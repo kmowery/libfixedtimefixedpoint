@@ -37,9 +37,9 @@ void fix_add(fixed op1, fixed op2, fixed* result) {
   //printf("extend: %x\n", EXTEND_BIT_32(!(isnan | isinfpos | isinfneg)));
 
   // do some horrible bit-ops to make result into what we want
-  *result = ( F_NAN & ( !!isnan ? ALL_BIT_MASK : 0 )) |
-      ( F_INF_POS & ( !!isinfpos ? ALL_BIT_MASK : 0 )) |
-      ( F_INF_NEG & ( !!isinfneg ? ALL_BIT_MASK : 0 )) |
+  *result = ( F_NAN & ( isnan ? ALL_BIT_MASK : 0 )) |
+      ( F_INF_POS & ( isinfpos ? ALL_BIT_MASK : 0 )) |
+      ( F_INF_NEG & ( isinfneg ? ALL_BIT_MASK : 0 )) |
       ( tempresult & (!(isnan | isinfpos | isinfneg) ? ALL_BIT_MASK : 0));
 }
 
