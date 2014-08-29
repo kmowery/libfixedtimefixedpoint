@@ -67,15 +67,21 @@ void fix_mul(fixed op1, fixed op2, fixed* result) {
 
   isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
   isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
-  isnegop1 = FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1);
-  isnegop2 = FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2);
+  isnegop1 = FIX_IS_INF_NEG(op1) | (FIX_IS_NEG(op1) & !isinfop1);
+  isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
 
-  // We may also wish to help the compiler by using some local variables
+  //TODO Doesn't account for NaN or overflow yet
   isinfpos = (isinfop1 | isinfop2) &
     !(isnegop1 ^ isnegop2);
 
   isinfneg = (isinfop1 | isinfop2) &
     (isnegop1 ^ isnegop2);
+
+  *result = ( isnan ? F_NAN : 0 ) |
+     ( isinfpos ? F_INF_POS : 0 ) |
+     ( isinfneg ? F_INF_NEG : 0 ) |
+     ( DATA_BITS(tempresult));
+
 }
 
 
