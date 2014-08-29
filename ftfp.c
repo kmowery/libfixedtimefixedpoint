@@ -52,6 +52,8 @@ void fix_mul(fixed op1, fixed op2, fixed* result) {
 
   uint8_t isinfop1;
   uint8_t isinfop2;
+  uint8_t isnegop1;
+  uint8_t isnegop2;
 
   fixed tempresult;
 
@@ -62,23 +64,18 @@ void fix_mul(fixed op1, fixed op2, fixed* result) {
 
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
 
+
   isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
   isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
+  isnegop1 = FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1);
+  isnegop2 = FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2);
 
-  //TODO These seem excessive...
   // We may also wish to help the compiler by using some local variables
   isinfpos = (isinfop1 | isinfop2) &
-    ((FIX_IS_INF_POS(op1) & !(FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2))) |
-     (FIX_IS_INF_NEG(op1) & (FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2))) |
-     (FIX_IS_INF_POS(op2) & !(FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1))) |
-     (FIX_IS_INF_NEG(op2) & (FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1))));
+    !(isnegop1 ^ isnegop2);
 
-  isinfpos = (isinfop1 | isinfop2) &
-    ((FIX_IS_INF_NEG(op1) & !(FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2))) |
-     (FIX_IS_INF_POS(op1) & (FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2))) |
-     (FIX_IS_INF_NEG(op2) & !(FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1))) |
-     (FIX_IS_INF_POS(op2) & (FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1))));
-
+  isinfneg = (isinfop1 | isinfop2) &
+    (isnegop1 ^ isnegop2);
 }
 
 
