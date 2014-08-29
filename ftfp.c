@@ -1,5 +1,37 @@
 #include "ftfp.h"
 
+void fix_neg(fixed op1, fixed* result){
+  uint8_t isinfpos;
+  uint8_t isinfneg;
+  uint8_t isnan;
+
+  fixed tempresult;
+
+  if(result == NULL) {
+    // TODO: we can't be constant time if there's no output.
+    return;
+  }
+
+  // Flip our infs
+  isinfpos = FIX_IS_INF_NEG(op1);
+  isinfneg = FIX_IS_INF_POS(op1);
+
+  // NaN is still NaN
+  isnan = FIX_IS_NAN(op1);
+
+  // 2s comp negate the data bits
+  tempresult = DATA_BITS(((~op1) + 4));
+
+  //TODO: Check overflow? other issues?
+
+
+  // Combine
+  *result = ( isnan ? F_NAN : 0 ) |
+    ( isinfpos ? F_INF_POS : 0 ) |
+    ( isinfneg ? F_INF_NEG : 0 ) |
+    tempresult;
+}
+
 void fix_add(fixed op1, fixed op2, fixed* result) {
 
   uint8_t isnan;
@@ -23,10 +55,12 @@ void fix_add(fixed op1, fixed op2, fixed* result) {
   // 'negative' number:
   //   if both inputs are positive (top bit == 0) and the result is 'negative'
   //   (top bit nonzero)
-  isinfpos |= (TOP_BIT(op1) | TOP_BIT(op2)) == 0x0 && (TOP_BIT(tempresult) != 0x0);
+  isinfpos |= (TOP_BIT(op1) | TOP_BIT(op2)) ==
+    0x0 && (TOP_BIT(tempresult) != 0x0);
 
   // check if there's negative infinity overflow
-  isinfneg |= (TOP_BIT(op1) & TOP_BIT(op2)) == TOP_BIT_MASK && (TOP_BIT(tempresult) == 0x0);
+  isinfneg |= (TOP_BIT(op1) & TOP_BIT(op2)) ==
+    TOP_BIT_MASK && (TOP_BIT(tempresult) == 0x0);
 
   //printf("isnan: %x\n", isnan);
   //printf("isinfpos: %x\n", isinfpos);
@@ -37,10 +71,10 @@ void fix_add(fixed op1, fixed op2, fixed* result) {
   //printf("extend: %x\n", EXTEND_BIT_32(!(isnan | isinfpos | isinfneg)));
 
   // do some horrible bit-ops to make result into what we want
-  *result = ( F_NAN & ( isnan ? ALL_BIT_MASK : 0 )) |
-      ( F_INF_POS & ( isinfpos ? ALL_BIT_MASK : 0 )) |
-      ( F_INF_NEG & ( isinfneg ? ALL_BIT_MASK : 0 )) |
-      ( tempresult & (!(isnan | isinfpos | isinfneg) ? ALL_BIT_MASK : 0));
+  *result = ( isnan ? F_NAN : 0 ) |
+     ( isinfpos ? F_INF_POS : 0 ) |
+     ( isinfneg ? F_INF_NEG : 0 ) |
+     ( DATA_BITS(tempresult));
 }
 
 // TODO: not constant time. will work for now.

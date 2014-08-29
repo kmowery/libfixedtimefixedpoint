@@ -18,6 +18,9 @@ typedef uint32_t fixed;
 #define TOP_BIT_MASK (1<<31)
 #define TOP_BIT(f) (f & TOP_BIT_MASK)
 
+#define DATA_BIT_MASK (0xFFFFFFFC)
+#define DATA_BITS(f) (f & DATA_BIT_MASK)
+
 #define FIX_IS_NAN(f) ((f&FLAGS_MASK) == F_NAN)
 #define FIX_IS_INF_POS(f) ((f&FLAGS_MASK) == F_INF_POS)
 #define FIX_IS_INF_NEG(f) ((f&FLAGS_MASK) == F_INF_NEG)
@@ -32,6 +35,7 @@ typedef uint32_t fixed;
   v |= v << 16; \
   v; })
 
+void fix_neg(fixed op1, fixed* result);
 
 void fix_add(fixed op1, fixed op2, fixed* result);
 

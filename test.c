@@ -29,6 +29,14 @@ int main(int argc, char** argv) {
 
   p(h);
 
+  fix_neg(h,&h);
+  p(h);
+
+  f = FIXINT( 1<<12);
+  fix_neg(f,&h);
+  p(f);
+  p(h);
+
   f = FIXINT( (1 << 14) -1 );
   p(f);
 }
