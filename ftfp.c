@@ -32,6 +32,56 @@ void fix_neg(fixed op1, fixed* result){
     tempresult;
 }
 
+void fix_sub(fixed op1, fixed op2, fixed* result) {
+  fixed tmp;
+
+  if(result == NULL) {
+    // TODO: we can't be constant time if there's no output.
+    return;
+  }
+
+  fix_neg(op2,&tmp);
+  fix_add(op1,op2,result);
+}
+
+void fix_mul(fixed op1, fixed op2, fixed* result) {
+
+  uint8_t isnan;
+  uint8_t isinfpos;
+  uint8_t isinfneg;
+
+  uint8_t isinfop1;
+  uint8_t isinfop2;
+
+  fixed tempresult;
+
+  if(result == NULL) {
+    // TODO: we can't be constant time if there's no output.
+    return;
+  }
+
+  isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
+
+  isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
+  isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
+
+  //TODO These seem excessive...
+  // We may also wish to help the compiler by using some local variables
+  isinfpos = (isinfop1 | isinfop2) &
+    ((FIX_IS_INF_POS(op1) & !(FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2))) |
+     (FIX_IS_INF_NEG(op1) & (FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2))) |
+     (FIX_IS_INF_POS(op2) & !(FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1))) |
+     (FIX_IS_INF_NEG(op2) & (FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1))));
+
+  isinfpos = (isinfop1 | isinfop2) &
+    ((FIX_IS_INF_NEG(op1) & !(FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2))) |
+     (FIX_IS_INF_POS(op1) & (FIX_IS_INF_NEG(op2) | FIX_IS_NEG(op2))) |
+     (FIX_IS_INF_NEG(op2) & !(FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1))) |
+     (FIX_IS_INF_POS(op2) & (FIX_IS_INF_NEG(op1) | FIX_IS_NEG(op1))));
+
+}
+
+
 void fix_add(fixed op1, fixed op2, fixed* result) {
 
   uint8_t isnan;
@@ -45,6 +95,7 @@ void fix_add(fixed op1, fixed op2, fixed* result) {
     return;
   }
 
+  //TODO: One of the INFs needs to 'win' if we get -inf and inf.
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
   isinfpos = FIX_IS_INF_POS(op1) | FIX_IS_INF_POS(op2);
   isinfneg = FIX_IS_INF_NEG(op1) | FIX_IS_INF_NEG(op2);
