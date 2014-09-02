@@ -47,6 +47,7 @@ void fix_sub(fixed op1, fixed op2, fixed* result) {
 void fix_mul(fixed op1, fixed op2, fixed* result) {
 
   uint8_t isnan;
+  uint8_t isinf;
   uint8_t isinfpos;
   uint8_t isinfneg;
 
@@ -54,6 +55,8 @@ void fix_mul(fixed op1, fixed op2, fixed* result) {
   uint8_t isinfop2;
   uint8_t isnegop1;
   uint8_t isnegop2;
+
+  uint64_t tmp;
 
   fixed tempresult;
 
@@ -64,18 +67,25 @@ void fix_mul(fixed op1, fixed op2, fixed* result) {
 
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
 
+  tmp = (uint64_t)op1 * (uint64_t)op2;
 
+  //TODO: Will this work correctly...
+  isinf = !!(tmp & 0xFFFFFFFF00000000);
+
+  tempresult = tmp & 0xFFFFFFFC;
+
+  //TODO Cache these maybe due to O0?
   isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
   isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
   isnegop1 = FIX_IS_INF_NEG(op1) | (FIX_IS_NEG(op1) & !isinfop1);
   isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
 
-  //TODO Doesn't account for NaN or overflow yet
-  isinfpos = (isinfop1 | isinfop2) &
-    !(isnegop1 ^ isnegop2);
+  //Update isinf
+  isinf = (isinfop1 | isinfop2 | isinf) & (!isnan);
 
-  isinfneg = (isinfop1 | isinfop2) &
-    (isnegop1 ^ isnegop2);
+  isinfpos = isinf & !(isnegop1 ^ isnegop2);
+
+  isinfneg = isinf & (isnegop1 ^ isnegop2);
 
   *result = ( isnan ? F_NAN : 0 ) |
      ( isinfpos ? F_INF_POS : 0 ) |
