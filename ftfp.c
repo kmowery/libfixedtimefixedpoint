@@ -1,4 +1,5 @@
 #include "ftfp.h"
+#include <math.h>
 
 void fix_neg(fixed op1, fixed* result){
   uint8_t isinfpos;
@@ -173,4 +174,33 @@ void fix_print(char* buffer, fixed f) {
   }
 
   sprintf(buffer, "%f", d);
+}
+
+fixed fix_convert_double(double d) {
+  uint64_t bits = *(uint64_t*) &d;
+  uint32_t exponent = ((bits >> 52) & 0x7ff) - 1023;
+  uint32_t sign = bits >> 63;
+
+  /* note that this breaks with denorm numbers. However, we'll shift those all
+   * away with the exponent later */
+  uint64_t mantissa = (bits & ((1ull <<52)-1)) | (1ull<<52);
+  uint32_t shift = 52 - (n_frac_bits) - exponent;
+
+  uint64_t result_long = (mantissa >> (shift));
+  fixed result = (result_long << n_flag_bits) & 0xffffffff;
+
+  /* TODO: make fixed-time */
+  if(isnan(d)) {
+    result = F_NAN;
+  }
+
+  /* TODO: make fixed-time */
+  if( isinf(d) || (result_long & ~((1ull << (n_frac_bits + n_int_bits)) -1)) != 0) {
+    result = F_INF_POS;
+  }
+
+  fixed result_neg;
+  fix_neg(result, &result_neg);
+
+  return (sign == 0 ? result : result_neg);
 }
