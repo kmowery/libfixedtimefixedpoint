@@ -35,15 +35,15 @@ int main(int argc, char** argv) {
   g = FIXINT(1 << 13);
   p(f);
 
-  fix_add(f,g, &h);
+  h = fix_add(f,g);
 
   p(h);
 
-  fix_neg(h,&h);
+  h = fix_neg(h);
   p(h);
 
   f = FIXINT( 1<<12);
-  fix_neg(f,&h);
+  h = fix_neg(f);
   p(f);
   p(h);
 

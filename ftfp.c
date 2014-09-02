@@ -1,17 +1,12 @@
 #include "ftfp.h"
 #include <math.h>
 
-void fix_neg(fixed op1, fixed* result){
+fixed fix_neg(fixed op1){
   uint8_t isinfpos;
   uint8_t isinfneg;
   uint8_t isnan;
 
   fixed tempresult;
-
-  if(result == NULL) {
-    // TODO: we can't be constant time if there's no output.
-    return;
-  }
 
   // Flip our infs
   isinfpos = FIX_IS_INF_NEG(op1);
@@ -27,25 +22,17 @@ void fix_neg(fixed op1, fixed* result){
 
 
   // Combine
-  *result = ( isnan ? F_NAN : 0 ) |
+  return ( isnan ? F_NAN : 0 ) |
     ( isinfpos ? F_INF_POS : 0 ) |
     ( isinfneg ? F_INF_NEG : 0 ) |
     tempresult;
 }
 
-void fix_sub(fixed op1, fixed op2, fixed* result) {
-  fixed tmp;
-
-  if(result == NULL) {
-    // TODO: we can't be constant time if there's no output.
-    return;
-  }
-
-  fix_neg(op2,&tmp);
-  fix_add(op1,op2,result);
+fixed fix_sub(fixed op1, fixed op2) {
+  return fix_add(op1,fix_neg(op2));
 }
 
-void fix_mul(fixed op1, fixed op2, fixed* result) {
+fixed fix_mul(fixed op1, fixed op2) {
 
   uint8_t isnan;
   uint8_t isinf;
@@ -60,11 +47,6 @@ void fix_mul(fixed op1, fixed op2, fixed* result) {
   uint64_t tmp;
 
   fixed tempresult;
-
-  if(result == NULL) {
-    // TODO: we can't be constant time if there's no output.
-    return;
-  }
 
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
 
@@ -88,7 +70,7 @@ void fix_mul(fixed op1, fixed op2, fixed* result) {
 
   isinfneg = isinf & (isnegop1 ^ isnegop2);
 
-  *result = ( isnan ? F_NAN : 0 ) |
+  return ( isnan ? F_NAN : 0 ) |
      ( isinfpos ? F_INF_POS : 0 ) |
      ( isinfneg ? F_INF_NEG : 0 ) |
      ( DATA_BITS(tempresult));
@@ -96,18 +78,13 @@ void fix_mul(fixed op1, fixed op2, fixed* result) {
 }
 
 
-void fix_add(fixed op1, fixed op2, fixed* result) {
+fixed fix_add(fixed op1, fixed op2) {
 
   uint8_t isnan;
   uint8_t isinfpos;
   uint8_t isinfneg;
 
   fixed tempresult;
-
-  if(result == NULL) {
-    // TODO: we can't be constant time if there's no output.
-    return;
-  }
 
   //TODO: One of the INFs needs to 'win' if we get -inf and inf.
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
@@ -136,7 +113,7 @@ void fix_add(fixed op1, fixed op2, fixed* result) {
   //printf("extend: %x\n", EXTEND_BIT_32(!(isnan | isinfpos | isinfneg)));
 
   // do some horrible bit-ops to make result into what we want
-  *result = ( isnan ? F_NAN : 0 ) |
+  return ( isnan ? F_NAN : 0 ) |
      ( isinfpos ? F_INF_POS : 0 ) |
      ( isinfneg ? F_INF_NEG : 0 ) |
      ( DATA_BITS(tempresult));
@@ -199,8 +176,7 @@ fixed fix_convert_double(double d) {
     result = F_INF_POS;
   }
 
-  fixed result_neg;
-  fix_neg(result, &result_neg);
+  fixed result_neg = fix_neg(result);
 
   return (sign == 0 ? result : result_neg);
 }

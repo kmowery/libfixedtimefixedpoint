@@ -42,11 +42,11 @@ typedef uint32_t fixed;
   v |= v << 16; \
   v; })
 
-void fix_neg(fixed op1, fixed* result);
+fixed fix_neg(fixed op1);
 
-void fix_sub(fixed op1, fixed op2, fixed* result);
+fixed fix_sub(fixed op1, fixed op2);
 
-void fix_add(fixed op1, fixed op2, fixed* result);
+fixed fix_add(fixed op1, fixed op2);
 
 fixed fix_convert_double(double d);
 
