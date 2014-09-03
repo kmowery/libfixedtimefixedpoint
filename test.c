@@ -31,17 +31,35 @@ void p(fixed f) {
   assert_memory_equal( &f, &g, sizeof(fixed)); \
 }
 
-CONVERT_DBL(zero, 0, 0x00000);
-CONVERT_DBL(one, 1, 0x20000);
-CONVERT_DBL(one_neg, -1, 0xfffe0000);
-CONVERT_DBL(two, 2, 0x40000);
-CONVERT_DBL(two_neg, -2, 0xfffc0000);
-CONVERT_DBL(many, 1000.4, 0x7d0cccc);
-CONVERT_DBL(many_neg, -1000.4, 0xf82f3334);
-CONVERT_DBL(frac, 0.5342, 0x11180);
-CONVERT_DBL(inf_pos, INFINITY, F_INF_POS);
-CONVERT_DBL(inf_neg, -INFINITY, F_INF_NEG);
-CONVERT_DBL(nan, nan("0"), F_NAN);
+CONVERT_DBL(zero     , 0         , 0x00000);
+CONVERT_DBL(one      , 1         , 0x20000);
+CONVERT_DBL(one_neg  , -1        , 0xfffe0000);
+CONVERT_DBL(two      , 2         , 0x40000);
+CONVERT_DBL(two_neg  , -2        , 0xfffc0000);
+CONVERT_DBL(many     , 1000.4    , 0x7d0cccc);
+CONVERT_DBL(many_neg , -1000.4   , 0xf82f3334);
+CONVERT_DBL(frac     , 0.5342    , 0x11180);
+CONVERT_DBL(frac_neg , -0.5342   , 0xfffeee80);
+CONVERT_DBL(inf_pos  , INFINITY  , F_INF_POS);
+CONVERT_DBL(inf_neg  , -INFINITY , F_INF_NEG);
+CONVERT_DBL(nan      , nan("0")  , F_NAN);
+
+#define unit_fixnum(name) unit_test(fixnum_##name)
+#define TEST_FIXNUM(name, z, frac, bits) static void fixnum_##name(void **state) { \
+  fixed f = bits; \
+  fixed g = FIXNUM(z, frac); \
+  assert_true( FIX_EQ(f, g) ); \
+}
+
+TEST_FIXNUM(zero     , 0     , 0    , 0x0);
+TEST_FIXNUM(one      , 1     , 0    , 0x20000);
+TEST_FIXNUM(one_neg  , -1    , 0    , 0xfffe0000);
+TEST_FIXNUM(two      , 2     , 0    , 0x40000);
+TEST_FIXNUM(two_neg  , -2    , 0    , 0xfffc0000);
+TEST_FIXNUM(many     , 1000  , 4    , 0x7d0cccc);
+TEST_FIXNUM(many_neg , -1000 , 4    , 0xf82f3334);
+TEST_FIXNUM(frac     , 0     , 5342 , 0x11184);
+TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee7c);
 
 #define unit_add(name) unit_test(add_##name)
 #define ADD_CUST(name, op1, op2, result) static void add_##name(void **state) { \
@@ -87,9 +105,20 @@ int main(int argc, char** argv) {
     unit_fixint_dbl(many),
     unit_fixint_dbl(many_neg),
     unit_fixint_dbl(frac),
+    unit_fixint_dbl(frac_neg),
     unit_fixint_dbl(inf_pos),
     unit_fixint_dbl(inf_neg),
     unit_fixint_dbl(nan),
+
+    unit_fixnum(zero),
+    unit_fixnum(one),
+    unit_fixnum(one_neg),
+    unit_fixnum(two),
+    unit_fixnum(two_neg),
+    unit_fixnum(many),
+    unit_fixnum(many_neg),
+    unit_fixnum(frac),
+    unit_fixnum(frac_neg),
 
     unit_add(one_zero),
     unit_add(one_one),

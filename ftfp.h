@@ -39,6 +39,39 @@ typedef uint32_t fixed;
 
 #define FIXINT(z) ((z)<<(n_flag_bits+n_frac_bits))
 
+/*
+ * General idea:
+ *   This creates the fractional portion of a fixed point, given a decimal
+ *   fraction. It uses the formula:
+ *
+ *     "one" / 10^( ceil(log_10( frac )) ) * frac
+ *
+ *  Along with extra precision bits and rounding to get as close as possible. It
+ *  actually looks more like, with rounding tacked on:
+ *
+ *   (((1<<(n_frac_bits+15)) / ((int) pow(10, log_ceil))) * frac >> 15) << n_flag_bits;
+ *
+ * Notes:
+ *   This works fairly well, and should always give the fixed point that is
+ *   closest to the decimal number .frac. That is, FIXFRAC(5) will give 0.5,
+ *   etc. We use a horrible strlen preprocessor trick, so FIXFRAC(001) will
+ *   give a fixed point close to 0.001.
+ *
+ *   I'd really like to remove the pow call; doing this in the preprocessor
+ *   seems difficult.
+ */
+#define FIXFRAC(frac) ({ \
+    uint32_t log_ceil = ((int) strlen( #frac )); \
+    uint32_t one = 1 << (n_frac_bits + 15); \
+    uint32_t p = (int) pow(10, log_ceil); \
+    uint32_t unit = one / p; \
+    uint32_t n = unit * frac; \
+    uint32_t round = (n >> 14) & 0x1;\
+    ((n >> 15) + (round ? 1 : 0)) << n_flag_bits;\
+    })
+
+#define FIXNUM(i,frac) ({fixed f = (FIXINT(abs(i)) | FIXFRAC(frac)); ( #i[0] == '-' ? fix_neg(f) : f ); })
+
 #define EXTEND_BIT_32(b) ({ uint32_t v = b; \
   v |= v << 1; \
   v |= v << 2; \
