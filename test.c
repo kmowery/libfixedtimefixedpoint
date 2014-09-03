@@ -77,6 +77,21 @@ ADD(fifteen_one,   15,    1,     16);
 ADD_CUST(overflow, 1<<13, 1<<13, F_INF_POS);
 // TODO: negative overflow, NaNs, fractions
 
+#define unit_mul(name) unit_test(mul_##name)
+#define MUL_CUST(name, op1, op2, result) static void mul_##name(void **state) { \
+  fixed o1 = fix_convert_double(op1); \
+  fixed o2 = fix_convert_double(op2); \
+  fixed muld = fix_mul(o1,o2); \
+  fixed expected = result; \
+  assert_true( FIX_EQ(muld, expected) ); \
+}
+#define MUL(name, op1, op2, val) MUL_CUST(name, op1, op2, fix_convert_double(val))
+MUL(one_zero,      1,     0,     0);
+MUL(one_one,       1,     1,     1);
+MUL(fifteen_one,   15,    1,     15);
+MUL(fifteen_two,   15,    2,     30);
+
+
 #define unit_neg(name) unit_test(neg_##name)
 #define NEG_CUST(name, op1, result) static void neg_##name(void **state) { \
   fixed o1 = fix_convert_double(op1); \
@@ -124,6 +139,11 @@ int main(int argc, char** argv) {
     unit_add(one_one),
     unit_add(fifteen_one),
     unit_add(overflow),
+
+    unit_mul(one_zero),
+    unit_mul(one_one),
+    unit_mul(fifteen_one),
+    unit_mul(fifteen_two),
 
     unit_neg(zero),
     unit_neg(one),

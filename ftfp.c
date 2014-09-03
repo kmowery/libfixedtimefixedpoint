@@ -50,7 +50,7 @@ fixed fix_mul(fixed op1, fixed op2) {
 
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
 
-  tmp = (uint64_t)op1 * (uint64_t)op2;
+  tmp = ((uint64_t)op1 * (uint64_t)op2) >> 15;
 
   //TODO: Will this work correctly...
   isinf = !!(tmp & 0xFFFFFFFF00000000);
