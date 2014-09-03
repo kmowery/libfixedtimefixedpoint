@@ -160,7 +160,7 @@ fixed fix_convert_double(double d) {
 
   /* note that this breaks with denorm numbers. However, we'll shift those all
    * away with the exponent later */
-  uint64_t mantissa = (bits & ((1ull <<52)-1)) | (1ull<<52);
+  uint64_t mantissa = (bits & ((1ull <<52)-1)) | (d != 0 ? (1ull<<52) : 0);
   uint32_t shift = 52 - (n_frac_bits) - exponent;
 
   uint64_t result_long = (mantissa >> (shift));
