@@ -32,6 +32,11 @@ typedef uint32_t fixed;
 #define FIX_IS_INF_POS(f) ((f&FLAGS_MASK) == F_INF_POS)
 #define FIX_IS_INF_NEG(f) ((f&FLAGS_MASK) == F_INF_NEG)
 
+#define FIX_EQ(op1, op2) ((FIX_IS_NAN(op1) && FIX_IS_NAN(op2)) || \
+    (FIX_IS_INF_POS(op1) && FIX_IS_INF_POS(op2)) || \
+    (FIX_IS_INF_NEG(op1) && FIX_IS_INF_NEG(op2)) || \
+    (op1 == op2))
+
 #define FIXINT(z) ((z)<<(n_flag_bits+n_frac_bits))
 
 #define EXTEND_BIT_32(b) ({ uint32_t v = b; \
