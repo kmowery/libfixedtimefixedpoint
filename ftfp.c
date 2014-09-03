@@ -164,7 +164,8 @@ fixed fix_convert_double(double d) {
   uint32_t shift = 52 - (n_frac_bits) - exponent;
 
   uint64_t result_long = (mantissa >> (shift));
-  fixed result = (result_long << n_flag_bits) & 0xffffffff;
+  uint32_t round = (mantissa >> (shift-1)) & 0x1;
+  fixed result = ((result_long + round) << n_flag_bits) & 0xffffffff;
 
   /* TODO: make fixed-time */
   if(isnan(d)) {
