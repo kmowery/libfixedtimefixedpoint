@@ -70,6 +70,7 @@ typedef uint32_t fixed;
     ((n >> 15) + (round ? 1 : 0)) << n_flag_bits;\
     })
 
+/* TODO: fix this for variables and not just constants */
 #define FIXNUM(i,frac) ({fixed f = (FIXINT(abs(i)) | FIXFRAC(frac)); ( #i[0] == '-' ? fix_neg(f) : f ); })
 
 #define EXTEND_BIT_32(b) ({ uint32_t v = b; \

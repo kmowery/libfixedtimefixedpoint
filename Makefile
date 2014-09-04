@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -O3 -std=gnu99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing
+CFLAGS := -O3 -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing
 LDFLAGS := -lcmocka
 
 progs             := test
