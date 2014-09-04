@@ -67,15 +67,30 @@ TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee7c);
   fixed o2 = fix_convert_double(op2); \
   fixed added = fix_add(o1,o2); \
   fixed expected = result; \
-  assert_true( FIX_EQ(added, expected) ); \
+  if( !FIX_EQ(added, expected) ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, added); \
+    fix_print(b2, expected); \
+    fail_msg("Mismatch: %s (%x) != %s (%x)", b1, added, b2, expected); \
+  } \
 }
 #define ADD(name, op1, op2, val) ADD_CUST(name, op1, op2, fix_convert_double(val))
 
-ADD(one_zero,      1,     0,     1);
-ADD(one_one,       1,     1,     2);
-ADD(fifteen_one,   15,    1,     16);
-ADD_CUST(overflow, 1<<13, 1<<13, F_INF_POS);
-// TODO: negative overflow, NaNs, fractions
+ADD(one_zero               , 1        , 0             , 1);
+ADD(one_one                , 1        , 1             , 2);
+ADD(fifteen_one            , 15       , 1             , 16);
+ADD(pos_neg                , 15       , -1.5          , 13.5);
+ADD(pos_neg_cross_zero     , 15       , -18           , -3);
+ADD_CUST(overflow          , 1<<13    , 1<<13         , F_INF_POS);
+ADD_CUST(overflow_neg      , -(1<<13) , -((1<<13) +1) , F_INF_NEG);
+ADD_CUST(inf_number        , INFINITY , 1             , F_INF_POS);
+ADD_CUST(inf_neg           , INFINITY , -1            , F_INF_POS);
+ADD_CUST(nan               , nan("0") , 0             , F_NAN);
+ADD_CUST(nan_inf           , nan("0") , INFINITY      , F_NAN);
+ADD_CUST(inf_nan           , INFINITY , nan("0")      , F_NAN);
+ADD_CUST(nan_inf_neg       , nan("0") , -INFINITY     , F_NAN);
+ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , F_INF_POS);
+// TODO: negative overflow , NaNs     , fractions
 
 #define unit_mul(name) unit_test(mul_##name)
 #define MUL_CUST(name, op1, op2, result) static void mul_##name(void **state) { \
@@ -138,7 +153,17 @@ int main(int argc, char** argv) {
     unit_add(one_zero),
     unit_add(one_one),
     unit_add(fifteen_one),
+    unit_add(pos_neg),
+    unit_add(pos_neg_cross_zero),
     unit_add(overflow),
+    unit_add(overflow_neg),
+    unit_add(inf_number),
+    unit_add(inf_neg),
+    unit_add(nan),
+    unit_add(nan_inf),
+    unit_add(inf_nan),
+    unit_add(nan_inf_neg),
+    unit_add(inf_inf_neg),
 
     unit_mul(one_zero),
     unit_mul(one_one),

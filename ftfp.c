@@ -22,10 +22,11 @@ fixed fix_neg(fixed op1){
 
 
   // Combine
-  return ( isnan ? F_NAN : 0 ) |
-    ( isinfpos ? F_INF_POS : 0 ) |
-    ( isinfneg ? F_INF_NEG : 0 ) |
-    tempresult;
+  return ( isnan                       ? F_NAN : 0 ) |
+     ( isinfpos & !(isnan)             ? F_INF_POS : 0 ) |
+     ( isinfneg & !(isnan || isinfpos) ? F_INF_NEG : 0 ) |
+     ( DATA_BITS(tempresult));
+
 }
 
 fixed fix_sub(fixed op1, fixed op2) {
@@ -70,11 +71,10 @@ fixed fix_mul(fixed op1, fixed op2) {
 
   isinfneg = isinf & (isnegop1 ^ isnegop2);
 
-  return ( isnan ? F_NAN : 0 ) |
-     ( isinfpos ? F_INF_POS : 0 ) |
-     ( isinfneg ? F_INF_NEG : 0 ) |
+  return ( isnan                       ? F_NAN : 0 ) |
+     ( isinfpos & !(isnan)             ? F_INF_POS : 0 ) |
+     ( isinfneg & !(isnan || isinfpos) ? F_INF_NEG : 0 ) |
      ( DATA_BITS(tempresult));
-
 }
 
 
@@ -113,9 +113,9 @@ fixed fix_add(fixed op1, fixed op2) {
   //printf("extend: %x\n", EXTEND_BIT_32(!(isnan | isinfpos | isinfneg)));
 
   // do some horrible bit-ops to make result into what we want
-  return ( isnan ? F_NAN : 0 ) |
-     ( isinfpos ? F_INF_POS : 0 ) |
-     ( isinfneg ? F_INF_NEG : 0 ) |
+  return ( isnan                       ? F_NAN : 0 ) |
+     ( isinfpos & !(isnan)             ? F_INF_POS : 0 ) |
+     ( isinfneg & !(isnan || isinfpos) ? F_INF_NEG : 0 ) |
      ( DATA_BITS(tempresult));
 }
 
