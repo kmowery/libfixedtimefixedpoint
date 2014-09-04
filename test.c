@@ -61,6 +61,23 @@ TEST_FIXNUM(many_neg , -1000 , 4    , 0xf82f3334);
 TEST_FIXNUM(frac     , 0     , 5342 , 0x11184);
 TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee7c);
 
+#define unit_round_to_even(name) unit_test(round_to_even_##name)
+#define TEST_ROUND_TO_EVEN(name, value, shift, result) static void round_to_even_##name(void **state) { \
+  int32_t rounded = ROUND_TO_EVEN(value, shift); \
+  int32_t expected = result; \
+  assert_memory_equal( &rounded, &expected, sizeof(uint32_t)); \
+}
+
+TEST_ROUND_TO_EVEN(zero  , 0x0 << 1 , 0x3 , 0x0);
+TEST_ROUND_TO_EVEN(one   , 0x1 << 1 , 0x3 , 0x0);
+TEST_ROUND_TO_EVEN(two   , 0x2 << 1 , 0x3 , 0x0);
+TEST_ROUND_TO_EVEN(three , 0x3 << 1 , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(four  , 0x4 << 1 , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(five  , 0x5 << 1 , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(six   , 0x6 << 1 , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(seven , 0x7 << 1 , 0x3 , 0x2);
+TEST_ROUND_TO_EVEN(eight , 0x8 << 1 , 0x3 , 0x2);
+
 #define unit_add(name) unit_test(add_##name)
 #define ADD_CUST(name, op1, op2, result) static void add_##name(void **state) { \
   fixed o1 = fix_convert_double(op1); \
@@ -150,6 +167,16 @@ int main(int argc, char** argv) {
     unit_fixnum(frac),
     unit_fixnum(frac_neg),
 
+    unit_round_to_even(zero),
+    unit_round_to_even(one),
+    unit_round_to_even(two),
+    unit_round_to_even(three),
+    unit_round_to_even(four),
+    unit_round_to_even(five),
+    unit_round_to_even(six),
+    unit_round_to_even(seven),
+    unit_round_to_even(eight),
+
     unit_add(one_zero),
     unit_add(one_one),
     unit_add(fifteen_one),
@@ -177,5 +204,6 @@ int main(int argc, char** argv) {
     unit_neg(inf_neg),
     unit_neg(nan),
   };
+
   return run_tests(tests);
 }

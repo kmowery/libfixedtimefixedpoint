@@ -39,6 +39,25 @@ typedef uint32_t fixed;
 
 #define FIXINT(z) ((z)<<(n_flag_bits+n_frac_bits))
 
+/* Lops off the rightmost n_shift_bits of value and rounds to an even value
+ * (so 0.5 will round to 0, but 1.5 will round to 2)
+ *
+ * n_shift_bits must be >- 2.
+ *
+ * Round Truth table:
+ *  Bit 0 1 2       Result
+ *      0 0 0       0
+ *      0 0 1       0
+ *      0 1 0       0
+ *      0 1 1       1
+ *      1 0 0       0
+ *      1 0 1       0
+ *      1 1 0       1
+ *      1 1 1       1
+ * */
+#define ROUND_TO_EVEN(value, n_shift_bits) \
+  (((value) >> (n_shift_bits)) + ( ((value) >> ((n_shift_bits)-2) & 0x3) == 0x3 ))  // | ((value >> (n_shift_bits-2) & 0x7) == 0x3)))
+
 /*
  * General idea:
  *   This creates the fractional portion of a fixed point, given a decimal
