@@ -85,8 +85,7 @@ typedef uint32_t fixed;
     uint32_t p = (int) pow(10, log_ceil); \
     uint32_t unit = one / p; \
     uint32_t n = unit * frac; \
-    uint32_t round = (n >> 14) & 0x1;\
-    ((n >> 15) + (round ? 1 : 0)) << n_flag_bits;\
+    ((ROUND_TO_EVEN(n, 15)) << n_flag_bits); \
     })
 
 /* TODO: fix this for variables and not just constants */

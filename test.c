@@ -38,11 +38,12 @@ CONVERT_DBL(two      , 2         , 0x40000);
 CONVERT_DBL(two_neg  , -2        , 0xfffc0000);
 CONVERT_DBL(many     , 1000.4    , 0x7d0cccc);
 CONVERT_DBL(many_neg , -1000.4   , 0xf82f3334);
-CONVERT_DBL(frac     , 0.5342    , 0x11184);
-CONVERT_DBL(frac_neg , -0.5342   , 0xfffeee7c);
+CONVERT_DBL(frac     , 0.5342    , 0x11180);
+CONVERT_DBL(frac_neg , -0.5342   , 0xfffeee80);
 CONVERT_DBL(inf_pos  , INFINITY  , F_INF_POS);
 CONVERT_DBL(inf_neg  , -INFINITY , F_INF_NEG);
 CONVERT_DBL(nan      , nan("0")  , F_NAN);
+/* TODO: add tests for round-to-even */
 
 #define unit_fixnum(name) unit_test(fixnum_##name)
 #define TEST_FIXNUM(name, z, frac, bits) static void fixnum_##name(void **state) { \
@@ -58,8 +59,9 @@ TEST_FIXNUM(two      , 2     , 0    , 0x40000);
 TEST_FIXNUM(two_neg  , -2    , 0    , 0xfffc0000);
 TEST_FIXNUM(many     , 1000  , 4    , 0x7d0cccc);
 TEST_FIXNUM(many_neg , -1000 , 4    , 0xf82f3334);
-TEST_FIXNUM(frac     , 0     , 5342 , 0x11184);
-TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee7c);
+TEST_FIXNUM(frac     , 0     , 5342 , 0x11180);
+TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee80);
+/* TODO: add tests for round-to-even */
 
 #define unit_round_to_even(name) unit_test(round_to_even_##name)
 #define TEST_ROUND_TO_EVEN(name, value, shift, result) static void round_to_even_##name(void **state) { \

@@ -163,9 +163,7 @@ fixed fix_convert_double(double d) {
   uint64_t mantissa = (bits & ((1ull <<52)-1)) | (d != 0 ? (1ull<<52) : 0);
   uint32_t shift = 52 - (n_frac_bits) - exponent;
 
-  uint64_t result_long = (mantissa >> (shift));
-  uint32_t round = (mantissa >> (shift-1)) & 0x1;
-  fixed result = ((result_long + round) << n_flag_bits) & 0xffffffff;
+  fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << n_flag_bits) & 0xffffffff;
 
   /* TODO: make fixed-time */
   if(isnan(d)) {
@@ -173,7 +171,7 @@ fixed fix_convert_double(double d) {
   }
 
   /* TODO: make fixed-time */
-  if( isinf(d) || (result_long & ~((1ull << (n_frac_bits + n_int_bits)) -1)) != 0) {
+  if( isinf(d) || ((mantissa >> shift) & ~((1ull << (n_frac_bits + n_int_bits)) -1)) != 0) {
     result = F_INF_POS;
   }
 
