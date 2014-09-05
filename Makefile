@@ -1,6 +1,7 @@
 CC := gcc
-CFLAGS := -O3 -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing
-LDFLAGS := -lcmocka
+OPTFLAGS := -O -fforce-addr
+CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing
+LDFLAGS := -lcmocka -lm
 
 progs             := test
 test_ftfp_src     := test.c ftfp.c
