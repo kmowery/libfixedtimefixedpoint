@@ -49,7 +49,7 @@ CONVERT_DBL(nan      , nan("0")  , F_NAN);
 #define TEST_FIXNUM(name, z, frac, bits) static void fixnum_##name(void **state) { \
   fixed f = bits; \
   fixed g = FIXNUM(z, frac); \
-  assert_true( FIX_EQ(f, g) ); \
+  assert_true( FIX_EQ_NAN(f, g) ); \
 }
 
 TEST_FIXNUM(zero     , 0     , 0    , 0x0);
@@ -86,7 +86,7 @@ TEST_ROUND_TO_EVEN(eight , 0x8 << 1 , 0x3 , 0x2);
   fixed o2 = fix_convert_double(op2); \
   fixed added = fix_add(o1,o2); \
   fixed expected = result; \
-  if( !FIX_EQ(added, expected) ) { \
+  if( !FIX_EQ_NAN(added, expected) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, added); \
     fix_print(b2, expected); \
@@ -117,7 +117,7 @@ ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , F_INF_POS);
   fixed o2 = fix_convert_double(op2); \
   fixed muld = fix_mul(o1,o2); \
   fixed expected = result; \
-  assert_true( FIX_EQ(muld, expected) ); \
+  assert_true( FIX_EQ_NAN(muld, expected) ); \
 }
 #define MUL(name, op1, op2, val) MUL_CUST(name, op1, op2, fix_convert_double(val))
 MUL(one_zero              , 1           ,0             ,0);
@@ -135,7 +135,7 @@ MUL_CUST(ninf_neg         ,  -INFINITY  , FIXINT(-10)  ,F_INF_POS);
   fixed o1 = fix_convert_double(op1); \
   fixed negd = fix_neg(o1); \
   fixed expected = result; \
-  assert_true( FIX_EQ(negd, expected) ); \
+  assert_true( FIX_EQ_NAN(negd, expected) ); \
 }
 #define NEG(name, op1, val) NEG_CUST(name, op1, fix_convert_double(val))
 
