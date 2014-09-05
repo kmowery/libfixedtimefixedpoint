@@ -120,11 +120,15 @@ ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , F_INF_POS);
   assert_true( FIX_EQ(muld, expected) ); \
 }
 #define MUL(name, op1, op2, val) MUL_CUST(name, op1, op2, fix_convert_double(val))
-MUL(one_zero,      1,     0,     0);
-MUL(one_one,       1,     1,     1);
-MUL(fifteen_one,   15,    1,     15);
-MUL(fifteen_two,   15,    2,     30);
-
+MUL(one_zero              , 1           ,0             ,0);
+MUL(one_one               , 1           , 1            ,1);
+MUL(fifteen_one           , 15          , 1            ,15);
+MUL(fifteen_two           , 15          , 2            ,30);
+MUL(nthree_15             , -3          , 15           ,-45);
+MUL(frac5_15              , FIXFRAC(5)  , 15           ,7.5);
+MUL_CUST(inf_ten          , INFINITY    , FIXINT(10)   ,F_INF_POS);
+MUL_CUST(inf_neg          , INFINITY    , FIXINT(-10)  ,F_INF_NEG);
+MUL_CUST(ninf_neg         ,  -INFINITY  , FIXINT(-10)  ,F_INF_POS);
 
 #define unit_neg(name) unit_test(neg_##name)
 #define NEG_CUST(name, op1, result) static void neg_##name(void **state) { \
