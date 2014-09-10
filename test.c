@@ -163,6 +163,7 @@ MUL(fifteen_one           , 15          , 1            ,15);
 MUL(fifteen_two           , 15          , 2            ,30);
 MUL(nthree_15             , -3          , 15           ,-45);
 MUL(frac5_15              , FIXFRAC(5)  , 15           ,7.5);
+MUL_CUST(overflow         , 1<<10       , 1<<10        ,F_INF_POS);
 MUL_CUST(inf_ten          , INFINITY    , FIXINT(10)   ,F_INF_POS);
 MUL_CUST(inf_neg          , INFINITY    , FIXINT(-10)  ,F_INF_NEG);
 MUL_CUST(ninf_neg         ,  -INFINITY  , FIXINT(-10)  ,F_INF_POS);
@@ -267,6 +268,12 @@ int main(int argc, char** argv) {
     unit_mul(one_one),
     unit_mul(fifteen_one),
     unit_mul(fifteen_two),
+    unit_mul(nthree_15),
+    unit_mul(frac5_15),
+    unit_mul(overflow),
+    unit_mul(inf_ten),
+    unit_mul(inf_neg),
+    unit_mul(ninf_neg),
 
     unit_neg(zero),
     unit_neg(one),
