@@ -33,6 +33,52 @@ fixed fix_sub(fixed op1, fixed op2) {
   return fix_add(op1,fix_neg(op2));
 }
 
+fixed fix_div(fixed op1, fixed op2) {
+  uint8_t isnan;
+  uint8_t isinf;
+  uint8_t isinfpos;
+  uint8_t isinfneg;
+
+  uint8_t isinfop1;
+  uint8_t isinfop2;
+  uint8_t isnegop1;
+  uint8_t isnegop2;
+
+  uint64_t tmp;
+
+  fixed tempresult,op2nz;
+
+  isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2) | (op2 == 0);
+
+  // Take advantage of the extra bits we get out from doing this in uint64_t
+  //TODO: Does not handle negative numbers correctly
+  // op2 is never allowed to be 0, if it is set it to something like 1 so div doesn't fall over
+  op2nz = op2 | (DATA_BITS(op2) == 0);
+  tmp = ((((int64_t)((int32_t)DATA_BITS(op1)))<<15) /
+         (int64_t)((int32_t)(op2nz)))<<2;
+
+  tempresult = tmp & 0xFFFFFFFC;
+
+  isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
+  isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
+  isnegop1 = FIX_IS_INF_NEG(op1) | (FIX_IS_NEG(op1) & !isinfop1);
+  isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
+
+  //Update isinf
+  isinf = (isinfop1 | isinfop2) & (!isnan);
+
+  isinfpos = isinf & !(isnegop1 ^ isnegop2);
+
+  isinfneg = isinf & (isnegop1 ^ isnegop2);
+
+  return ( isnan                       ? F_NAN : 0 ) |
+     ( isinfpos & !(isnan)             ? F_INF_POS : 0 ) |
+     ( isinfneg & !(isnan || isinfpos) ? F_INF_NEG : 0 ) |
+     ( DATA_BITS(tempresult));
+
+}
+
+
 fixed fix_mul(fixed op1, fixed op2) {
 
   uint8_t isnan;
@@ -46,15 +92,20 @@ fixed fix_mul(fixed op1, fixed op2) {
   uint8_t isnegop2;
 
   uint64_t tmp;
+  uint64_t tmp2;
 
   fixed tempresult;
 
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
 
-  tmp = ((uint64_t)op1 * (uint64_t)op2) >> 17;
+  // Sign extend it all, this will help us correctly catch overflow
+  tmp = ((int64_t)((int32_t)op1) * (int64_t)((int32_t)op2)) >> 17;
 
-  //TODO: Will this work correctly...
-  isinf = !!(tmp & 0xFFFFFFFF00000000);
+  // inf only if overflow, and not a sign thing
+  tmp2 = tmp & 0xFFFFFFFF00000000;
+  isinf = !((tmp2 == 0xFFFFFFFF00000000) | (tmp2 == 0));
+
+  // TODO, this needs some rounding
 
   tempresult = tmp & 0xFFFFFFFC;
 

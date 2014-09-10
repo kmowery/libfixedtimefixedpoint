@@ -107,6 +107,8 @@ fixed fix_add(fixed op1, fixed op2);
 
 fixed fix_mul(fixed op1, fixed op2);
 
+fixed fix_div(fixed op1, fixed op2);
+
 fixed fix_convert_double(double d);
 
 void fix_print(char* buffer, fixed f);

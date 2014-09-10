@@ -125,10 +125,26 @@ MUL(one_one               , 1           , 1            ,1);
 MUL(fifteen_one           , 15          , 1            ,15);
 MUL(fifteen_two           , 15          , 2            ,30);
 MUL(nthree_15             , -3          , 15           ,-45);
-MUL(frac5_15              , FIXFRAC(5)  , 15           ,7.5);
-MUL_CUST(inf_ten          , INFINITY    , FIXINT(10)   ,F_INF_POS);
-MUL_CUST(inf_neg          , INFINITY    , FIXINT(-10)  ,F_INF_NEG);
-MUL_CUST(ninf_neg         ,  -INFINITY  , FIXINT(-10)  ,F_INF_POS);
+MUL(frac5_15              , 0.5         , 15           ,7.5);
+MUL_CUST(inf_ten          , INFINITY    , 10           ,F_INF_POS);
+MUL_CUST(inf_neg          , INFINITY    , -10          ,F_INF_NEG);
+MUL_CUST(ninf_neg         ,  -INFINITY  , -10          ,F_INF_POS);
+
+#define unit_div(name) unit_test(div_##name)
+#define DIV_CUST(name, op1, op2, result) static void div_##name(void **state) { \
+  fixed o1 = fix_convert_double(op1); \
+  fixed o2 = fix_convert_double(op2); \
+  fixed divd = fix_div(o1,o2); \
+  fixed expected = result; \
+  assert_true( FIX_EQ(divd, expected) ); \
+}
+#define DIV(name, op1, op2, val) DIV_CUST(name, op1, op2, fix_convert_double(val))
+DIV(one_one               , 1           , 1            ,1);
+DIV(fifteen_one           , 15          , 1            ,15);
+DIV(sixteen_two           , 16          , 2            ,8);
+DIV(nfifteen_three        , 15          , -3           ,-5);
+DIV(fifteen_frac5         , 15          , 0.5          ,30);
+DIV_CUST(one_zero         , 1           ,0             ,F_NAN);
 
 #define unit_neg(name) unit_test(neg_##name)
 #define NEG_CUST(name, op1, result) static void neg_##name(void **state) { \
@@ -202,6 +218,19 @@ int main(int argc, char** argv) {
     unit_mul(one_one),
     unit_mul(fifteen_one),
     unit_mul(fifteen_two),
+    unit_mul(nthree_15),
+    unit_mul(frac5_15),
+    unit_mul(inf_ten),
+    unit_mul(inf_neg),
+    unit_mul(ninf_neg),
+
+    unit_div(one_zero),
+    unit_div(one_one),
+    unit_div(fifteen_one),
+    unit_div(sixteen_two),
+    unit_div(nfifteen_three),
+    unit_div(fifteen_frac5),
+
 
     unit_neg(zero),
     unit_neg(one),
