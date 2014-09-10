@@ -32,11 +32,13 @@ typedef uint32_t fixed;
 #define FIX_IS_INF_POS(f) ((f&FLAGS_MASK) == F_INF_POS)
 #define FIX_IS_INF_NEG(f) ((f&FLAGS_MASK) == F_INF_NEG)
 
+/* Returns true if the numbers are equal (NaNs are always unequal.) */
 #define FIX_EQ(op1, op2) (!(FIX_IS_NAN(op1) || FIX_IS_NAN(op2)) || \
     (FIX_IS_INF_POS(op1) && FIX_IS_INF_POS(op2)) || \
     (FIX_IS_INF_NEG(op1) && FIX_IS_INF_NEG(op2)) || \
     (op1 == op2))
 
+/* Returns true if the numbers are equal (and also if they are both NaN) */
 #define FIX_EQ_NAN(op1, op2) ((FIX_IS_NAN(op1) && FIX_IS_NAN(op2)) || \
     (FIX_IS_INF_POS(op1) && FIX_IS_INF_POS(op2)) || \
     (FIX_IS_INF_NEG(op1) && FIX_IS_INF_NEG(op2)) || \
