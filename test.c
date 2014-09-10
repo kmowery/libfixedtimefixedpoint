@@ -49,7 +49,7 @@ CONVERT_DBL(nan      , nan("0")  , F_NAN);
 #define TEST_FIXNUM(name, z, frac, bits) static void fixnum_##name(void **state) { \
   fixed f = bits; \
   fixed g = FIXNUM(z, frac); \
-  assert_true( FIX_EQ(f, g) ); \
+  assert_true( FIX_EQ_NAN(f, g) ); \
 }
 
 TEST_FIXNUM(zero     , 0     , 0    , 0x0);
@@ -80,13 +80,50 @@ TEST_ROUND_TO_EVEN(six   , 0x6 << 1 , 0x3 , 0x1);
 TEST_ROUND_TO_EVEN(seven , 0x7 << 1 , 0x3 , 0x2);
 TEST_ROUND_TO_EVEN(eight , 0x8 << 1 , 0x3 , 0x2);
 
+#define unit_cmp(name) unit_test(cmp_##name)
+#define TEST_CMP(name, op1, op2, result) static void cmp_##name(void **state) { \
+  fixed o1 = fix_convert_double(op1); \
+  fixed o2 = fix_convert_double(op2); \
+  int32_t cmp = FIX_CMP(o1, o2); \
+  int32_t expected = result; \
+  assert_memory_equal( &cmp, &expected, sizeof(uint32_t)); \
+}
+
+TEST_CMP(zero_zero_eq    , 0         , 0         , 0);
+TEST_CMP(pos_zero_gt     , 1         , 0         , 1);
+TEST_CMP(neg_zero_lt     , -1        , 0         , -1);
+TEST_CMP(pos_pos_gt      , 1.4       , 0.5       , 1);
+TEST_CMP(pos_pos_lt      , 0.4       , 0.5       , -1);
+TEST_CMP(pos_pos_eq      , 0.5       , 0.5       , 0);
+TEST_CMP(neg_neg_gt      , -1.4      , -1.5      , 1);
+TEST_CMP(neg_neg_lt      , -0.9      , -0.5      , -1);
+TEST_CMP(neg_neg_eq      , -0.5      , -0.5      , 0);
+TEST_CMP(nan_nan         , nan("0")  , nan("0")  , 1);
+TEST_CMP(nan_inf_pos     , nan("0")  , INFINITY  , 1);
+TEST_CMP(nan_inf_neg     , nan("0")  , -INFINITY , 1);
+TEST_CMP(nan_pos         , nan("0")  , 24.5      , 1);
+TEST_CMP(nan_neg         , nan("0")  , -24.5     , 1);
+TEST_CMP(pos_nan         , 24.5      , nan("0")  , 1);
+TEST_CMP(neg_nan         , -24.5     , nan("0")  , 1);
+TEST_CMP(inf_inf         , INFINITY  , INFINITY  , 0);
+TEST_CMP(inf_pos         , INFINITY  , 24.5      , 1);
+TEST_CMP(inf_neg         , INFINITY  , -24.5     , 1);
+TEST_CMP(inf_inf_neg     , INFINITY  , -INFINITY , 1);
+TEST_CMP(pos_inf         , 24.5      , INFINITY  , -1);
+TEST_CMP(neg_inf         , -24.5     , INFINITY  , -1);
+TEST_CMP(inf_neg_inf_pos , -INFINITY , INFINITY  , -1);
+TEST_CMP(inf_neg_pos     , -INFINITY , 24.5      , -1);
+TEST_CMP(inf_neg_neg     , -INFINITY , -24.5     , -1);
+TEST_CMP(pos_neg         , 17.3      , -24.5     , 1);
+TEST_CMP(neg_pos         , -17.3     , 24.5      , -1);
+
 #define unit_add(name) unit_test(add_##name)
 #define ADD_CUST(name, op1, op2, result) static void add_##name(void **state) { \
   fixed o1 = fix_convert_double(op1); \
   fixed o2 = fix_convert_double(op2); \
   fixed added = fix_add(o1,o2); \
   fixed expected = result; \
-  if( !FIX_EQ(added, expected) ) { \
+  if( !FIX_EQ_NAN(added, expected) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, added); \
     fix_print(b2, expected); \
@@ -117,7 +154,12 @@ ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , F_INF_POS);
   fixed o2 = fix_convert_double(op2); \
   fixed muld = fix_mul(o1,o2); \
   fixed expected = result; \
-  assert_true( FIX_EQ(muld, expected) ); \
+  if( !FIX_EQ_NAN(muld, expected) ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, muld); \
+    fix_print(b2, expected); \
+    fail_msg("Mismatch: %s (%x) != %s (%x)", b1, muld, b2, expected); \
+  } \
 }
 #define MUL(name, op1, op2, val) MUL_CUST(name, op1, op2, fix_convert_double(val))
 MUL(one_zero              , 1           ,0             ,0);
@@ -125,10 +167,11 @@ MUL(one_one               , 1           , 1            ,1);
 MUL(fifteen_one           , 15          , 1            ,15);
 MUL(fifteen_two           , 15          , 2            ,30);
 MUL(nthree_15             , -3          , 15           ,-45);
-MUL(frac5_15              , 0.5         , 15           ,7.5);
-MUL_CUST(inf_ten          , INFINITY    , 10           ,F_INF_POS);
-MUL_CUST(inf_neg          , INFINITY    , -10          ,F_INF_NEG);
-MUL_CUST(ninf_neg         ,  -INFINITY  , -10          ,F_INF_POS);
+MUL(frac5_15              , .5           , 15           ,7.5);
+MUL_CUST(overflow         , 1<<10       , 1<<10        ,F_INF_POS);
+MUL_CUST(inf_ten          , INFINITY    , FIXINT(10)   ,F_INF_POS);
+MUL_CUST(inf_neg          , INFINITY    , FIXINT(-10)  ,F_INF_NEG);
+MUL_CUST(ninf_neg         ,  -INFINITY  , FIXINT(-10)  ,F_INF_POS);
 
 #define unit_div(name) unit_test(div_##name)
 #define DIV_CUST(name, op1, op2, result) static void div_##name(void **state) { \
@@ -151,7 +194,7 @@ DIV_CUST(one_zero         , 1           ,0             ,F_NAN);
   fixed o1 = fix_convert_double(op1); \
   fixed negd = fix_neg(o1); \
   fixed expected = result; \
-  assert_true( FIX_EQ(negd, expected) ); \
+  assert_true( FIX_EQ_NAN(negd, expected) ); \
 }
 #define NEG(name, op1, val) NEG_CUST(name, op1, fix_convert_double(val))
 
@@ -189,6 +232,35 @@ int main(int argc, char** argv) {
     unit_fixnum(frac),
     unit_fixnum(frac_neg),
 
+    unit_cmp(zero_zero_eq),
+    unit_cmp(pos_zero_gt),
+    unit_cmp(neg_zero_lt),
+    unit_cmp(pos_pos_gt),
+    unit_cmp(pos_pos_lt),
+    unit_cmp(pos_pos_eq),
+    unit_cmp(neg_neg_gt),
+    unit_cmp(neg_neg_lt),
+    unit_cmp(neg_neg_eq),
+    unit_cmp(nan_nan),
+    unit_cmp(nan_inf_pos),
+    unit_cmp(nan_inf_neg),
+    unit_cmp(nan_pos),
+    unit_cmp(nan_neg),
+    unit_cmp(pos_nan),
+    unit_cmp(pos_neg),
+    unit_cmp(neg_nan),
+    unit_cmp(inf_inf),
+    unit_cmp(inf_pos),
+    unit_cmp(inf_neg),
+    unit_cmp(inf_inf_neg),
+    unit_cmp(pos_inf),
+    unit_cmp(neg_inf),
+    unit_cmp(inf_neg_inf_pos),
+    unit_cmp(inf_neg_pos),
+    unit_cmp(inf_neg_neg),
+    unit_cmp(pos_neg),
+    unit_cmp(neg_pos),
+
     unit_round_to_even(zero),
     unit_round_to_even(one),
     unit_round_to_even(two),
@@ -220,6 +292,8 @@ int main(int argc, char** argv) {
     unit_mul(fifteen_two),
     unit_mul(nthree_15),
     unit_mul(frac5_15),
+
+    unit_mul(overflow),
     unit_mul(inf_ten),
     unit_mul(inf_neg),
     unit_mul(ninf_neg),
@@ -230,7 +304,6 @@ int main(int argc, char** argv) {
     unit_div(sixteen_two),
     unit_div(nfifteen_three),
     unit_div(fifteen_frac5),
-
 
     unit_neg(zero),
     unit_neg(one),
