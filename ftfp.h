@@ -135,13 +135,14 @@ void fix_print(char* buffer, fixed f);
 
 
 /*
- * add
- * compare?
+ * TODO:
  * div
- * sub
- * mul
  * round to integer
  * exp
+ * log
+ *
+ * floor
+ * ceil
  *
  * sqrt
  * sin / cos / arctan
