@@ -230,6 +230,7 @@ int main(int argc, char** argv) {
     unit_cmp(nan_inf_neg),
     unit_cmp(nan_pos),
     unit_cmp(nan_neg),
+    unit_cmp(pos_nan),
     unit_cmp(pos_neg),
     unit_cmp(neg_nan),
     unit_cmp(inf_inf),
