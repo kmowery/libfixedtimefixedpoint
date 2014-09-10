@@ -42,6 +42,23 @@ typedef uint32_t fixed;
     (FIX_IS_INF_NEG(op1) && FIX_IS_INF_NEG(op2)) || \
     (op1 == op2))
 
+#define FIX_CMP(op1, op2) ({ \
+      uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2)); \
+      uint32_t gt = 0, lt = 0, pos1 = 0, pos2 = 0, cmp_gt = 0, cmp_lt = 0; \
+      pos1 = !TOP_BIT(op1); pos2 = !TOP_BIT(op2); \
+      gt = (FIX_IS_INF_POS(op1) && !FIX_IS_INF_POS(op2)) | (!FIX_IS_INF_NEG(op1) && FIX_IS_INF_NEG(op2)); \
+      lt = (!FIX_IS_INF_POS(op1) && FIX_IS_INF_POS(op2)) | (FIX_IS_INF_NEG(op1) && !FIX_IS_INF_NEG(op2)); \
+      gt |= (pos1 && !pos2); \
+      lt |= (!pos1 && pos2); \
+      cmp_gt = ((fixed) op1 > (fixed) op2); \
+      cmp_lt = ((fixed) op1 < (fixed) op2); \
+      uint32_t result = ((nans ? 1 : 0) | \
+        (gt & !nans ? 1 : 0) | \
+        (lt & !nans ? 0xffffffff : 0) | \
+        (cmp_gt && !(gt | lt | nans) ? 1 : 0) | \
+        (cmp_lt && !(gt|lt|nans) ? -1 : 0)); \
+       (result); })
+
 #define FIXINT(z) ((z)<<(n_flag_bits+n_frac_bits))
 
 /* Lops off the rightmost n_shift_bits of value and rounds to an even value
