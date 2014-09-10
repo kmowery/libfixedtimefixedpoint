@@ -154,7 +154,12 @@ ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , F_INF_POS);
   fixed o2 = fix_convert_double(op2); \
   fixed muld = fix_mul(o1,o2); \
   fixed expected = result; \
-  assert_true( FIX_EQ_NAN(muld, expected) ); \
+  if( !FIX_EQ_NAN(muld, expected) ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, muld); \
+    fix_print(b2, expected); \
+    fail_msg("Mismatch: %s (%x) != %s (%x)", b1, muld, b2, expected); \
+  } \
 }
 #define MUL(name, op1, op2, val) MUL_CUST(name, op1, op2, fix_convert_double(val))
 MUL(one_zero              , 1           ,0             ,0);
