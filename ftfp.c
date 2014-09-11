@@ -153,6 +153,9 @@ fixed fix_add(fixed op1, fixed op2) {
   isinfneg |= (TOP_BIT(op1) & TOP_BIT(op2)) ==
     TOP_BIT_MASK && (TOP_BIT(tempresult) == 0x0);
 
+  // Force infpos to win in cases where it is unclear
+  isinfneg &= !isinfpos;
+
   //printf("isnan: %x\n", isnan);
   //printf("isinfpos: %x\n", isinfpos);
   //printf("isinfneg: %x\n", isinfneg);

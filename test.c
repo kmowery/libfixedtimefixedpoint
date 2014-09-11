@@ -188,6 +188,8 @@ DIV(sixteen_two           , 16          , 2            ,8);
 DIV(nfifteen_three        , 15          , -3           ,-5);
 DIV(fifteen_frac5         , 15          , 0.5          ,30);
 DIV_CUST(one_zero         , 1           ,0             ,F_NAN);
+DIV_CUST(inf_zero         , INFINITY    ,0             ,F_NAN);
+DIV_CUST(zero_inf         , 0           ,INFINITY      ,F_INF_POS);
 
 #define unit_neg(name) unit_test(neg_##name)
 #define NEG_CUST(name, op1, result) static void neg_##name(void **state) { \
@@ -304,6 +306,8 @@ int main(int argc, char** argv) {
     unit_div(sixteen_two),
     unit_div(nfifteen_three),
     unit_div(fifteen_frac5),
+    unit_div(inf_zero),
+    unit_div(zero_inf),
 
     unit_neg(zero),
     unit_neg(one),
