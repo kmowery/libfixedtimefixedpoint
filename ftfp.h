@@ -83,9 +83,18 @@ typedef uint32_t fixed;
  *      1 0 1       0 0x1
  *      1 1 0       1 0x2
  *      1 1 1       1 0x2
+ * The repeated phrase
+ *
+ *    ((!!(value & ((1 << (n_shift_bits-1))-1))) << (n_shift_bits-1))
+ *
+ *  is there to compress all lower-order bits into bit 2 in the truth table
  * */
 #define ROUND_TO_EVEN(value, n_shift_bits) \
-  (((value) >> (n_shift_bits)) + (( ((value) >> ((n_shift_bits)-2) & 0x3) == 0x3 ) | ((value >> (n_shift_bits-2) & 0x7) == 0x6)))
+  (((value) >> (n_shift_bits)) + \
+   !!( \
+     ((value & (1 << (n_shift_bits-1))) && !!(value & ((1 << (n_shift_bits-1))-1))) | \
+     ((((value) >> (n_shift_bits-2)) & 0x6) == 0x6) \
+   ))
 
 /*
  * General idea:

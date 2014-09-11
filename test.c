@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <limits.h>
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -81,15 +82,24 @@ TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee80);
   CHECK_INT_EQUAL("round_to_even", rounded, expected); \
 }
 
-TEST_ROUND_TO_EVEN(zero  , 0x0 << 1 , 0x3 , 0x0);
-TEST_ROUND_TO_EVEN(one   , 0x1 << 1 , 0x3 , 0x0);
-TEST_ROUND_TO_EVEN(two   , 0x2 << 1 , 0x3 , 0x0);
-TEST_ROUND_TO_EVEN(three , 0x3 << 1 , 0x3 , 0x1);
-TEST_ROUND_TO_EVEN(four  , 0x4 << 1 , 0x3 , 0x1);
-TEST_ROUND_TO_EVEN(five  , 0x5 << 1 , 0x3 , 0x1);
-TEST_ROUND_TO_EVEN(six   , 0x6 << 1 , 0x3 , 0x2);
-TEST_ROUND_TO_EVEN(seven , 0x7 << 1 , 0x3 , 0x2);
-TEST_ROUND_TO_EVEN(eight , 0x8 << 1 , 0x3 , 0x2);
+TEST_ROUND_TO_EVEN(zero       , 0x00 , 0x3 , 0x0);
+TEST_ROUND_TO_EVEN(zero_plus  , 0x01 , 0x3 , 0x0);
+TEST_ROUND_TO_EVEN(one        , 0x02 , 0x3 , 0x0);
+TEST_ROUND_TO_EVEN(one_plus   , 0x03 , 0x3 , 0x0);
+TEST_ROUND_TO_EVEN(two        , 0x04 , 0x3 , 0x0);  /* 0.5 -> 0 */
+TEST_ROUND_TO_EVEN(two_plus   , 0x05 , 0x3 , 0x1);  /* 0.55 -> 1 */
+TEST_ROUND_TO_EVEN(three      , 0x06 , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(three_plus , 0x07 , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(four       , 0x08 , 0x3 , 0x1);  /* 1 -> 1 */
+TEST_ROUND_TO_EVEN(four_plus  , 0x09 , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(five       , 0x0a , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(five_plus  , 0x0b , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(six        , 0x0c , 0x3 , 0x2);  /* 1.5 -> 2 */
+TEST_ROUND_TO_EVEN(six_plus   , 0x0d , 0x3 , 0x2);
+TEST_ROUND_TO_EVEN(seven      , 0x0e , 0x3 , 0x2);
+TEST_ROUND_TO_EVEN(seven_plus , 0x0f , 0x3 , 0x2);
+TEST_ROUND_TO_EVEN(eight      , 0x10 , 0x3 , 0x2);
+TEST_ROUND_TO_EVEN(eight_plus , 0x10 , 0x3 , 0x2);
 
 #define unit_cmp(name) unit_test(cmp_##name)
 #define TEST_CMP(name, op1, op2, result) static void cmp_##name(void **state) { \
@@ -283,6 +293,15 @@ int main(int argc, char** argv) {
     unit_round_to_even(six),
     unit_round_to_even(seven),
     unit_round_to_even(eight),
+    unit_round_to_even(zero_plus),
+    unit_round_to_even(one_plus),
+    unit_round_to_even(two_plus),
+    unit_round_to_even(three_plus),
+    unit_round_to_even(four_plus),
+    unit_round_to_even(five_plus),
+    unit_round_to_even(six_plus),
+    unit_round_to_even(seven_plus),
+    unit_round_to_even(eight_plus),
 
     unit_add(one_zero),
     unit_add(one_one),
