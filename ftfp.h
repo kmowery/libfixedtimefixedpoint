@@ -75,17 +75,17 @@ typedef uint32_t fixed;
  *
  * Round Truth table:
  *  Bit 0 1 2       Result
- *      0 0 0       0
- *      0 0 1       0
- *      0 1 0       0
- *      0 1 1       1
- *      1 0 0       0
- *      1 0 1       0
- *      1 1 0       1
- *      1 1 1       1
+ *      0 0 0       0 0x0
+ *      0 0 1       0 0x0
+ *      0 1 0       0 0x0
+ *      0 1 1       1 0x1
+ *      1 0 0       0 0x1
+ *      1 0 1       0 0x1
+ *      1 1 0       1 0x2
+ *      1 1 1       1 0x2
  * */
 #define ROUND_TO_EVEN(value, n_shift_bits) \
-  (((value) >> (n_shift_bits)) + ( ((value) >> ((n_shift_bits)-2) & 0x3) == 0x3 ))  // | ((value >> (n_shift_bits-2) & 0x7) == 0x3)))
+  (((value) >> (n_shift_bits)) + (( ((value) >> ((n_shift_bits)-2) & 0x3) == 0x3 ) | ((value >> (n_shift_bits-2) & 0x7) == 0x6)))
 
 /*
  * General idea:

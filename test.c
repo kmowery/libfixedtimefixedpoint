@@ -15,6 +15,17 @@ static void null_test_success(void **state) {
   //(void) state;
 }
 
+#define CHECK_EQ(error_msg, var1, var2) \
+  if( !FIX_EQ(var1, var2) ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, var1); fix_print(b2, var2); \
+    fail_msg( error_msg ": %s (%x) != %s (%x)", b1, var1, b2, var2); \
+  }
+
+#define CHECK_INT_EQUAL(error_msg, var1, var2) \
+  if( !(var1 == var2) ) { \
+    fail_msg( error_msg ": %d (0x%x) != %d (0x%x)", var1, var1, var2, var2); \
+  }
 
 void p(fixed f) {
   char buf[40];
@@ -67,7 +78,7 @@ TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee80);
 #define TEST_ROUND_TO_EVEN(name, value, shift, result) static void round_to_even_##name(void **state) { \
   int32_t rounded = ROUND_TO_EVEN(value, shift); \
   int32_t expected = result; \
-  assert_memory_equal( &rounded, &expected, sizeof(uint32_t)); \
+  CHECK_INT_EQUAL("round_to_even", rounded, expected); \
 }
 
 TEST_ROUND_TO_EVEN(zero  , 0x0 << 1 , 0x3 , 0x0);
@@ -76,7 +87,7 @@ TEST_ROUND_TO_EVEN(two   , 0x2 << 1 , 0x3 , 0x0);
 TEST_ROUND_TO_EVEN(three , 0x3 << 1 , 0x3 , 0x1);
 TEST_ROUND_TO_EVEN(four  , 0x4 << 1 , 0x3 , 0x1);
 TEST_ROUND_TO_EVEN(five  , 0x5 << 1 , 0x3 , 0x1);
-TEST_ROUND_TO_EVEN(six   , 0x6 << 1 , 0x3 , 0x1);
+TEST_ROUND_TO_EVEN(six   , 0x6 << 1 , 0x3 , 0x2);
 TEST_ROUND_TO_EVEN(seven , 0x7 << 1 , 0x3 , 0x2);
 TEST_ROUND_TO_EVEN(eight , 0x8 << 1 , 0x3 , 0x2);
 
