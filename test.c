@@ -22,6 +22,12 @@ static void null_test_success(void **state) {
     fix_print(b1, var1); fix_print(b2, var2); \
     fail_msg( error_msg ": %s (%x) != %s (%x)", b1, var1, b2, var2); \
   }
+#define CHECK_EQ_NAN(error_msg, var1, var2) \
+  if( !FIX_EQ_NAN(var1, var2) ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, var1); fix_print(b2, var2); \
+    fail_msg( error_msg ": %s (%x) != %s (%x)", b1, var1, b2, var2); \
+  }
 
 #define CHECK_INT_EQUAL(error_msg, var1, var2) \
   if( !(var1 == var2) ) { \
@@ -260,7 +266,7 @@ MUL_CUST(ninf_neg         ,  -INFINITY  , FIXINT(-10)  ,F_INF_POS);
   fixed o2 = fix_convert_double(op2); \
   fixed divd = fix_div(o1,o2); \
   fixed expected = result; \
-  assert_true( FIX_EQ(divd, expected) ); \
+  CHECK_EQ_NAN("div", divd, expected); \
 }
 #define DIV(name, op1, op2, val) DIV_CUST(name, op1, op2, fix_convert_double(val))
 DIV(one_one               , 1           , 1            ,1);
