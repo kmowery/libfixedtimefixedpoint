@@ -28,6 +28,8 @@ static void null_test_success(void **state) {
     fail_msg( error_msg ": %d (0x%x) != %d (0x%x)", var1, var1, var2, var2); \
   }
 
+#define NaN nan("0")
+
 void p(fixed f) {
   char buf[40];
 
@@ -61,7 +63,7 @@ CONVERT_DBL(nan      , nan("0")  , F_NAN);
 #define TEST_FIXNUM(name, z, frac, bits) static void fixnum_##name(void **state) { \
   fixed f = bits; \
   fixed g = FIXNUM(z, frac); \
-  assert_true( FIX_EQ_NAN(f, g) ); \
+  CHECK_EQ("fixnum", g, f); \
 }
 
 TEST_FIXNUM(zero     , 0     , 0    , 0x0);
@@ -71,8 +73,8 @@ TEST_FIXNUM(two      , 2     , 0    , 0x40000);
 TEST_FIXNUM(two_neg  , -2    , 0    , 0xfffc0000);
 TEST_FIXNUM(many     , 1000  , 4    , 0x7d0cccc);
 TEST_FIXNUM(many_neg , -1000 , 4    , 0xf82f3334);
-TEST_FIXNUM(frac     , 0     , 5342 , 0x11180);
-TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee80);
+TEST_FIXNUM(frac     , 0     , 5342 , 0x11184);
+TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee7c);
 
 #define unit_eq(name) unit_test(equal_##name)
 #define TEST_EQ(name, op1, op2, value, valuenan) static void equal_##name(void **state) { \
@@ -122,6 +124,42 @@ TEST_ROUND_TO_EVEN(seven      , 0x0e , 0x3 , 0x2);
 TEST_ROUND_TO_EVEN(seven_plus , 0x0f , 0x3 , 0x2);
 TEST_ROUND_TO_EVEN(eight      , 0x10 , 0x3 , 0x2);
 TEST_ROUND_TO_EVEN(eight_plus , 0x10 , 0x3 , 0x2);
+
+#define unit_rounding(name) unit_test(rounding_##name)
+#define TEST_ROUNDING(name, value, res_even, res_up, res_ceil, res_floor) static void rounding_##name(void **state) { \
+  fixed input = fix_convert_double(value); \
+  int32_t round_even  = FIX_ROUND_INT(input); \
+  int32_t round_up    = FIX_ROUND_UP_INT(input); \
+  int32_t round_ceil  = FIX_CEIL(input); \
+  int32_t round_floor = FIX_FLOOR(input); \
+  int32_t exp_even    = res_even; \
+  int32_t exp_up      = res_up; \
+  int32_t exp_ceil    = res_ceil; \
+  int32_t exp_floor   = res_floor; \
+  CHECK_INT_EQUAL("round to even" , round_even  , exp_even); \
+  CHECK_INT_EQUAL("round up"      , round_up    , exp_up); \
+  CHECK_INT_EQUAL("ceiling"       , round_ceil  , exp_ceil); \
+  CHECK_INT_EQUAL("floor"         , round_floor , exp_floor); \
+}
+
+/*            Name       Value       Even      Up        Ceil      Down */
+TEST_ROUNDING(zero     , 0         , 0       , 0       , 0       , 0);
+TEST_ROUNDING(one      , 1         , 1       , 1       , 1       , 1);
+TEST_ROUNDING(one3     , 1.3       , 1       , 1       , 2       , 1);
+TEST_ROUNDING(one5     , 1.5       , 2       , 2       , 2       , 1);
+TEST_ROUNDING(one7     , 1.7       , 2       , 2       , 2       , 1);
+TEST_ROUNDING(two      , 2         , 2       , 2       , 2       , 2);
+TEST_ROUNDING(two3     , 2.3       , 2       , 2       , 3       , 2);
+TEST_ROUNDING(two5     , 2.5       , 2       , 3       , 3       , 2);
+TEST_ROUNDING(two7     , 2.7       , 3       , 3       , 3       , 2);
+TEST_ROUNDING(one_neg  , -1        , -1      , -1      , -1      , -1);
+TEST_ROUNDING(one3_neg , -1.3      , -1      , -1      , -1      , -2);
+TEST_ROUNDING(one5_neg , -1.5      , -2      , -1      , -1      , -2);
+TEST_ROUNDING(two3_neg , -2.3      , -2      , -2      , -2      , -3);
+TEST_ROUNDING(two5_neg , -2.5      , -2      , -2      , -2      , -3);
+TEST_ROUNDING(nan      , NaN       , 0       , 0       , 0       , 0);
+TEST_ROUNDING(inf      , INFINITY  , INT_MAX , INT_MAX , INT_MAX , INT_MAX);
+TEST_ROUNDING(inf_neg  , -INFINITY , INT_MIN , INT_MIN , INT_MIN , INT_MIN);
 
 #define unit_cmp(name) unit_test(cmp_##name)
 #define TEST_CMP(name, op1, op2, result) static void cmp_##name(void **state) { \
@@ -330,6 +368,24 @@ int main(int argc, char** argv) {
     unit_round_to_even(six_plus),
     unit_round_to_even(seven_plus),
     unit_round_to_even(eight_plus),
+
+    unit_rounding(zero),
+    unit_rounding(one),
+    unit_rounding(one3),
+    unit_rounding(one5),
+    unit_rounding(one7),
+    unit_rounding(two),
+    unit_rounding(two3),
+    unit_rounding(two5),
+    unit_rounding(two7),
+    unit_rounding(one_neg),
+    unit_rounding(one3_neg),
+    unit_rounding(one5_neg),
+    unit_rounding(two3_neg),
+    unit_rounding(two5_neg),
+    unit_rounding(nan),
+    unit_rounding(inf),
+    unit_rounding(inf_neg),
 
     unit_add(one_zero),
     unit_add(one_one),

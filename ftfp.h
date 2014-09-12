@@ -23,6 +23,11 @@ typedef uint32_t fixed;
 #define TOP_BIT_MASK (1<<31)
 #define TOP_BIT(f) (f & TOP_BIT_MASK)
 
+#define FRAC_MASK (((1<<n_frac_bits)-1) << n_flag_bits)
+#define INT_MASK  (((1<<n_int_bits)-1) << (n_flag_bits + n_frac_bits))
+
+#define SIGN_EXTEND(value, n_top_bit) ({uint32_t m = (1 << (n_top_bit-1)); (((uint32_t) value) ^ m) - m;})
+
 #define DATA_BIT_MASK (0xFFFFFFFC)
 #define DATA_BITS(f) (f & DATA_BIT_MASK)
 
@@ -136,6 +141,18 @@ typedef uint32_t fixed;
   v |= v << 8; \
   v |= v << 16; \
   v; })
+
+
+/* TODO: handle infinity and nan properly in rounding methods */
+
+/* Uses round to even semantics */
+#define FIX_ROUND_INT(op1) SIGN_EXTEND(ROUND_TO_EVEN(op1, n_flag_bits + n_frac_bits), n_int_bits)
+
+/* 0.5 rounds up always */
+#define FIX_ROUND_UP_INT(op1) SIGN_EXTEND(((op1) >> (n_flag_bits + n_frac_bits)) + (op1 >> (n_flag_bits + n_frac_bits-1) & 0x1), n_int_bits)
+
+#define FIX_CEIL(op1)  SIGN_EXTEND(((op1) >> (n_flag_bits + n_frac_bits)) + !!(op1 & FRAC_MASK), n_int_bits)
+#define FIX_FLOOR(op1) SIGN_EXTEND(((op1) >> (n_flag_bits + n_frac_bits)), n_int_bits)
 
 fixed fix_neg(fixed op1);
 
