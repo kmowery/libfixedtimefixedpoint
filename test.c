@@ -73,7 +73,29 @@ TEST_FIXNUM(many     , 1000  , 4    , 0x7d0cccc);
 TEST_FIXNUM(many_neg , -1000 , 4    , 0xf82f3334);
 TEST_FIXNUM(frac     , 0     , 5342 , 0x11180);
 TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee80);
-/* TODO: add tests for round-to-even */
+
+#define unit_eq(name) unit_test(equal_##name)
+#define TEST_EQ(name, op1, op2, value, valuenan) static void equal_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed o2 = op2; \
+  if( FIX_EQ(o1, o2) != value ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, o1); fix_print(b2, o2); \
+    fail_msg( "values not right: %s (%x) %s %s (%x)", b1, o1, value ? "!=" : "==", b2, o2); \
+  } \
+  if( FIX_EQ_NAN(o1, o2) != valuenan ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, o1); fix_print(b2, o2); \
+    fail_msg( "NaN values not right: %s (%x) %s %s (%x)", b1, o1, value ? "!=" : "==", b2, o2); \
+  } \
+}
+
+TEST_EQ(zero    , 0         , 0         , 1 , 1);
+TEST_EQ(frac    , 0x11180   , 0x11184   , 0 , 0);
+TEST_EQ(nan     , F_NAN     , F_NAN     , 0 , 1);
+TEST_EQ(inf     , F_INF_POS , F_INF_POS , 1 , 1);
+TEST_EQ(inf_neg , F_INF_NEG , F_INF_NEG , 1 , 1);
+
 
 #define unit_round_to_even(name) unit_test(round_to_even_##name)
 #define TEST_ROUND_TO_EVEN(name, value, shift, result) static void round_to_even_##name(void **state) { \
@@ -254,6 +276,12 @@ int main(int argc, char** argv) {
     unit_fixnum(many_neg),
     unit_fixnum(frac),
     unit_fixnum(frac_neg),
+
+    unit_eq(zero),
+    unit_eq(frac),
+    unit_eq(nan),
+    unit_eq(inf),
+    unit_eq(inf_neg),
 
     unit_cmp(zero_zero_eq),
     unit_cmp(pos_zero_gt),
