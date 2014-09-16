@@ -40,7 +40,22 @@ void p(fixed f) {
   char buf[40];
 
   fix_print(buf, f);
-  printf("n: %s\n", buf);
+  printf("n: %s (%08x)\n", buf, f);
+}
+
+void bounds(fixed f) {
+  char buf_less[40];
+  char buf[40];
+  char buf_more[40];
+
+  fixed less = f - 0x4;
+  fixed more = f + 0x4;
+
+  fix_print(buf_less, less);
+  fix_print(buf, f);
+  fix_print(buf_more, more);
+
+  printf("%s (0x%08x) | %s (0x%08x) | %s (0x%08x)\n", buf_less, less, buf, f, buf_more, more);
 }
 
 
@@ -166,6 +181,12 @@ TEST_ROUNDING(two5_neg , -2.5      , -2      , -2      , -2      , -3);
 TEST_ROUNDING(nan      , NaN       , 0       , 0       , 0       , 0);
 TEST_ROUNDING(inf      , INFINITY  , INT_MAX , INT_MAX , INT_MAX , INT_MAX);
 TEST_ROUNDING(inf_neg  , -INFINITY , INT_MIN , INT_MIN , INT_MIN , INT_MIN);
+
+static void constants(void **state) {
+  assert_true(FIX_PI  == 0x00064880);
+  assert_true(FIX_TAU == 0x000c90fc);
+  assert_true(FIX_E   == 0x00056fc0);
+}
 
 #define unit_cmp(name) unit_test(cmp_##name)
 #define TEST_CMP(name, op1, op2, result) static void cmp_##name(void **state) { \
@@ -419,6 +440,8 @@ int main(int argc, char** argv) {
     unit_rounding(nan),
     unit_rounding(inf),
     unit_rounding(inf_neg),
+
+    unit_test(constants),
 
     unit_add(one_zero),
     unit_add(one_one),
