@@ -123,12 +123,13 @@ typedef uint32_t fixed;
  *   seems difficult.
  */
 #define FIXFRAC(frac) ({ \
-    uint32_t log_ceil = ((int) strlen( #frac )); \
-    uint32_t one = 1 << (n_frac_bits + 15); \
-    uint32_t p = (int) pow(10, log_ceil); \
-    uint32_t unit = one / p; \
-    uint32_t n = unit * frac; \
-    ((ROUND_TO_EVEN(n, 15)) << n_flag_bits); \
+    uint32_t bits = 45; \
+    uint64_t log_ceil = ((uint64_t) strlen( #frac )); \
+    uint64_t one = 1ULL << (n_frac_bits + bits); \
+    uint64_t p = (uint64_t) pow(10, log_ceil); \
+    uint64_t unit = one / p; \
+    uint64_t n = unit * frac; \
+    ((ROUND_TO_EVEN(n, bits)) << n_flag_bits); \
     })
 
 /* TODO: fix this for variables and not just constants */
@@ -142,6 +143,10 @@ typedef uint32_t fixed;
   v |= v << 16; \
   v; })
 
+#define FIX_PI  FIXNUM(3,14159265359)
+#define FIX_TAU FIXNUM(6,28318530718)
+#define FIX_E   FIXNUM(2,71828182846)
+#define FIX_EPSILON ((fixed) (1 << n_flag_bits))
 
 /* TODO: handle infinity and nan properly in rounding methods */
 
