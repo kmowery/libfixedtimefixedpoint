@@ -94,8 +94,8 @@ TEST_FIXNUM(two      , 2     , 0    , 0x40000);
 TEST_FIXNUM(two_neg  , -2    , 0    , 0xfffc0000);
 TEST_FIXNUM(many     , 1000  , 4    , 0x7d0cccc);
 TEST_FIXNUM(many_neg , -1000 , 4    , 0xf82f3334);
-TEST_FIXNUM(frac     , 0     , 5342 , 0x11184);
-TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee7c);
+TEST_FIXNUM(frac     , 0     , 5342 , 0x11180);
+TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee80);
 
 #define unit_eq(name) unit_test(equal_##name)
 #define TEST_EQ(name, op1, op2, value, valuenan) static void equal_##name(void **state) { \
