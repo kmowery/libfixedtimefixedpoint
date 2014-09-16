@@ -26,6 +26,8 @@ typedef uint32_t fixed;
 #define FRAC_MASK (((1<<n_frac_bits)-1) << n_flag_bits)
 #define INT_MASK  (((1<<n_int_bits)-1) << (n_flag_bits + n_frac_bits))
 
+#define FIX_SIGN_TO_64(f) ((int64_t)((int32_t)(f)))
+
 #define SIGN_EXTEND(value, n_top_bit) ({uint32_t m = (1 << (n_top_bit-1)); (((uint32_t) value) ^ m) - m;})
 
 #define DATA_BIT_MASK (0xFFFFFFFC)

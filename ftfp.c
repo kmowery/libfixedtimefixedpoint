@@ -50,11 +50,10 @@ fixed fix_div(fixed op1, fixed op2) {
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2) | (op2 == 0);
 
   // Take advantage of the extra bits we get out from doing this in uint64_t
-  //TODO: Does not handle negative numbers correctly
   // op2 is never allowed to be 0, if it is set it to something like 1 so div doesn't fall over
   op2nz = op2 | (DATA_BITS(op2) == 0);
-  tmp = ((((int64_t)((int32_t)DATA_BITS(op1)))<<15) /
-         (int64_t)((int32_t)(op2nz)))<<2;
+  tmp = ((FIX_SIGN_TO_64(DATA_BITS(op1))<<15) /
+         FIX_SIGN_TO_64(op2nz))<<2;
 
   tempresult = tmp & 0xFFFFFFFC;
 
@@ -97,13 +96,12 @@ fixed fix_mul(fixed op1, fixed op2) {
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
 
   // Sign extend it all, this will help us correctly catch overflow
-  tmp = ((int64_t)((int32_t)op1) * (int64_t)((int32_t)op2)) >> 17;
+  //  tmp = ROUND_TO_EVEN(FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2),17);
+  tmp = (FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2)) >>17;
 
   // inf only if overflow, and not a sign thing
   tmp2 = tmp & 0xFFFFFFFF00000000;
   isinf = !((tmp2 == 0xFFFFFFFF00000000) | (tmp2 == 0));
-
-  // TODO, this needs some rounding
 
   tempresult = tmp & 0xFFFFFFFC;
 
