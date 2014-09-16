@@ -135,7 +135,6 @@ fixed fix_add(fixed op1, fixed op2) {
 
   fixed tempresult;
 
-  //TODO: One of the INFs needs to 'win' if we get -inf and inf.
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
   isinfpos = FIX_IS_INF_POS(op1) | FIX_IS_INF_POS(op2);
   isinfneg = FIX_IS_INF_NEG(op1) | FIX_IS_INF_NEG(op2);

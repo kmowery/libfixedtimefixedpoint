@@ -254,11 +254,23 @@ MUL(one_one               , 1           , 1            ,1);
 MUL(fifteen_one           , 15          , 1            ,15);
 MUL(fifteen_two           , 15          , 2            ,30);
 MUL(nthree_15             , -3          , 15           ,-45);
-MUL(frac5_15              , .5           , 15           ,7.5);
+MUL(nthree_n15            , -3          , -15          ,45);
+MUL(three_n15             , 3           , -15          ,-45);
+MUL(frac5_15              , .5          , 15           ,7.5);
 MUL_CUST(overflow         , 1<<10       , 1<<10        ,F_INF_POS);
-MUL_CUST(inf_ten          , INFINITY    , FIXINT(10)   ,F_INF_POS);
-MUL_CUST(inf_neg          , INFINITY    , FIXINT(-10)  ,F_INF_NEG);
-MUL_CUST(ninf_neg         ,  -INFINITY  , FIXINT(-10)  ,F_INF_POS);
+MUL_CUST(inf_ten          , INFINITY    , 10           ,F_INF_POS);
+MUL_CUST(inf_neg          , INFINITY    , -10          ,F_INF_NEG);
+MUL_CUST(ninf_neg         ,  -INFINITY  , -10          ,F_INF_POS);
+MUL_CUST(neg_inf          , -10         , INFINITY     ,F_INF_NEG);
+MUL_CUST(neg_ninf         , -10         ,  -INFINITY   ,F_INF_POS);
+MUL_CUST(pos_nan          , 10          , nan("0")     ,F_NAN);
+MUL_CUST(neg_nan          , -10         , nan("0")     ,F_NAN);
+MUL_CUST(inf_nan          , INFINITY    , nan("0")     ,F_NAN);
+MUL_CUST(ninf_nan         , -INFINITY   , nan("0")     ,F_NAN);
+MUL_CUST(nan_pos          , nan("0")    , 10           ,F_NAN);
+MUL_CUST(nan_neg          , nan("0")    , -10          ,F_NAN);
+MUL_CUST(nan_inf          , nan("0")    , INFINITY     ,F_NAN);
+MUL_CUST(nan_ninf         , nan("0")    , -INFINITY    ,F_NAN);
 
 #define unit_div(name) unit_test(div_##name)
 #define DIV_CUST(name, op1, op2, result) static void div_##name(void **state) { \
@@ -272,11 +284,26 @@ MUL_CUST(ninf_neg         ,  -INFINITY  , FIXINT(-10)  ,F_INF_POS);
 DIV(one_one               , 1           , 1            ,1);
 DIV(fifteen_one           , 15          , 1            ,15);
 DIV(sixteen_two           , 16          , 2            ,8);
-DIV(nfifteen_three        , 15          , -3           ,-5);
+DIV(fifteen_nthree        , 15          , -3           ,-5);
+DIV(nfifteen_nthree       , -15         , -3           ,5);
+DIV(nfifteen_three        , -15         , 3            ,-5);
 DIV(fifteen_frac5         , 15          , 0.5          ,30);
 DIV_CUST(one_zero         , 1           ,0             ,F_NAN);
 DIV_CUST(inf_zero         , INFINITY    ,0             ,F_NAN);
 DIV_CUST(zero_inf         , 0           ,INFINITY      ,F_INF_POS);
+DIV_CUST(inf_neg          , INFINITY    , -10          ,F_INF_NEG);
+DIV_CUST(ninf_neg         ,  -INFINITY  , -10          ,F_INF_POS);
+DIV_CUST(neg_inf          , -10         , INFINITY     ,F_INF_NEG);
+DIV_CUST(neg_ninf         , -10         ,  -INFINITY   ,F_INF_POS);
+DIV_CUST(pos_nan          , 10          , nan("1")     ,F_NAN);
+DIV_CUST(neg_nan          , -10         , nan("1")     ,F_NAN);
+DIV_CUST(inf_nan          , INFINITY    , nan("1")     ,F_NAN);
+DIV_CUST(ninf_nan         , -INFINITY   , nan("1")     ,F_NAN);
+DIV_CUST(nan_pos          , nan("0")    , 10           ,F_NAN);
+DIV_CUST(nan_neg          , nan("0")    , -10          ,F_NAN);
+DIV_CUST(nan_inf          , nan("0")    , INFINITY     ,F_NAN);
+DIV_CUST(nan_ninf         , nan("0")    , -INFINITY    ,F_NAN);
+
 
 #define unit_neg(name) unit_test(neg_##name)
 #define NEG_CUST(name, op1, result) static void neg_##name(void **state) { \
@@ -413,21 +440,49 @@ int main(int argc, char** argv) {
     unit_mul(fifteen_one),
     unit_mul(fifteen_two),
     unit_mul(nthree_15),
+    unit_mul(nthree_n15),
+    unit_mul(three_n15),
     unit_mul(frac5_15),
-
     unit_mul(overflow),
     unit_mul(inf_ten),
     unit_mul(inf_neg),
     unit_mul(ninf_neg),
+    unit_mul(neg_inf),
+    unit_mul(neg_ninf),
+    unit_mul(pos_nan),
+    unit_mul(neg_nan),
+    unit_mul(inf_nan),
+    unit_mul(ninf_nan),
+    unit_mul(nan_pos),
+    unit_mul(nan_neg),
+    unit_mul(nan_inf),
+    unit_mul(nan_ninf),
+
 
     unit_div(one_zero),
     unit_div(one_one),
     unit_div(fifteen_one),
     unit_div(sixteen_two),
     unit_div(nfifteen_three),
+    unit_div(nfifteen_nthree),
+    unit_div(fifteen_nthree),
     unit_div(fifteen_frac5),
     unit_div(inf_zero),
     unit_div(zero_inf),
+    unit_div(inf_neg),
+    unit_div(ninf_neg),
+    unit_div(neg_inf),
+    unit_div(neg_ninf),
+    unit_div(pos_nan),
+    unit_div(neg_nan),
+    unit_div(inf_nan),
+    unit_div(ninf_nan),
+    unit_div(nan_pos),
+    unit_div(nan_neg),
+    unit_div(nan_inf),
+    unit_div(nan_ninf),
+
+
 
     unit_neg(zero),
     unit_neg(one),
