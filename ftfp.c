@@ -44,6 +44,7 @@ fixed fix_div(fixed op1, fixed op2) {
   uint8_t isnegop2;
 
   uint64_t tmp;
+  uint64_t tmp2;
 
   fixed tempresult,op2nz;
 
@@ -55,6 +56,9 @@ fixed fix_div(fixed op1, fixed op2) {
   tmp = ROUND_TO_EVEN(((FIX_SIGN_TO_64(DATA_BITS(op1))<<32) /
                        FIX_SIGN_TO_64(op2nz)),17)<<2;
 
+  tmp2 = tmp & 0xFFFFFFFF00000000;
+  isinf = !((tmp2 == 0xFFFFFFFF00000000) | (tmp2 == 0));
+
   tempresult = tmp & 0xFFFFFFFC;
 
   isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
@@ -63,7 +67,7 @@ fixed fix_div(fixed op1, fixed op2) {
   isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
 
   //Update isinf
-  isinf = (isinfop1 | isinfop2) & (!isnan);
+  isinf = (isinf | isinfop1 | isinfop2) & (!isnan);
 
   isinfpos = isinf & !(isnegop1 ^ isnegop2);
 

@@ -309,6 +309,7 @@ DIV(fifteen_nthree        , 15          , -3           ,-5);
 DIV(nfifteen_nthree       , -15         , -3           ,5);
 DIV(nfifteen_three        , -15         , 3            ,-5);
 DIV(fifteen_frac5         , 15          , 0.5          ,30);
+DIV_CUST(overflow         , 1<<13       , 0.1          ,F_INF_POS);
 DIV_CUST(one_zero         , 1           ,0             ,F_NAN);
 DIV_CUST(inf_zero         , INFINITY    ,0             ,F_NAN);
 DIV_CUST(zero_inf         , 0           ,INFINITY      ,F_INF_POS);
@@ -504,7 +505,7 @@ int main(int argc, char** argv) {
     unit_div(nan_neg),
     unit_div(nan_inf),
     unit_div(nan_ninf),
-
+    unit_div(overflow),
 
 
     unit_neg(zero),
