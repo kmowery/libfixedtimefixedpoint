@@ -171,6 +171,79 @@ fixed fix_add(fixed op1, fixed op2) {
     DATA_BITS(tempresult);
 }
 
+fixed fix_sin(fixed op1) {
+  uint8_t isinfpos;
+  uint8_t isinfneg;
+  uint8_t isnan;
+
+  isinfpos = FIX_IS_INF_POS(op1);
+  isinfneg = FIX_IS_INF_NEG(op1);
+  isnan = FIX_IS_NAN(op1);
+
+  /* Math:
+   *
+   * See http://www.coranac.com/2009/07/sines/ for a great overview.
+   *
+   * Fifth order taylor approximation:
+   *
+   *   Sin_5(x) = ax - bx^3 + cx^5
+   *
+   * where:
+   *
+   *   a = 1.569718634 (almost but not quite pi/2)
+   *   b = 2a - (5/2)
+   *   c = a - (3/2)
+   *   Constants minimise least-squared error (according to Coranac).
+   *
+   * Simplify for computation:
+   *
+   *   Sin_5(x) = az - bz^3 + cz^5
+   *            = z(a + (-bz^2 + cz^4)
+   *            = z(a + z^2(cz - b)
+   *
+   *   where z = x / (tau/4).
+   *
+   */
+
+  /* Scratchpad to compute z:
+   *
+   * variables are lowercase, and considered as integers.
+   * real numbers are capitalized, and are the space we're trying to work in
+   *
+   * op1: input. fixed: 15.15.b00
+   * X = op1 / 2^17                          # in radians
+   * TAU = 6.28318530718...                  # 2pi
+   * QTAU = TAU/4
+   *
+   * Z = (X / QTAU) % 4                      # the dimensionless circle fraction
+   *
+   * circle_frac = Z * 2^32                  # will fit in 32 bits
+   *
+   * big_op = op1 << 32
+   * BIG_OP = X * 2^32
+   *
+   * big_qtau = floor(QTAU * 2^(17+32-32+2)) # remove 32-2 bits so that big_op /
+   *          = floor(QTAU * 2^19)           # big_tau has 30-bits of fraction and
+   *                                         # 2 bits of integer
+   *
+   * circle_frac = big_op / big_qtau
+   *   = X * 2^32 / floor(QTAU * 2^19)
+   *  ~= X * 2^13 / QTAU
+   *   = (X / QTAU) * 2^13
+   *  ~= (op1 / QTAU / 2^17) * 2^13
+   *   = (op1 / TAU) * 2^30
+   */
+
+  uint64_t big_op = ((uint64_t) DATA_BITS(op1)) << 32;
+  uint32_t big_tau = 0xc90fd;  // in python: "0x%x"%(math.floor((math.pi / 2) * 2**19))
+  uint32_t circle_frac = big_op / big_tau;
+
+  printf("circled_frac: %08x\n", circle_frac);
+
+  return 0;
+
+}
+
 // TODO: not constant time. will work for now.
 void fix_print(char* buffer, fixed f) {
   double d;
