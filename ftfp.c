@@ -200,8 +200,9 @@ fixed fix_sin(fixed op1) {
    * Simplify for computation:
    *
    *   Sin_5(x) = az - bz^3 + cz^5
-   *            = z(a + (-bz^2 + cz^4)
-   *            = z(a + z^2(cz - b)
+   *            = z(a + (-bz^2 + cz^4))
+   *            = z(a + z^2(cz^2 - b))
+   *            = z(a - z^2(b - cz^2))
    *
    *   where z = x / (tau/4).
    *
@@ -219,31 +220,55 @@ fixed fix_sin(fixed op1) {
    *
    * Z = (X / QTAU) % 4                      # the dimensionless circle fraction
    *
-   * circle_frac = Z * 2^32                  # will fit in 32 bits
+   * circle_frac = Z * 2^28                  # will fit in 30 bits, 2 for extra
    *
    * big_op = op1 << 32
    * BIG_OP = X * 2^32
    *
-   * big_qtau = floor(QTAU * 2^(17+32-32+2)) # remove 32-2 bits so that big_op /
-   *          = floor(QTAU * 2^19)           # big_tau has 30-bits of fraction and
+   * big_qtau = floor(QTAU * 2^(17+32-32+4)) # remove 32-4 bits so that big_op /
+   *          = floor(QTAU * 2^21)           # big_tau has 28-bits of fraction and
    *                                         # 2 bits of integer
    *
    * circle_frac = big_op / big_qtau
-   *   = X * 2^32 / floor(QTAU * 2^19)
-   *  ~= X * 2^13 / QTAU
-   *   = (X / QTAU) * 2^13
-   *  ~= (op1 / QTAU / 2^17) * 2^13
-   *   = (op1 / TAU) * 2^30
+   *   = X * 2^32 / floor(QTAU * 2^21)
+   *  ~= X * 2^11 / QTAU
+   *   = (X / QTAU) * 2^11
+   *  ~= (op1 / QTAU / 2^17) * 2^11
+   *   = (op1 / QTAU) * 2^28                # in [0,4), fills 30 bits at 2.28
+   *
+   * Z' =    2 - Z       { if 1 <= z < 3
+   *         Z           { otherwise
+   *
+   * zp =                                   # bits: xx.2.28
+   *         (1<<31) - circle_frac { if 1 <= circle_frac[29:28] < 3
+   *         circle_frac           { otherwise
+   *
    */
 
   uint64_t big_op = ((uint64_t) DATA_BITS(op1)) << 32;
-  uint32_t big_tau = 0xc90fd;  // in python: "0x%x"%(math.floor((math.pi / 2) * 2**19))
+  uint32_t big_tau = 0x3243f6;  // in python: "0x%x"%(math.floor((math.pi / 2) * 2**21))
   uint32_t circle_frac = big_op / big_tau;
+  uint32_t top_bits_differ = ((circle_frac >> 28) & 0x1) ^ ((circle_frac >> 29) & 0x1);
+  uint32_t zp = MASK_UNLESS(top_bits_differ, (1<<29) - circle_frac) |
+                MASK_UNLESS(!top_bits_differ, SIGN_EXTEND(circle_frac, 30));
 
-  printf("circled_frac: %08x\n", circle_frac);
+#define MUL_TOP_32(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) op1) ) * ((int64_t) ((int32_t) op2) )) >> (32-4)) & 0xffffffff)
 
-  return 0;
+  uint32_t zp2 = MUL_TOP_32(zp, zp);
 
+  uint32_t a = 0x64764525; // a = 1.569718634; "0x%08x"%(a*2**30)"
+  uint32_t b = 0x28ec8a4a; // "0x%08x"%((2*a - (5/2.)) *2**30)
+  uint32_t c = 0x04764525; // "0x%08x"%((a - (3/2.)) *2**30)
+
+  uint32_t result =
+    MUL_TOP_32(zp,
+        (a - MUL_TOP_32(zp2,
+                          b - MUL_TOP_32(c, zp2))));
+
+  // result is xx.2.28, shift over into fixed, sign extend to full result
+  return DATA_BITS(SIGN_EXTEND( result >> (30 - n_frac_bits - n_flag_bits), (32 - (30 - n_frac_bits - n_flag_bits ) )));
+
+#undef MUL_TOP_32
 }
 
 // TODO: not constant time. will work for now.

@@ -29,6 +29,7 @@ typedef uint32_t fixed;
 #define FIX_SIGN_TO_64(f) ((int64_t)((int32_t)(f)))
 
 #define SIGN_EXTEND(value, n_top_bit) ({uint32_t m = (1 << (n_top_bit-1)); (((uint32_t) value) ^ m) - m;})
+#define MASK_UNLESS(expression, value) (SIGN_EXTEND(!!(expression), 1) & value)
 
 #define DATA_BIT_MASK (0xFFFFFFFC)
 #define DATA_BITS(f) (f & DATA_BIT_MASK)
