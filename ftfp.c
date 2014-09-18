@@ -52,8 +52,8 @@ fixed fix_div(fixed op1, fixed op2) {
   // Take advantage of the extra bits we get out from doing this in uint64_t
   // op2 is never allowed to be 0, if it is set it to something like 1 so div doesn't fall over
   op2nz = op2 | (DATA_BITS(op2) == 0);
-  tmp = ((FIX_SIGN_TO_64(DATA_BITS(op1))<<15) /
-         FIX_SIGN_TO_64(op2nz))<<2;
+  tmp = ROUND_TO_EVEN(((FIX_SIGN_TO_64(DATA_BITS(op1))<<32) /
+                       FIX_SIGN_TO_64(op2nz)),17)<<2;
 
   tempresult = tmp & 0xFFFFFFFC;
 
@@ -170,13 +170,13 @@ fixed fix_add(fixed op1, fixed op2) {
 }
 
 fixed fix_sin(fixed op1) {
-  uint8_t isinfpos;
-  uint8_t isinfneg;
-  uint8_t isnan;
+  //  uint8_t isinfpos;
+  //  uint8_t isinfneg;
+  //  uint8_t isnan;
 
-  isinfpos = FIX_IS_INF_POS(op1);
-  isinfneg = FIX_IS_INF_NEG(op1);
-  isnan = FIX_IS_NAN(op1);
+  //  isinfpos = FIX_IS_INF_POS(op1);
+  // isinfneg = FIX_IS_INF_NEG(op1);
+  // isnan = FIX_IS_NAN(op1);
 
   /* Math:
    *
