@@ -266,7 +266,12 @@ fixed fix_sin(fixed op1) {
                           b - MUL_TOP_32(c, zp2))));
 
   // result is xx.2.28, shift over into fixed, sign extend to full result
-  return DATA_BITS(SIGN_EXTEND( result >> (30 - n_frac_bits - n_flag_bits), (32 - (30 - n_frac_bits - n_flag_bits ) )));
+  return FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS(isinfpos & (!isnan)) |
+    FIX_IF_INF_NEG(isinfneg & (!isnan)) |
+    DATA_BITS(SIGN_EXTEND(
+          result >> (30 - n_frac_bits - n_flag_bits),
+          (32 - (30 - n_frac_bits - n_flag_bits ) /* 19 */ )));
 
 #undef MUL_TOP_32
 }
