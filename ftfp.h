@@ -150,6 +150,7 @@ typedef uint32_t fixed;
 #define FIX_TAU FIXNUM(6,28318530718)
 #define FIX_E   FIXNUM(2,71828182846)
 #define FIX_EPSILON ((fixed) (1 << n_flag_bits))
+#define FIX_ZERO 0
 
 /* TODO: handle infinity and nan properly in rounding methods */
 

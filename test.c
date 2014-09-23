@@ -343,6 +343,35 @@ NEG_CUST(inf, INFINITY, F_INF_NEG);
 NEG_CUST(inf_neg, -INFINITY, F_INF_POS);
 NEG_CUST(nan, nan("0"), F_NAN);
 
+#define unit_sin(name) unit_test(sin_##name)
+#define SIN_CUST(name, op1, result) static void sin_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed sin = fix_sin(o1); \
+  fixed expected = result; \
+  CHECK_EQ_NAN(#name, sin, expected); \
+}
+#define SIN(name, op1, val) SIN_CUST(name, op1, fix_convert_double(val))
+
+SIN(zero       , FIX_ZERO                                           , 0);
+SIN_CUST(pi_2  , fix_div(FIX_PI , FIXNUM(2 , 0))                    , 0x1fffc);
+SIN_CUST(pi    , FIX_PI                                             , 0xfffffffc);
+SIN_CUST(pi3_2 , fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0)) , 0xfffe0000);
+SIN_CUST(pi2   , fix_mul(FIX_PI, FIXNUM(2,0))                       , 0);
+SIN_CUST(pi5_2 , fix_div(fix_mul(FIX_PI, FIXNUM(5,0)), FIXNUM(2,0)) , 0x1fffc);
+SIN_CUST(pi3   , fix_mul(FIX_PI, FIXNUM(3,0))                       , 0xfffffffc);
+SIN_CUST(pi7_2 , fix_div(fix_mul(FIX_PI, FIXNUM(7,0)), FIXNUM(2,0)) , 0xfffe0000);
+SIN_CUST(pi4   , fix_mul(FIX_PI, FIXNUM(4,0))                       , 0x4);
+
+SIN_CUST(neg_pi_2  , fix_neg(fix_div(FIX_PI , FIXNUM(2 , 0)))                    , 0xfffe0000);
+SIN_CUST(neg_pi    , fix_neg(FIX_PI)                                             , 0x0);
+SIN_CUST(neg_pi3_2 , fix_neg(fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0))) , 0x20000);
+SIN_CUST(neg_pi2   , fix_neg(fix_mul(FIX_PI, FIXNUM(2,0)))                       , 0);
+
+SIN_CUST(inf_pos   , F_INF_POS                          , F_INF_POS);
+SIN_CUST(inf_neg   , F_INF_NEG                          , F_INF_NEG);
+SIN_CUST(nan       , F_NAN                              , F_NAN);
+
+
 int main(int argc, char** argv) {
 
   const UnitTest tests[] = {
@@ -514,6 +543,23 @@ int main(int argc, char** argv) {
     unit_neg(inf),
     unit_neg(inf_neg),
     unit_neg(nan),
+
+    unit_sin(zero),
+    unit_sin(pi_2),
+    unit_sin(pi),
+    unit_sin(pi3_2),
+    unit_sin(pi2),
+    unit_sin(pi5_2),
+    unit_sin(pi3),
+    unit_sin(pi7_2),
+    unit_sin(pi4),
+    unit_sin(neg_pi_2),
+    unit_sin(neg_pi),
+    unit_sin(neg_pi3_2),
+    unit_sin(neg_pi2),
+    unit_sin(inf_pos),
+    unit_sin(inf_neg),
+    unit_sin(nan),
   };
 
   return run_tests(tests);
