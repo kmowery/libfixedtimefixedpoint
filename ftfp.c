@@ -174,13 +174,13 @@ fixed fix_add(fixed op1, fixed op2) {
 }
 
 fixed fix_sin(fixed op1) {
-  //  uint8_t isinfpos;
-  //  uint8_t isinfneg;
-  //  uint8_t isnan;
+  uint8_t isinfpos;
+  uint8_t isinfneg;
+  uint8_t isnan;
 
-  //  isinfpos = FIX_IS_INF_POS(op1);
-  // isinfneg = FIX_IS_INF_NEG(op1);
-  // isnan = FIX_IS_NAN(op1);
+  isinfpos = FIX_IS_INF_POS(op1);
+  isinfneg = FIX_IS_INF_NEG(op1);
+  isnan = FIX_IS_NAN(op1);
 
   /* Math:
    *
