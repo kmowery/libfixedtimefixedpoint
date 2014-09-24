@@ -28,6 +28,23 @@ fixed fix_neg(fixed op1){
     DATA_BITS(tempresult);
 }
 
+fixed fix_abs(fixed op1){
+  uint8_t isinfpos;
+  uint8_t isinfneg;
+  uint8_t isnan;
+
+  isinfpos = FIX_IS_INF_POS(op1);
+  isinfneg = FIX_IS_INF_NEG(op1);
+  isnan = FIX_IS_NAN(op1);
+
+  fixed tempresult = MASK_UNLESS(TOP_BIT(~op1), op1) |
+    MASK_UNLESS(  TOP_BIT(op1), DATA_BITS(((~op1) + 4)));
+
+  return FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS((isinfpos | isinfneg) & (!isnan)) |
+    DATA_BITS(tempresult);
+}
+
 fixed fix_sub(fixed op1, fixed op2) {
   return fix_add(op1,fix_neg(op2));
 }

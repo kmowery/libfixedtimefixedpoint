@@ -189,6 +189,7 @@ typedef uint32_t fixed;
     })
 
 fixed fix_neg(fixed op1);
+fixed fix_abs(fixed op1);
 
 
 fixed fix_add(fixed op1, fixed op2);

@@ -343,6 +343,22 @@ NEG_CUST(inf, INFINITY, F_INF_NEG);
 NEG_CUST(inf_neg, -INFINITY, F_INF_POS);
 NEG_CUST(nan, nan("0"), F_NAN);
 
+#define unit_abs(name) unit_test(abs_##name)
+#define ABS_CUST(name, op1, result) static void abs_##name(void **state) { \
+  fixed o1 = fix_convert_double(op1); \
+  fixed absd = fix_abs(o1); \
+  fixed expected = result; \
+  assert_true( FIX_EQ_NAN(absd, expected) ); \
+}
+#define ABS(name, op1, val) ABS_CUST(name, op1, fix_convert_double(val))
+
+ABS(zero         , 0         , 0);
+ABS(one          , 1         , 1);
+ABS(one_neg      , -1        , 1);
+ABS_CUST(inf     , INFINITY  , F_INF_POS);
+ABS_CUST(inf_neg , -INFINITY , F_INF_POS);
+ABS_CUST(nan     , nan("0")  , F_NAN);
+
 
 // To print out all sins:
 //int roots_of_unity = 16;
@@ -562,6 +578,13 @@ int main(int argc, char** argv) {
     unit_neg(inf),
     unit_neg(inf_neg),
     unit_neg(nan),
+
+    unit_abs(zero),
+    unit_abs(one),
+    unit_abs(one_neg),
+    unit_abs(inf),
+    unit_abs(inf_neg),
+    unit_abs(nan),
 
     unit_sin(zero),
     unit_sin(pi_2),
