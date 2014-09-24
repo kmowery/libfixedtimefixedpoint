@@ -343,6 +343,25 @@ NEG_CUST(inf, INFINITY, F_INF_NEG);
 NEG_CUST(inf_neg, -INFINITY, F_INF_POS);
 NEG_CUST(nan, nan("0"), F_NAN);
 
+
+// To print out all sins:
+//int roots_of_unity = 16;
+//fixed x = fix_neg(FIX_TAU);
+//fixed step = fix_div(FIX_TAU, FIXINT(roots_of_unity));
+
+//for(int i = 0; i <= roots_of_unity * 4; i++) {
+//  printf("\nsin of:");
+//  pl(x);
+//  printf(": ");
+//  pl(fix_sin(x));
+
+//  x = fix_add(x, step);
+//}
+//printf("\n");
+
+//p(fix_sin(FIX_PI));
+
+
 #define unit_sin(name) unit_test(sin_##name)
 #define SIN_CUST(name, op1, result) static void sin_##name(void **state) { \
   fixed o1 = op1; \
@@ -364,8 +383,8 @@ SIN_CUST(pi4   , fix_mul(FIX_PI, FIXNUM(4,0))                       , 0x4);
 
 SIN_CUST(neg_pi_2  , fix_neg(fix_div(FIX_PI , FIXNUM(2 , 0)))                    , 0xfffe0000);
 SIN_CUST(neg_pi    , fix_neg(FIX_PI)                                             , 0x0);
-SIN_CUST(neg_pi3_2 , fix_neg(fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0))) , 0x20000);
-SIN_CUST(neg_pi2   , fix_neg(fix_mul(FIX_PI, FIXNUM(2,0)))                       , 0);
+SIN_CUST(neg_pi3_2 , fix_neg(fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0))) , 0x1fffc);
+SIN_CUST(neg_pi2   , fix_neg(fix_mul(FIX_PI, FIXNUM(2,0)))                       , 0xfffffffc);
 
 SIN_CUST(inf_pos   , F_INF_POS                          , F_INF_POS);
 SIN_CUST(inf_neg   , F_INF_NEG                          , F_INF_NEG);

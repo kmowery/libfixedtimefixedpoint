@@ -245,9 +245,9 @@ fixed fix_sin(fixed op1) {
    *
    */
 
-  uint64_t big_op = ((uint64_t) DATA_BITS(op1)) << 32;
-  uint32_t big_tau = 0x3243f6;  // in python: "0x%x"%(math.floor((math.pi / 2) * 2**21))
-  uint32_t circle_frac = (big_op / big_tau) & 0x3fffffff;
+  int64_t big_op = ((int64_t) ((int32_t) DATA_BITS(op1))) << 32;
+  int32_t big_tau = 0x3243f6;  // in python: "0x%x"%(math.floor((math.pi / 2) * 2**21))
+  int32_t circle_frac = (big_op / big_tau) & 0x3fffffff;
   uint32_t top_bits_differ = ((circle_frac >> 28) & 0x1) ^ ((circle_frac >> 29) & 0x1);
   uint32_t zp = MASK_UNLESS(top_bits_differ, (1<<29) - circle_frac) |
                 MASK_UNLESS(!top_bits_differ, SIGN_EXTEND(circle_frac, 30));
