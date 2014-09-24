@@ -331,17 +331,17 @@ fixed fix_convert_double(double d) {
 
   fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << n_flag_bits) & 0xffffffff;
 
-  /* TODO: make fixed-time */
-  if(isnan(d)) {
-    result = F_NAN;
-  }
-
-  /* TODO: make fixed-time */
-  if( isinf(d) || ((mantissa >> shift) & ~((1ull << (n_frac_bits + n_int_bits)) -1)) != 0) {
-    result = F_INF_POS;
-  }
+  uint8_t isinf = (isinf(d) || ((mantissa >> shift) & ~((1ull << (n_frac_bits + n_int_bits)) -1)) != 0);
+  uint8_t isinfpos = (d > 0) & isinf;
+  uint8_t isinfneg = (d < 0) & isinf;
+  uint8_t isnan = isnan(d);
 
   fixed result_neg = fix_neg(result);
 
-  return (sign == 0 ? result : result_neg);
+  return
+    FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS(isinfpos) |
+    FIX_IF_INF_NEG(isinfneg) |
+    MASK_UNLESS(sign == 0, DATA_BITS(result)) |
+    MASK_UNLESS(sign, DATA_BITS(result_neg));
 }
