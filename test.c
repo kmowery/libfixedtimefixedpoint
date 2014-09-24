@@ -20,13 +20,13 @@ static void null_test_success(void **state) {
   if( !FIX_EQ(var1, var2) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s (%x) != %s (%x)", b1, var1, b2, var2); \
+    fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, var1, b2, var2); \
   }
 #define CHECK_EQ_NAN(error_msg, var1, var2) \
   if( !FIX_EQ_NAN(var1, var2) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s (%x) != %s (%x)", b1, var1, b2, var2); \
+    fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, var1, b2, var2); \
   }
 
 #define CHECK_INT_EQUAL(error_msg, var1, var2) \
@@ -41,6 +41,12 @@ void p(fixed f) {
 
   fix_print(buf, f);
   printf("n: %s (%08x)\n", buf, f);
+}
+void pl(fixed f) {
+  char buf[40];
+
+  fix_print(buf, f);
+  printf("%s (%08x)", buf, f);
 }
 
 void bounds(fixed f) {
@@ -63,7 +69,7 @@ void bounds(fixed f) {
 #define CONVERT_DBL(name, d, bits) static void convert_dbl_##name(void **state) { \
   fixed f = bits; \
   fixed g = fix_convert_double(d); \
-  assert_memory_equal( &f, &g, sizeof(fixed)); \
+  CHECK_EQ_NAN(#name, f, g); \
 }
 
 CONVERT_DBL(zero     , 0         , 0x00000);
@@ -348,7 +354,7 @@ NEG_CUST(nan, nan("0"), F_NAN);
   fixed o1 = fix_convert_double(op1); \
   fixed absd = fix_abs(o1); \
   fixed expected = result; \
-  assert_true( FIX_EQ_NAN(absd, expected) ); \
+  CHECK_EQ_NAN(#name, absd, expected); \
 }
 #define ABS(name, op1, val) ABS_CUST(name, op1, fix_convert_double(val))
 

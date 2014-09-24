@@ -207,8 +207,6 @@ void fix_print(char* buffer, fixed f);
 
 /*
  * TODO:
- * div
- * round to integer
  * exp
  * log
  *
@@ -217,8 +215,6 @@ void fix_print(char* buffer, fixed f);
  *
  * sqrt
  * sin / cos / arctan
- *
- * important constants?
  */
 
 #endif
