@@ -157,14 +157,6 @@ fixed fix_add(fixed op1, fixed op2) {
   // Force infpos to win in cases where it is unclear
   isinfneg &= !isinfpos;
 
-  //printf("isnan: %x\n", isnan);
-  //printf("isinfpos: %x\n", isinfpos);
-  //printf("isinfneg: %x\n", isinfneg);
-  //printf("bits: %x\n", isnan | isinfpos | isinfneg );
-  //printf("result: %x\n", tempresult);
-  //printf("bit: %x\n", !(isnan | isinfpos | isinfneg));
-  //printf("extend: %x\n", EXTEND_BIT_32(!(isnan | isinfpos | isinfneg)));
-
   // do some horrible bit-ops to make result into what we want
 
   return FIX_IF_NAN(isnan) |
