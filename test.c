@@ -366,6 +366,31 @@ ABS_CUST(inf_neg , -INFINITY , F_INF_POS);
 ABS_CUST(nan     , nan("0")  , F_NAN);
 
 
+
+
+#define unit_ln(name) unit_test(ln_##name)
+#define LN_CUST(name, op1, result) static void ln_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed ln = fix_ln(o1); \
+  fixed expected = result; \
+  CHECK_EQ_NAN(#name, ln, expected); \
+}
+#define LN(name, op1, val) LN_CUST(name, op1, fix_convert_double(val))
+
+LN_CUST(zero   , 0x0               , F_INF_NEG);
+LN_CUST(0xf0   , 0xf0              , 0xfff2020c);
+LN_CUST(0x80   , 0x80              , 0xfff22318);
+LN_CUST(0xa0   , 0xa0              , 0xfff29358);
+LN_CUST(two    , FIXNUM(2,0)       , FIXNUM(0 , 69314718));
+LN_CUST(one    , FIXNUM(1,0)       , FIXNUM(0 , 0));
+LN_CUST(e      , FIX_E             , 0x0001fda4 ); // not quite FIXNUM(1 , 0), but close
+LN_CUST(ten    , FIXNUM(10,0)      , 0x000498ec ); // not quite FIXNUM(2 , 30258509), but close
+LN_CUST(inf    , F_INF_POS         , F_INF_POS);
+LN_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
+LN_CUST(nan    , F_NAN             , F_NAN);
+
+
+
 // To print out all sins:
 //int roots_of_unity = 16;
 //fixed x = fix_neg(FIX_TAU);
@@ -591,6 +616,18 @@ int main(int argc, char** argv) {
     unit_abs(inf),
     unit_abs(inf_neg),
     unit_abs(nan),
+
+    unit_ln(one),
+    unit_ln(two),
+    unit_ln(e),
+    unit_ln(ten),
+    unit_ln(zero),
+    unit_ln(inf),
+    unit_ln(neg),
+    unit_ln(nan),
+    unit_ln(0xf0),
+    unit_ln(0x80),
+    unit_ln(0xa0),
 
     unit_sin(zero),
     unit_sin(pi_2),

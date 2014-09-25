@@ -182,6 +182,68 @@ fixed fix_add(fixed op1, fixed op2) {
     DATA_BITS(tempresult);
 }
 
+#define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
+
+fixed fix_ln(fixed op1) {
+  /* Approach taken from http://eesite.bitbucket.org/html/software/log_app/log_app.html */
+
+  uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
+  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
+
+  uint32_t scratch = op1;
+  uint32_t log2; // compute (int) log2(op1)  (as a uint32_t, not fixed)
+  uint32_t shift;
+
+  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
+  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
+  log2 |= (scratch >> 1);
+  //log2 is now log2(op1), considered as a uint32_t
+
+  uint32_t top2mask = (3 << (log2 - 1));
+  uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0;
+
+  // we need to move op1 into [-0.5, 0.5] in xx.2.28
+  //
+  // first, let's move to [0.5, 1.5] in xx.2.28...
+  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2 + top2set))) |
+    MASK_UNLESS(log2 > 28, op1 >> (log2 + top2set - 28));
+
+  // and then shift down by '1'. (1.28 bits of zero)
+  m -= (1 << 28);
+
+  fixed ln2 = 0x000162e4; // python: "0x%08x"%(math.log(2) * 2**17)
+  fixed nln2 = ln2 * (log2 - n_frac_bits - n_flag_bits); // correct for nonsense
+    // we want this to go negative for numbers < 1.
+
+  // now, calculate ln(1+m):
+  uint32_t c411933 = 0x0697470e; // "0x%08x"%(0.411933 * 2**28)
+  uint32_t c574785 = 0x093251c1; // "0x%08x"%(0.574785 * 2**28)
+  uint32_t c994946 = 0x0feb4c7f; // "0x%08x"%(0.994946 * 2**28)
+  uint32_t c0022683 = 0x00094a7c; // "0x%08x"%(0.0022683 * 2**28)
+
+  // (((0.411x - 0.57)x + 0.99)x + 0.0022..
+
+  uint32_t tempresult =
+    (MUL_2x28(m,
+        MUL_2x28(m,
+          MUL_2x28(m,
+            c411933)
+          - c574785)
+        + c994946)
+      + c0022683);
+
+  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - n_frac_bits - n_flag_bits);
+  tempresult += nln2 - 0x128; // adjustment constant for when log should be 0
+
+  return FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS(isinfpos) |
+    FIX_IF_INF_NEG(isinfneg) |
+    DATA_BITS(tempresult);
+}
+
 fixed fix_sin(fixed op1) {
   uint8_t isinfpos;
   uint8_t isinfneg;
@@ -261,18 +323,16 @@ fixed fix_sin(fixed op1) {
   uint32_t zp = MASK_UNLESS(top_bits_differ, (1<<29) - circle_frac) |
                 MASK_UNLESS(!top_bits_differ, SIGN_EXTEND(circle_frac, 30));
 
-#define MUL_TOP_32(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) op1) ) * ((int64_t) ((int32_t) op2) )) >> (32-4)) & 0xffffffff)
-
-  uint32_t zp2 = MUL_TOP_32(zp, zp);
+  uint32_t zp2 = MUL_2x28(zp, zp);
 
   uint32_t a = 0x64764525; // a = 1.569718634; "0x%08x"%(a*2**30)"
   uint32_t b = 0x28ec8a4a; // "0x%08x"%((2*a - (5/2.)) *2**30)
   uint32_t c = 0x04764525; // "0x%08x"%((a - (3/2.)) *2**30)
 
   uint32_t result =
-    MUL_TOP_32(zp,
-        (a - MUL_TOP_32(zp2,
-                          b - MUL_TOP_32(c, zp2))));
+    MUL_2x28(zp,
+        (a - MUL_2x28(zp2,
+                          b - MUL_2x28(c, zp2))));
 
   // result is xx.2.28, shift over into fixed, sign extend to full result
   return FIX_IF_NAN(isnan) |
@@ -282,7 +342,7 @@ fixed fix_sin(fixed op1) {
           result >> (30 - n_frac_bits - n_flag_bits),
           (32 - (30 - n_frac_bits - n_flag_bits ) /* 19 */ )));
 
-#undef MUL_TOP_32
+#undef MUL_2x28
 }
 
 // TODO: not constant time. will work for now.
