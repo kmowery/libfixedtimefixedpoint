@@ -101,8 +101,8 @@ typedef uint32_t fixed;
 #define ROUND_TO_EVEN(value, n_shift_bits) \
   (((value) >> (n_shift_bits)) + \
    !!( \
-     ((value & (1 << (n_shift_bits-1))) && !!(value & ((1 << (n_shift_bits-1))-1))) | \
-     ((((value) >> (n_shift_bits-2)) & 0x6) == 0x6) \
+     (((value) & (1 << ((n_shift_bits)-1))) && !!((value) & ((1 << ((n_shift_bits)-1))-1))) | \
+     ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
 /*
@@ -200,6 +200,8 @@ fixed fix_div(fixed op1, fixed op2);
 
 fixed fix_ln(fixed op1);
 fixed fix_log2(fixed op1);
+
+fixed fix_sqrt(fixed op1);
 
 fixed fix_sin(fixed op1);
 

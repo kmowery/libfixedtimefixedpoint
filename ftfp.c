@@ -311,6 +311,80 @@ fixed fix_log2(fixed op1) {
     DATA_BITS(tempresult);
 }
 
+fixed fix_sqrt(fixed op1) {
+  // We're going to use Newton's Method with a fixed number of iterations.
+  // The polynomial to use is:
+  //
+  //     f(x)  = x^2 - op1
+  //     f'(x) = 2x
+  //
+  // Each update cycle is then:
+  //
+  //     x' = x - f(x) / f'(x)
+
+  uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isinfneg = 0;
+  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
+
+  // We need an initial guess. Let's use log_2(op1), since that's fairly quick
+  // and easy, and not horribly wrong.
+  uint32_t scratch = op1;
+  uint32_t log2; // compute (int) log2(op1)  (as a uint32_t, not fixed)
+  uint32_t shift;
+
+  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
+  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
+  log2 |= (scratch >> 1);
+  //log2 is now log2(op1), considered as a uint32_t
+
+  // Make a guess! Use log2(op1) if op1 > 2, otherwise just uhhhh mul op1 by 2.
+  int64_t x = MASK_UNLESS(op1 >= (1<<(n_frac_bits + n_flag_bits+1)),
+                           FIXINT(log2 - (n_flag_bits + n_frac_bits))) |
+               MASK_UNLESS(op1 < (1<<(n_frac_bits + n_flag_bits+1)),
+                           op1 << 1);
+
+
+  // We're going to do all math in a 47.17 uint64_t
+  //int64_t x = op1;
+  //int64_t x = 1<< 19;
+
+  uint64_t op1neg = FIX_SIGN_TO_64(fix_neg(op1));
+
+  //printf("\n\n");
+  //d("op1", op1);
+  //d("guess", x);
+  //d("op1neg", op1neg);
+
+  // we're going to use 15.17 fixed point numbers to do the calculation, and
+  // then mask off our flag bits later
+  for(int i = 0; i < 10; i++) {
+    //printf("\n");
+    int64_t x2 = (x * x) >> 17;
+    int64_t t = x2 + op1neg;
+
+    //d("x         ", x);
+    //d("x2        ", x2);
+    //d("f(x)      ", t);
+    //d("f'(x)     ", x<<1);
+
+    // t = t / f'(x) = t / 2x
+    t = ROUND_TO_EVEN((t<<22) / (x<<1), 5);
+
+    //d("f(x)/f'(x)", t);
+
+    x = x - t;
+
+    //d("x'        ", x);
+  }
+
+  return FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS(isinfpos) |
+    FIX_IF_INF_NEG(isinfneg) |
+    DATA_BITS(x & 0xffffffff);
+}
+
 fixed fix_sin(fixed op1) {
   uint8_t isinfpos;
   uint8_t isinfneg;
