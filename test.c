@@ -390,6 +390,27 @@ LN_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
 LN_CUST(nan    , F_NAN             , F_NAN);
 
 
+#define unit_log2(name) unit_test(log2_##name)
+#define LOG2_CUST(name, op1, result) static void log2_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed log2 = fix_log2(o1); \
+  fixed expected = result; \
+  CHECK_EQ_NAN(#name, log2, expected); \
+}
+#define LOG2(name, op1, val) LOG2_CUST(name, op1, fix_convert_double(val))
+
+LOG2_CUST(zero   , 0x0               , F_INF_NEG);
+LOG2_CUST(0xf0   , 0xf0              , 0xffebd050);
+LOG2_CUST(0x80   , 0x80              , 0xffec0000);
+LOG2_CUST(0xa0   , 0xa0              , 0xffeca29c);
+LOG2_CUST(one    , FIXNUM(1,0)       , FIXNUM(0 , 0));
+LOG2_CUST(two    , FIXNUM(2,0)       , FIXNUM(1 , 0));
+LOG2_CUST(e      , FIX_E             , 0x0002e060 ); // not quite 1.4426 but close
+LOG2_CUST(ten    , FIXNUM(10,0)      , 0x0006a29c ); // not quite 3.3219 but close
+LOG2_CUST(inf    , F_INF_POS         , F_INF_POS);
+LOG2_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
+LOG2_CUST(nan    , F_NAN             , F_NAN);
+
 
 // To print out all sins:
 //int roots_of_unity = 16;
@@ -628,6 +649,18 @@ int main(int argc, char** argv) {
     unit_ln(0xf0),
     unit_ln(0x80),
     unit_ln(0xa0),
+
+    unit_log2(one),
+    unit_log2(two),
+    unit_log2(e),
+    unit_log2(ten),
+    unit_log2(zero),
+    unit_log2(inf),
+    unit_log2(neg),
+    unit_log2(nan),
+    unit_log2(0xf0),
+    unit_log2(0x80),
+    unit_log2(0xa0),
 
     unit_sin(zero),
     unit_sin(pi_2),

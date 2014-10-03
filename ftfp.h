@@ -199,6 +199,7 @@ fixed fix_mul(fixed op1, fixed op2);
 fixed fix_div(fixed op1, fixed op2);
 
 fixed fix_ln(fixed op1);
+fixed fix_log2(fixed op1);
 
 fixed fix_sin(fixed op1);
 
