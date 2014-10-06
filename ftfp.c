@@ -369,6 +369,8 @@ fixed fix_sqrt(fixed op1) {
     //d("f(x)      ", t);
     //d("f'(x)     ", x<<1);
 
+    x = x | (x==0); // don't divide by zero...
+
     // t = t / f'(x) = t / 2x
     t = ROUND_TO_EVEN((t<<22) / (x<<1), 5);
 
