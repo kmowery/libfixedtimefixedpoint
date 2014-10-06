@@ -88,9 +88,9 @@ CONVERT_DBL(nan      , nan("0")  , F_NAN);
 
 #define unit_fixnum(name) unit_test(fixnum_##name)
 #define TEST_FIXNUM(name, z, frac, bits) static void fixnum_##name(void **state) { \
-  fixed f = bits; \
+  fixed expected = bits; \
   fixed g = FIXNUM(z, frac); \
-  CHECK_EQ("fixnum", g, f); \
+  CHECK_EQ("fixnum", g, expected); \
 }
 
 TEST_FIXNUM(zero     , 0     , 0    , 0x0);
@@ -100,8 +100,15 @@ TEST_FIXNUM(two      , 2     , 0    , 0x40000);
 TEST_FIXNUM(two_neg  , -2    , 0    , 0xfffc0000);
 TEST_FIXNUM(many     , 1000  , 4    , 0x7d0cccc);
 TEST_FIXNUM(many_neg , -1000 , 4    , 0xf82f3334);
-TEST_FIXNUM(frac     , 0     , 5342 , 0x11180);
-TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee80);
+TEST_FIXNUM(frac     , 0     , 5342 , 0x11184);
+TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee7c);
+
+TEST_FIXNUM(regress0 ,     0 , 00932 ,        0x000004c4);
+TEST_FIXNUM(regress1 ,   100 , 002655,        0x00c8015c);
+TEST_FIXNUM(regress12,   100 , 0026550292968, 0x00c8015c);
+TEST_FIXNUM(regress2 ,     1 , 4142150878906, 0x0002d414);
+TEST_FIXNUM(regress3 ,     1 , 6487121582031, 0x00034c24);
+TEST_FIXNUM(regress4 ,     1 , 9999999999999, 0x00040000);
 
 #define unit_eq(name) unit_test(equal_##name)
 #define TEST_EQ(name, op1, op2, value, valuenan) static void equal_##name(void **state) { \
@@ -191,7 +198,7 @@ TEST_ROUNDING(inf_neg  , -INFINITY , INT_MIN , INT_MIN , INT_MIN , INT_MIN);
 static void constants(void **state) {
   assert_true(FIX_PI  == 0x00064880);
   assert_true(FIX_TAU == 0x000c90fc);
-  assert_true(FIX_E   == 0x00056fc0);
+  assert_true(FIX_E   == 0x00056fc4);
 }
 
 #define unit_cmp(name) unit_test(cmp_##name)
@@ -383,7 +390,7 @@ LN_CUST(0x80   , 0x80              , 0xfff22318);
 LN_CUST(0xa0   , 0xa0              , 0xfff29358);
 LN_CUST(two    , FIXNUM(2,0)       , FIXNUM(0 , 69314718));
 LN_CUST(one    , FIXNUM(1,0)       , FIXNUM(0 , 0));
-LN_CUST(e      , FIX_E             , 0x0001fda4 ); // not quite FIXNUM(1 , 0), but close
+LN_CUST(e      , FIX_E             , 0x0001fda8 ); // not quite FIXNUM(1 , 0), but close
 LN_CUST(ten    , FIXNUM(10,0)      , 0x000498ec ); // not quite FIXNUM(2 , 30258509), but close
 LN_CUST(inf    , F_INF_POS         , F_INF_POS);
 LN_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
@@ -405,7 +412,7 @@ LOG2_CUST(0x80   , 0x80              , 0xffec0000);
 LOG2_CUST(0xa0   , 0xa0              , 0xffeca29c);
 LOG2_CUST(one    , FIXNUM(1,0)       , FIXNUM(0 , 0));
 LOG2_CUST(two    , FIXNUM(2,0)       , FIXNUM(1 , 0));
-LOG2_CUST(e      , FIX_E             , 0x0002e060 ); // not quite 1.4426 but close
+LOG2_CUST(e      , FIX_E             , 0x0002e064 ); // not quite 1.4426 but close
 LOG2_CUST(ten    , FIXNUM(10,0)      , 0x0006a29c ); // not quite 3.3219 but close
 LOG2_CUST(inf    , F_INF_POS         , F_INF_POS);
 LOG2_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
@@ -507,6 +514,13 @@ int main(int argc, char** argv) {
     unit_fixnum(many_neg),
     unit_fixnum(frac),
     unit_fixnum(frac_neg),
+
+    unit_fixnum(regress0),
+    unit_fixnum(regress1),
+    unit_fixnum(regress12),
+    unit_fixnum(regress2),
+    unit_fixnum(regress3),
+    unit_fixnum(regress4),
 
     unit_eq(zero),
     unit_eq(frac),

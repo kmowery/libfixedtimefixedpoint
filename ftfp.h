@@ -125,19 +125,21 @@ typedef uint32_t fixed;
  *
  *   I'd really like to remove the pow call; doing this in the preprocessor
  *   seems difficult.
+ *
+ *   To prevent octal assignment, we do some nonsense into frac_int.
  */
 #define FIXFRAC(frac) ({ \
-    uint32_t bits = 45; \
+    uint32_t bits = 4; \
     uint64_t log_ceil = ((uint64_t) strlen( #frac )); \
     uint64_t one = 1ULL << (n_frac_bits + bits); \
     uint64_t p = (uint64_t) pow(10, log_ceil); \
-    uint64_t unit = one / p; \
-    uint64_t n = unit * frac; \
+    uint64_t frac_int =  1 ## frac - ((int64_t) pow(10, log_ceil)); \
+    uint64_t n = (frac_int * one) / p; \
     ((ROUND_TO_EVEN(n, bits)) << n_flag_bits); \
     })
 
 /* TODO: fix this for variables and not just constants */
-#define FIXNUM(i,frac) ({fixed f = (FIXINT(abs(i)) | FIXFRAC(frac)); ( #i[0] == '-' ? fix_neg(f) : f ); })
+#define FIXNUM(i,frac) ({fixed f = (FIXINT(abs(i)) + FIXFRAC(frac)); ( #i[0] == '-' ? fix_neg(f) : f ); })
 
 #define EXTEND_BIT_32(b) ({ uint32_t v = b; \
   v |= v << 1; \

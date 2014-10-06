@@ -519,7 +519,7 @@ void fix_print(char* buffer, fixed f) {
     d *= -1;
   }
 
-  sprintf(buffer, "%f", d);
+  sprintf(buffer, "%.015f", d);
 }
 
 fixed fix_convert_double(double d) {
