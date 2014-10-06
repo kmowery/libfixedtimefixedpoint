@@ -28,9 +28,9 @@ typedef uint32_t fixed;
 
 #define FIX_SIGN_TO_64(f) ((int64_t)((int32_t)(f)))
 
-#define SIGN_EXTEND(value, n_top_bit) ({uint32_t SE_m__ = (1 << ((n_top_bit)-1)); (((uint32_t) value) ^ SE_m__) - SE_m__;})
+#define SIGN_EXTEND(value, n_top_bit) ({uint32_t SE_m__ = (1 << ((n_top_bit)-1)); (((uint32_t) (value)) ^ SE_m__) - SE_m__;})
 #define SIGN_EX_SHIFT_RIGHT_32(value, shift) SIGN_EXTEND( (value) >> (shift), 32 - (shift) )
-#define MASK_UNLESS(expression, value) (SIGN_EXTEND(!!(expression), 1) & value)
+#define MASK_UNLESS(expression, value) (SIGN_EXTEND(!!(expression), 1) & (value))
 
 #define DATA_BIT_MASK (0xFFFFFFFC)
 #define DATA_BITS(f) (f & DATA_BIT_MASK)
@@ -138,8 +138,9 @@ typedef uint32_t fixed;
     ((ROUND_TO_EVEN(n, bits)) << n_flag_bits); \
     })
 
-/* TODO: fix this for variables and not just constants */
-#define FIXNUM(i,frac) ({fixed f = (FIXINT(abs(i)) + FIXFRAC(frac)); ( #i[0] == '-' ? fix_neg(f) : f ); })
+#define FIXNUM(i,frac) ({fixed f = (FIXINT(abs(i)) + FIXFRAC(frac)); \
+    ( MASK_UNLESS((#i[0] == '-') | (i < 0), fix_neg(f)) | \
+      MASK_UNLESS((#i[0] != '-') | (i > 0), f) ); })
 
 #define EXTEND_BIT_32(b) ({ uint32_t v = b; \
   v |= v << 1; \
