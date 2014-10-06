@@ -153,6 +153,9 @@ typedef uint32_t fixed;
 #define FIX_EPSILON ((fixed) (1 << n_flag_bits))
 #define FIX_ZERO 0
 
+#define FIX_MAX 0x7ffffffc
+#define FIX_MIN 0x80000000
+
 /* TODO: handle infinity and nan properly in rounding methods */
 
 /* Uses round to even semantics */
