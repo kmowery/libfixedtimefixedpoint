@@ -412,6 +412,28 @@ LOG2_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
 LOG2_CUST(nan    , F_NAN             , F_NAN);
 
 
+#define unit_sqrt(name) unit_test(sqrt_##name)
+#define SQRT_CUST(name, op1, result) static void sqrt_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed sqrt = fix_sqrt(o1); \
+  fixed expected = result; \
+  CHECK_EQ_NAN(#name, sqrt, expected); \
+}
+#define sqrt(name, op1, val) sqrt_CUST(name, op1, fix_convert_double(val))
+
+SQRT_CUST(zero   , 0x0               , FIXNUM(0,0));
+SQRT_CUST(half   , FIXNUM(0,5)       , FIXNUM(0,707092));
+SQRT_CUST(one    , FIXNUM(1,0)       , FIXNUM(1,0));
+SQRT_CUST(two    , FIXNUM(2,0)       , FIXNUM(1,414215));
+SQRT_CUST(e      , FIX_E             , FIXNUM(1,648712) );
+SQRT_CUST(ten    , FIXNUM(10,0)      , FIXNUM(3,162262) ); // not precisely sqrt(10) but so close
+SQRT_CUST(big    , FIXNUM(10000,5345), FIXNUM(100,002655) );
+SQRT_CUST(max    , FIX_MAX           , FIXNUM(128,0) );
+SQRT_CUST(inf    , F_INF_POS         , F_INF_POS);
+SQRT_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
+SQRT_CUST(nan    , F_NAN             , F_NAN);
+
+
 // To print out all sins:
 //int roots_of_unity = 16;
 //fixed x = fix_neg(FIX_TAU);
@@ -661,6 +683,18 @@ int main(int argc, char** argv) {
     unit_log2(0xf0),
     unit_log2(0x80),
     unit_log2(0xa0),
+
+    unit_sqrt(zero),
+    unit_sqrt(half),
+    unit_sqrt(one),
+    unit_sqrt(two),
+    unit_sqrt(e),
+    unit_sqrt(ten),
+    unit_sqrt(big),
+    unit_sqrt(max),
+    unit_sqrt(inf),
+    unit_sqrt(neg),
+    unit_sqrt(nan),
 
     unit_sin(zero),
     unit_sin(pi_2),

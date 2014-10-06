@@ -359,7 +359,7 @@ fixed fix_sqrt(fixed op1) {
 
   // we're going to use 15.17 fixed point numbers to do the calculation, and
   // then mask off our flag bits later
-  for(int i = 0; i < 10; i++) {
+  for(int i = 0; i < 8; i++) {
     //printf("\n");
     int64_t x2 = (x * x) >> 17;
     int64_t t = x2 + op1neg;
