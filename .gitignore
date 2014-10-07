@@ -1,3 +1,5 @@
 *.o
 test
+*.pre
+autogen.c
 

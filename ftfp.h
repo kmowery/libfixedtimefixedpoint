@@ -206,6 +206,7 @@ fixed fix_sin(fixed op1);
 fixed fix_convert_double(double d);
 
 void fix_print(char* buffer, fixed f);
+void fix_print_const(char* buffer, fixed f);
 
 
 /*
