@@ -47,7 +47,10 @@ print """#include "ftfp.h"
 
 void fix_print_const(char* buffer, fixed f) {
   uint32_t carry = 0;
-  uint32_t scratch = 0;"""
+  uint32_t scratch = 0;
+  uint32_t neg = f >> 31;
+
+  f = fix_abs(f);"""
 
 print "\n".join(["  uint32_t bit%d = (((f) >> (%d))&1);"%(i,i) for i in range(2,32)])
 
@@ -68,7 +71,7 @@ for position in reversed(range(int_loc,int_loc+int_chars)):
 
 print """
   char sign_lut[2] = {' ', '-'};
-  buffer[0] = sign_lut[bit31];
+  buffer[0] = sign_lut[neg];
 """
 
 print "  buffer[%d] = '\\0';"%(length);
