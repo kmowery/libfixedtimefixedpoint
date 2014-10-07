@@ -81,9 +81,9 @@ CONVERT_DBL(many     , 1000.4    , 0x7d0cccc);
 CONVERT_DBL(many_neg , -1000.4   , 0xf82f3334);
 CONVERT_DBL(frac     , 0.5342    , 0x11180);
 CONVERT_DBL(frac_neg , -0.5342   , 0xfffeee80);
-CONVERT_DBL(inf_pos  , INFINITY  , F_INF_POS);
-CONVERT_DBL(inf_neg  , -INFINITY , F_INF_NEG);
-CONVERT_DBL(nan      , nan("0")  , F_NAN);
+CONVERT_DBL(inf_pos  , INFINITY  , FIX_INF_POS);
+CONVERT_DBL(inf_neg  , -INFINITY , FIX_INF_NEG);
+CONVERT_DBL(nan      , nan("0")  , FIX_NAN);
 /* TODO: add tests for round-to-even */
 
 #define unit_fixnum(name) unit_test(fixnum_##name)
@@ -128,9 +128,9 @@ TEST_FIXNUM(regress4 ,     1 , 9999999999999, 0x00040000);
 
 TEST_EQ(zero    , 0         , 0         , 1 , 1);
 TEST_EQ(frac    , 0x11180   , 0x11184   , 0 , 0);
-TEST_EQ(nan     , F_NAN     , F_NAN     , 0 , 1);
-TEST_EQ(inf     , F_INF_POS , F_INF_POS , 1 , 1);
-TEST_EQ(inf_neg , F_INF_NEG , F_INF_NEG , 1 , 1);
+TEST_EQ(nan     , FIX_NAN     , FIX_NAN     , 0 , 1);
+TEST_EQ(inf     , FIX_INF_POS , FIX_INF_POS , 1 , 1);
+TEST_EQ(inf_neg , FIX_INF_NEG , FIX_INF_NEG , 1 , 1);
 
 
 #define unit_round_to_even(name) unit_test(round_to_even_##name)
@@ -258,15 +258,15 @@ ADD(one_one                , 1        , 1             , 2);
 ADD(fifteen_one            , 15       , 1             , 16);
 ADD(pos_neg                , 15       , -1.5          , 13.5);
 ADD(pos_neg_cross_zero     , 15       , -18           , -3);
-ADD_CUST(overflow          , 1<<13    , 1<<13         , F_INF_POS);
-ADD_CUST(overflow_neg      , -(1<<13) , -((1<<13) +1) , F_INF_NEG);
-ADD_CUST(inf_number        , INFINITY , 1             , F_INF_POS);
-ADD_CUST(inf_neg           , INFINITY , -1            , F_INF_POS);
-ADD_CUST(nan               , nan("0") , 0             , F_NAN);
-ADD_CUST(nan_inf           , nan("0") , INFINITY      , F_NAN);
-ADD_CUST(inf_nan           , INFINITY , nan("0")      , F_NAN);
-ADD_CUST(nan_inf_neg       , nan("0") , -INFINITY     , F_NAN);
-ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , F_INF_POS);
+ADD_CUST(overflow          , 1<<13    , 1<<13         , FIX_INF_POS);
+ADD_CUST(overflow_neg      , -(1<<13) , -((1<<13) +1) , FIX_INF_NEG);
+ADD_CUST(inf_number        , INFINITY , 1             , FIX_INF_POS);
+ADD_CUST(inf_neg           , INFINITY , -1            , FIX_INF_POS);
+ADD_CUST(nan               , nan("0") , 0             , FIX_NAN);
+ADD_CUST(nan_inf           , nan("0") , INFINITY      , FIX_NAN);
+ADD_CUST(inf_nan           , INFINITY , nan("0")      , FIX_NAN);
+ADD_CUST(nan_inf_neg       , nan("0") , -INFINITY     , FIX_NAN);
+ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , FIX_INF_POS);
 // TODO: negative overflow , NaNs     , fractions
 
 #define unit_mul(name) unit_test(mul_##name)
@@ -291,20 +291,20 @@ MUL(nthree_15             , -3          , 15           ,-45);
 MUL(nthree_n15            , -3          , -15          ,45);
 MUL(three_n15             , 3           , -15          ,-45);
 MUL(frac5_15              , .5          , 15           ,7.5);
-MUL_CUST(overflow         , 1<<10       , 1<<10        ,F_INF_POS);
-MUL_CUST(inf_ten          , INFINITY    , 10           ,F_INF_POS);
-MUL_CUST(inf_neg          , INFINITY    , -10          ,F_INF_NEG);
-MUL_CUST(ninf_neg         ,  -INFINITY  , -10          ,F_INF_POS);
-MUL_CUST(neg_inf          , -10         , INFINITY     ,F_INF_NEG);
-MUL_CUST(neg_ninf         , -10         ,  -INFINITY   ,F_INF_POS);
-MUL_CUST(pos_nan          , 10          , nan("0")     ,F_NAN);
-MUL_CUST(neg_nan          , -10         , nan("0")     ,F_NAN);
-MUL_CUST(inf_nan          , INFINITY    , nan("0")     ,F_NAN);
-MUL_CUST(ninf_nan         , -INFINITY   , nan("0")     ,F_NAN);
-MUL_CUST(nan_pos          , nan("0")    , 10           ,F_NAN);
-MUL_CUST(nan_neg          , nan("0")    , -10          ,F_NAN);
-MUL_CUST(nan_inf          , nan("0")    , INFINITY     ,F_NAN);
-MUL_CUST(nan_ninf         , nan("0")    , -INFINITY    ,F_NAN);
+MUL_CUST(overflow         , 1<<10       , 1<<10        ,FIX_INF_POS);
+MUL_CUST(inf_ten          , INFINITY    , 10           ,FIX_INF_POS);
+MUL_CUST(inf_neg          , INFINITY    , -10          ,FIX_INF_NEG);
+MUL_CUST(ninf_neg         ,  -INFINITY  , -10          ,FIX_INF_POS);
+MUL_CUST(neg_inf          , -10         , INFINITY     ,FIX_INF_NEG);
+MUL_CUST(neg_ninf         , -10         ,  -INFINITY   ,FIX_INF_POS);
+MUL_CUST(pos_nan          , 10          , nan("0")     ,FIX_NAN);
+MUL_CUST(neg_nan          , -10         , nan("0")     ,FIX_NAN);
+MUL_CUST(inf_nan          , INFINITY    , nan("0")     ,FIX_NAN);
+MUL_CUST(ninf_nan         , -INFINITY   , nan("0")     ,FIX_NAN);
+MUL_CUST(nan_pos          , nan("0")    , 10           ,FIX_NAN);
+MUL_CUST(nan_neg          , nan("0")    , -10          ,FIX_NAN);
+MUL_CUST(nan_inf          , nan("0")    , INFINITY     ,FIX_NAN);
+MUL_CUST(nan_ninf         , nan("0")    , -INFINITY    ,FIX_NAN);
 
 #define unit_div(name) unit_test(div_##name)
 #define DIV_CUST(name, op1, op2, result) static void div_##name(void **state) { \
@@ -322,22 +322,22 @@ DIV(fifteen_nthree        , 15          , -3           ,-5);
 DIV(nfifteen_nthree       , -15         , -3           ,5);
 DIV(nfifteen_three        , -15         , 3            ,-5);
 DIV(fifteen_frac5         , 15          , 0.5          ,30);
-DIV_CUST(overflow         , 1<<13       , 0.1          ,F_INF_POS);
-DIV_CUST(one_zero         , 1           ,0             ,F_NAN);
-DIV_CUST(inf_zero         , INFINITY    ,0             ,F_NAN);
-DIV_CUST(zero_inf         , 0           ,INFINITY      ,F_INF_POS);
-DIV_CUST(inf_neg          , INFINITY    , -10          ,F_INF_NEG);
-DIV_CUST(ninf_neg         ,  -INFINITY  , -10          ,F_INF_POS);
-DIV_CUST(neg_inf          , -10         , INFINITY     ,F_INF_NEG);
-DIV_CUST(neg_ninf         , -10         ,  -INFINITY   ,F_INF_POS);
-DIV_CUST(pos_nan          , 10          , nan("1")     ,F_NAN);
-DIV_CUST(neg_nan          , -10         , nan("1")     ,F_NAN);
-DIV_CUST(inf_nan          , INFINITY    , nan("1")     ,F_NAN);
-DIV_CUST(ninf_nan         , -INFINITY   , nan("1")     ,F_NAN);
-DIV_CUST(nan_pos          , nan("0")    , 10           ,F_NAN);
-DIV_CUST(nan_neg          , nan("0")    , -10          ,F_NAN);
-DIV_CUST(nan_inf          , nan("0")    , INFINITY     ,F_NAN);
-DIV_CUST(nan_ninf         , nan("0")    , -INFINITY    ,F_NAN);
+DIV_CUST(overflow         , 1<<13       , 0.1          ,FIX_INF_POS);
+DIV_CUST(one_zero         , 1           ,0             ,FIX_NAN);
+DIV_CUST(inf_zero         , INFINITY    ,0             ,FIX_NAN);
+DIV_CUST(zero_inf         , 0           ,INFINITY      ,FIX_INF_POS);
+DIV_CUST(inf_neg          , INFINITY    , -10          ,FIX_INF_NEG);
+DIV_CUST(ninf_neg         ,  -INFINITY  , -10          ,FIX_INF_POS);
+DIV_CUST(neg_inf          , -10         , INFINITY     ,FIX_INF_NEG);
+DIV_CUST(neg_ninf         , -10         ,  -INFINITY   ,FIX_INF_POS);
+DIV_CUST(pos_nan          , 10          , nan("1")     ,FIX_NAN);
+DIV_CUST(neg_nan          , -10         , nan("1")     ,FIX_NAN);
+DIV_CUST(inf_nan          , INFINITY    , nan("1")     ,FIX_NAN);
+DIV_CUST(ninf_nan         , -INFINITY   , nan("1")     ,FIX_NAN);
+DIV_CUST(nan_pos          , nan("0")    , 10           ,FIX_NAN);
+DIV_CUST(nan_neg          , nan("0")    , -10          ,FIX_NAN);
+DIV_CUST(nan_inf          , nan("0")    , INFINITY     ,FIX_NAN);
+DIV_CUST(nan_ninf         , nan("0")    , -INFINITY    ,FIX_NAN);
 
 
 #define unit_neg(name) unit_test(neg_##name)
@@ -352,9 +352,9 @@ DIV_CUST(nan_ninf         , nan("0")    , -INFINITY    ,F_NAN);
 NEG(zero,    0, 0);
 NEG(one,     1, -1);
 NEG(one_neg, -1, 1);
-NEG_CUST(inf, INFINITY, F_INF_NEG);
-NEG_CUST(inf_neg, -INFINITY, F_INF_POS);
-NEG_CUST(nan, nan("0"), F_NAN);
+NEG_CUST(inf, INFINITY, FIX_INF_NEG);
+NEG_CUST(inf_neg, -INFINITY, FIX_INF_POS);
+NEG_CUST(nan, nan("0"), FIX_NAN);
 
 #define unit_abs(name) unit_test(abs_##name)
 #define ABS_CUST(name, op1, result) static void abs_##name(void **state) { \
@@ -368,9 +368,9 @@ NEG_CUST(nan, nan("0"), F_NAN);
 ABS(zero         , 0         , 0);
 ABS(one          , 1         , 1);
 ABS(one_neg      , -1        , 1);
-ABS_CUST(inf     , INFINITY  , F_INF_POS);
-ABS_CUST(inf_neg , -INFINITY , F_INF_POS);
-ABS_CUST(nan     , nan("0")  , F_NAN);
+ABS_CUST(inf     , INFINITY  , FIX_INF_POS);
+ABS_CUST(inf_neg , -INFINITY , FIX_INF_POS);
+ABS_CUST(nan     , nan("0")  , FIX_NAN);
 
 
 
@@ -384,7 +384,7 @@ ABS_CUST(nan     , nan("0")  , F_NAN);
 }
 #define LN(name, op1, val) LN_CUST(name, op1, fix_convert_double(val))
 
-LN_CUST(zero   , 0x0               , F_INF_NEG);
+LN_CUST(zero   , 0x0               , FIX_INF_NEG);
 LN_CUST(0xf0   , 0xf0              , 0xfff2020c);
 LN_CUST(0x80   , 0x80              , 0xfff22318);
 LN_CUST(0xa0   , 0xa0              , 0xfff29358);
@@ -392,9 +392,9 @@ LN_CUST(two    , FIXNUM(2,0)       , FIXNUM(0 , 69314718));
 LN_CUST(one    , FIXNUM(1,0)       , FIXNUM(0 , 0));
 LN_CUST(e      , FIX_E             , 0x0001fda8 ); // not quite FIXNUM(1 , 0), but close
 LN_CUST(ten    , FIXNUM(10,0)      , 0x000498ec ); // not quite FIXNUM(2 , 30258509), but close
-LN_CUST(inf    , F_INF_POS         , F_INF_POS);
-LN_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
-LN_CUST(nan    , F_NAN             , F_NAN);
+LN_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
+LN_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
+LN_CUST(nan    , FIX_NAN           , FIX_NAN);
 
 
 #define unit_log2(name) unit_test(log2_##name)
@@ -406,7 +406,7 @@ LN_CUST(nan    , F_NAN             , F_NAN);
 }
 #define LOG2(name, op1, val) LOG2_CUST(name, op1, fix_convert_double(val))
 
-LOG2_CUST(zero   , 0x0               , F_INF_NEG);
+LOG2_CUST(zero   , 0x0               , FIX_INF_NEG);
 LOG2_CUST(0xf0   , 0xf0              , 0xffebd050);
 LOG2_CUST(0x80   , 0x80              , 0xffec0000);
 LOG2_CUST(0xa0   , 0xa0              , 0xffeca29c);
@@ -414,9 +414,9 @@ LOG2_CUST(one    , FIXNUM(1,0)       , FIXNUM(0 , 0));
 LOG2_CUST(two    , FIXNUM(2,0)       , FIXNUM(1 , 0));
 LOG2_CUST(e      , FIX_E             , 0x0002e064 ); // not quite 1.4426 but close
 LOG2_CUST(ten    , FIXNUM(10,0)      , 0x0006a29c ); // not quite 3.3219 but close
-LOG2_CUST(inf    , F_INF_POS         , F_INF_POS);
-LOG2_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
-LOG2_CUST(nan    , F_NAN             , F_NAN);
+LOG2_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
+LOG2_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
+LOG2_CUST(nan    , FIX_NAN           , FIX_NAN);
 
 
 #define unit_sqrt(name) unit_test(sqrt_##name)
@@ -436,9 +436,9 @@ SQRT_CUST(e      , FIX_E             , FIXNUM(1,648712) );
 SQRT_CUST(ten    , FIXNUM(10,0)      , FIXNUM(3,162262) ); // not precisely sqrt(10) but so close
 SQRT_CUST(big    , FIXNUM(10000,5345), FIXNUM(100,002655) );
 SQRT_CUST(max    , FIX_MAX           , FIXNUM(128,0) );
-SQRT_CUST(inf    , F_INF_POS         , F_INF_POS);
-SQRT_CUST(neg    , FIXNUM(-1,0)      , F_NAN);
-SQRT_CUST(nan    , F_NAN             , F_NAN);
+SQRT_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
+SQRT_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
+SQRT_CUST(nan    , FIX_NAN           , FIX_NAN);
 
 
 // To print out all sins:
@@ -483,9 +483,9 @@ SIN_CUST(neg_pi    , fix_neg(FIX_PI)                                            
 SIN_CUST(neg_pi3_2 , fix_neg(fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0))) , 0x1fffc);
 SIN_CUST(neg_pi2   , fix_neg(fix_mul(FIX_PI, FIXNUM(2,0)))                       , 0xfffffffc);
 
-SIN_CUST(inf_pos   , F_INF_POS                          , F_INF_POS);
-SIN_CUST(inf_neg   , F_INF_NEG                          , F_INF_NEG);
-SIN_CUST(nan       , F_NAN                              , F_NAN);
+SIN_CUST(inf_pos   , FIX_INF_POS                          , FIX_INF_POS);
+SIN_CUST(inf_neg   , FIX_INF_NEG                          , FIX_INF_NEG);
+SIN_CUST(nan       , FIX_NAN                              , FIX_NAN);
 
 
 int main(int argc, char** argv) {

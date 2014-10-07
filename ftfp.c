@@ -16,7 +16,7 @@ fixed fix_neg(fixed op1){
   isnan = FIX_IS_NAN(op1);
 
   // 2s comp negate the data bits
-  tempresult = DATA_BITS(((~op1) + 4));
+  tempresult = FIX_DATA_BITS(((~op1) + 4));
 
   //TODO: Check overflow? other issues?
 
@@ -25,7 +25,7 @@ fixed fix_neg(fixed op1){
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
     FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    DATA_BITS(tempresult);
+    FIX_DATA_BITS(tempresult);
 }
 
 fixed fix_abs(fixed op1){
@@ -37,12 +37,12 @@ fixed fix_abs(fixed op1){
   isinfneg = FIX_IS_INF_NEG(op1);
   isnan = FIX_IS_NAN(op1);
 
-  fixed tempresult = MASK_UNLESS(TOP_BIT(~op1), op1) |
-    MASK_UNLESS(  TOP_BIT(op1), DATA_BITS(((~op1) + 4)));
+  fixed tempresult = MASK_UNLESS(FIX_TOP_BIT(~op1), op1) |
+    MASK_UNLESS(  FIX_TOP_BIT(op1), FIX_DATA_BITS(((~op1) + 4)));
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS((isinfpos | isinfneg) & (!isnan)) |
-    DATA_BITS(tempresult);
+    FIX_DATA_BITS(tempresult);
 }
 
 fixed fix_sub(fixed op1, fixed op2) {
@@ -69,8 +69,8 @@ fixed fix_div(fixed op1, fixed op2) {
 
   // Take advantage of the extra bits we get out from doing this in uint64_t
   // op2 is never allowed to be 0, if it is set it to something like 1 so div doesn't fall over
-  op2nz = op2 | (DATA_BITS(op2) == 0);
-  tmp = ROUND_TO_EVEN(((FIX_SIGN_TO_64(DATA_BITS(op1))<<32) /
+  op2nz = op2 | (FIX_DATA_BITS(op2) == 0);
+  tmp = ROUND_TO_EVEN(((FIX_SIGN_TO_64(FIX_DATA_BITS(op1))<<32) /
                        FIX_SIGN_TO_64(op2nz)),17)<<2;
 
   tmp2 = tmp & 0xFFFFFFFF00000000;
@@ -93,7 +93,7 @@ fixed fix_div(fixed op1, fixed op2) {
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
     FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    DATA_BITS(tempresult);
+    FIX_DATA_BITS(tempresult);
 }
 
 
@@ -142,7 +142,7 @@ fixed fix_mul(fixed op1, fixed op2) {
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
     FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    DATA_BITS(tempresult);
+    FIX_DATA_BITS(tempresult);
 }
 
 
@@ -164,12 +164,12 @@ fixed fix_add(fixed op1, fixed op2) {
   // 'negative' number:
   //   if both inputs are positive (top bit == 0) and the result is 'negative'
   //   (top bit nonzero)
-  isinfpos |= (TOP_BIT(op1) | TOP_BIT(op2)) ==
-    0x0 && (TOP_BIT(tempresult) != 0x0);
+  isinfpos |= (FIX_TOP_BIT(op1) | FIX_TOP_BIT(op2)) ==
+    0x0 && (FIX_TOP_BIT(tempresult) != 0x0);
 
   // check if there's negative infinity overflow
-  isinfneg |= (TOP_BIT(op1) & TOP_BIT(op2)) ==
-    TOP_BIT_MASK && (TOP_BIT(tempresult) == 0x0);
+  isinfneg |= (FIX_TOP_BIT(op1) & FIX_TOP_BIT(op2)) ==
+    FIX_TOP_BIT_MASK && (FIX_TOP_BIT(tempresult) == 0x0);
 
   // Force infpos to win in cases where it is unclear
   isinfneg &= !isinfpos;
@@ -179,7 +179,7 @@ fixed fix_add(fixed op1, fixed op2) {
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
     FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    DATA_BITS(tempresult);
+    FIX_DATA_BITS(tempresult);
 }
 
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
@@ -215,7 +215,7 @@ fixed fix_ln(fixed op1) {
   m -= (1 << 28);
 
   fixed ln2 = 0x000162e4; // python: "0x%08x"%(math.log(2) * 2**17)
-  fixed nln2 = ln2 * (log2 - n_frac_bits - n_flag_bits); // correct for nonsense
+  fixed nln2 = ln2 * (log2 - FIX_FRAC_BITS - FIX_FLAG_BITS); // correct for nonsense
     // we want this to go negative for numbers < 1.
 
   // now, calculate ln(1+m):
@@ -235,13 +235,13 @@ fixed fix_ln(fixed op1) {
         + c994946)
       + c0022683);
 
-  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - n_frac_bits - n_flag_bits);
+  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - FIX_FRAC_BITS - FIX_FLAG_BITS);
   tempresult += nln2 - 0x128; // adjustment constant for when log should be 0
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    DATA_BITS(tempresult);
+    FIX_DATA_BITS(tempresult);
 }
 
 
@@ -276,7 +276,7 @@ fixed fix_log2(fixed op1) {
   // and then shift down by '1'. (1.28 bits of zero)
   m -= (1 << 28);
 
-  fixed n = (log2 - n_frac_bits - n_flag_bits) << (n_frac_bits + n_flag_bits);
+  fixed n = (log2 - FIX_FRAC_BITS - FIX_FLAG_BITS) << (FIX_FRAC_BITS + FIX_FLAG_BITS);
 
   // octave:31> x = -0.5:1/10000:0.5;
   // octave:32> polyfit( x, log2(x+1), 3)
@@ -302,13 +302,13 @@ fixed fix_log2(fixed op1) {
         + c14371765)
       + c0023697);
 
-  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - n_frac_bits - n_flag_bits);
+  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - FIX_FRAC_BITS - FIX_FLAG_BITS);
   tempresult += n - 0x134; // adjustment constant for when log should be 0
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    DATA_BITS(tempresult);
+    FIX_DATA_BITS(tempresult);
 }
 
 fixed fix_sqrt(fixed op1) {
@@ -340,9 +340,9 @@ fixed fix_sqrt(fixed op1) {
   //log2 is now log2(op1), considered as a uint32_t
 
   // Make a guess! Use log2(op1) if op1 > 2, otherwise just uhhhh mul op1 by 2.
-  int64_t x = MASK_UNLESS(op1 >= (1<<(n_frac_bits + n_flag_bits+1)),
-                           FIXINT(log2 - (n_flag_bits + n_frac_bits))) |
-               MASK_UNLESS(op1 < (1<<(n_frac_bits + n_flag_bits+1)),
+  int64_t x = MASK_UNLESS(op1 >= (1<<(FIX_FRAC_BITS + FIX_FLAG_BITS+1)),
+                           FIXINT(log2 - (FIX_FLAG_BITS + FIX_FRAC_BITS))) |
+               MASK_UNLESS(op1 < (1<<(FIX_FRAC_BITS + FIX_FLAG_BITS+1)),
                            op1 << 1);
 
 
@@ -384,7 +384,7 @@ fixed fix_sqrt(fixed op1) {
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    DATA_BITS(x & 0xffffffff);
+    FIX_DATA_BITS(x & 0xffffffff);
 }
 
 fixed fix_sin(fixed op1) {
@@ -459,7 +459,7 @@ fixed fix_sin(fixed op1) {
    *
    */
 
-  int64_t big_op = ((int64_t) ((int32_t) DATA_BITS(op1))) << 32;
+  int64_t big_op = ((int64_t) ((int32_t) FIX_DATA_BITS(op1))) << 32;
   int32_t big_tau = 0x3243f6;  // in python: "0x%x"%(math.floor((math.pi / 2) * 2**21))
   int32_t circle_frac = (big_op / big_tau) & 0x3fffffff;
   uint32_t top_bits_differ = ((circle_frac >> 28) & 0x1) ^ ((circle_frac >> 29) & 0x1);
@@ -481,9 +481,9 @@ fixed fix_sin(fixed op1) {
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
     FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    DATA_BITS(SIGN_EXTEND(
-          result >> (30 - n_frac_bits - n_flag_bits),
-          (32 - (30 - n_frac_bits - n_flag_bits ) /* 19 */ )));
+    FIX_DATA_BITS(SIGN_EXTEND(
+          result >> (30 - FIX_FRAC_BITS - FIX_FLAG_BITS),
+          (32 - (30 - FIX_FRAC_BITS - FIX_FLAG_BITS ) /* 19 */ )));
 
 #undef MUL_2x28
 }
@@ -506,7 +506,7 @@ void fix_print(char* buffer, fixed f) {
     return;
   }
 
-  uint8_t neg = !!TOP_BIT(f);
+  uint8_t neg = !!FIX_TOP_BIT(f);
 
   if(neg) {
     f_ = ~f_ + 4;
@@ -530,11 +530,11 @@ fixed fix_convert_double(double d) {
   /* note that this breaks with denorm numbers. However, we'll shift those all
    * away with the exponent later */
   uint64_t mantissa = (bits & ((1ull <<52)-1)) | (d != 0 ? (1ull<<52) : 0);
-  uint32_t shift = 52 - (n_frac_bits) - exponent;
+  uint32_t shift = 52 - (FIX_FRAC_BITS) - exponent;
 
-  fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << n_flag_bits) & 0xffffffff;
+  fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << FIX_FLAG_BITS) & 0xffffffff;
 
-  uint8_t isinf = (isinf(d) || ((mantissa >> shift) & ~((1ull << (n_frac_bits + n_int_bits)) -1)) != 0);
+  uint8_t isinf = (isinf(d) || ((mantissa >> shift) & ~((1ull << (FIX_FRAC_BITS + FIX_INT_BITS)) -1)) != 0);
   uint8_t isinfpos = (d > 0) & isinf;
   uint8_t isinfneg = (d < 0) & isinf;
   uint8_t isnan = isnan(d);
@@ -545,6 +545,6 @@ fixed fix_convert_double(double d) {
     FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    MASK_UNLESS(sign == 0, DATA_BITS(result)) |
-    MASK_UNLESS(sign, DATA_BITS(result_neg));
+    MASK_UNLESS(sign == 0, FIX_DATA_BITS(result)) |
+    MASK_UNLESS(sign, FIX_DATA_BITS(result_neg));
 }

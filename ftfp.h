@@ -8,23 +8,23 @@
 
 typedef uint32_t fixed;
 
-#define FLAGS_MASK 0x3
-#define F_NORMAL   0x0
-#define F_NAN      0x1
-#define F_INF_POS  0x2
-#define F_INF_NEG  0x3
+#define FIX_FLAGS_MASK 0x3
+#define FIX_NORMAL   0x0
+#define FIX_NAN      0x1
+#define FIX_INF_POS  0x2
+#define FIX_INF_NEG  0x3
 
-#define n_flag_bits 2
-#define n_frac_bits 15
-#define n_int_bits  15
+#define FIX_FLAG_BITS 2
+#define FIX_FRAC_BITS 15
+#define FIX_INT_BITS  15
 
-#define ALL_BIT_MASK 0xffffffff
+#define FIX_ALL_BIT_MASK 0xffffffff
 
-#define TOP_BIT_MASK (1<<31)
-#define TOP_BIT(f) (f & TOP_BIT_MASK)
+#define FIX_TOP_BIT_MASK (1<<31)
+#define FIX_TOP_BIT(f) (f & FIX_TOP_BIT_MASK)
 
-#define FRAC_MASK (((1<<n_frac_bits)-1) << n_flag_bits)
-#define INT_MASK  (((1<<n_int_bits)-1) << (n_flag_bits + n_frac_bits))
+#define FIX_FRAC_MASK (((1<<FIX_FRAC_BITS)-1) << FIX_FLAG_BITS)
+#define FIX_INT_MASK  (((1<<FIX_INT_BITS)-1) << (FIX_FLAG_BITS + FIX_FRAC_BITS))
 
 #define FIX_SIGN_TO_64(f) ((int64_t)((int32_t)(f)))
 
@@ -32,18 +32,18 @@ typedef uint32_t fixed;
 #define SIGN_EX_SHIFT_RIGHT_32(value, shift) SIGN_EXTEND( (value) >> (shift), 32 - (shift) )
 #define MASK_UNLESS(expression, value) (SIGN_EXTEND(!!(expression), 1) & (value))
 
-#define DATA_BIT_MASK (0xFFFFFFFC)
-#define DATA_BITS(f) (f & DATA_BIT_MASK)
+#define FIX_DATA_BIT_MASK (0xFFFFFFFC)
+#define FIX_DATA_BITS(f) (f & FIX_DATA_BIT_MASK)
 
-#define FIX_IS_NEG(f) ((TOP_BIT(f)) == TOP_BIT_MASK)
+#define FIX_IS_NEG(f) ((FIX_TOP_BIT(f)) == FIX_TOP_BIT_MASK)
 
-#define FIX_IS_NAN(f) ((f&FLAGS_MASK) == F_NAN)
-#define FIX_IS_INF_POS(f) ((f&FLAGS_MASK) == F_INF_POS)
-#define FIX_IS_INF_NEG(f) ((f&FLAGS_MASK) == F_INF_NEG)
+#define FIX_IS_NAN(f) ((f&FIX_FLAGS_MASK) == FIX_NAN)
+#define FIX_IS_INF_POS(f) ((f&FIX_FLAGS_MASK) == FIX_INF_POS)
+#define FIX_IS_INF_NEG(f) ((f&FIX_FLAGS_MASK) == FIX_INF_NEG)
 
-#define FIX_IF_NAN(isnan) (((isnan) | ((isnan) << 1)) & F_NAN)
-#define FIX_IF_INF_POS(isinfpos) (((isinfpos) | ((isinfpos) << 1)) & F_INF_POS)
-#define FIX_IF_INF_NEG(isinfneg) (((isinfneg) | ((isinfneg) << 1)) & F_INF_NEG)
+#define FIX_IF_NAN(isnan) (((isnan) | ((isnan) << 1)) & FIX_NAN)
+#define FIX_IF_INF_POS(isinfpos) (((isinfpos) | ((isinfpos) << 1)) & FIX_INF_POS)
+#define FIX_IF_INF_NEG(isinfneg) (((isinfneg) | ((isinfneg) << 1)) & FIX_INF_NEG)
 
 /* Returns true if the numbers are equal (NaNs are always unequal.) */
 #define FIX_EQ(op1, op2) ( \
@@ -62,7 +62,7 @@ typedef uint32_t fixed;
 #define FIX_CMP(op1, op2) ({ \
       uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2)); \
       uint32_t gt = 0, lt = 0, pos1 = 0, pos2 = 0, cmp_gt = 0, cmp_lt = 0; \
-      pos1 = !TOP_BIT(op1); pos2 = !TOP_BIT(op2); \
+      pos1 = !FIX_TOP_BIT(op1); pos2 = !FIX_TOP_BIT(op2); \
       gt = (FIX_IS_INF_POS(op1) && !FIX_IS_INF_POS(op2)) | (!FIX_IS_INF_NEG(op1) && FIX_IS_INF_NEG(op2)); \
       lt = (!FIX_IS_INF_POS(op1) && FIX_IS_INF_POS(op2)) | (FIX_IS_INF_NEG(op1) && !FIX_IS_INF_NEG(op2)); \
       gt |= (pos1 && !pos2); \
@@ -75,8 +75,6 @@ typedef uint32_t fixed;
         (cmp_gt && !(gt | lt | nans) ? 1 : 0) | \
         (cmp_lt && !(gt|lt|nans) ? -1 : 0)); \
        (result); })
-
-#define FIXINT(z) ((z)<<(n_flag_bits+n_frac_bits))
 
 /* Lops off the rightmost n_shift_bits of value and rounds to an even value
  * (so 0.5 will round to 0, but 1.5 will round to 2)
@@ -116,7 +114,7 @@ typedef uint32_t fixed;
  *  Along with extra precision bits and rounding to get as close as possible. It
  *  actually looks more like, with rounding tacked on:
  *
- *   (((1<<(n_frac_bits+15)) / ((int) pow(10, log_ceil))) * frac >> 15) << n_flag_bits;
+ *   (((1<<(FIX_FRAC_BITS+15)) / ((int) pow(10, log_ceil))) * frac >> 15) << FIX_FLAG_BITS;
  *
  * Notes:
  *   This works fairly well, and should always give the fixed point that is
@@ -132,33 +130,27 @@ typedef uint32_t fixed;
 #define FIXFRAC(frac) ({ \
     uint32_t bits = 4; \
     uint64_t log_ceil = ((uint64_t) strlen( #frac )); \
-    uint64_t one = 1ULL << (n_frac_bits + bits); \
+    uint64_t one = 1ULL << (FIX_FRAC_BITS + bits); \
     uint64_t p = (uint64_t) pow(10, log_ceil); \
     uint64_t frac_int =  1 ## frac - ((int64_t) pow(10, log_ceil)); \
     uint64_t n = (frac_int * one) / p; \
-    ((ROUND_TO_EVEN(n, bits)) << n_flag_bits); \
+    ((ROUND_TO_EVEN(n, bits)) << FIX_FLAG_BITS); \
     })
+
+#define FIXINT(z) ((z)<<(FIX_FLAG_BITS+FIX_FRAC_BITS))
 
 #define FIXNUM(i,frac) ({fixed f = (FIXINT(abs(i)) + FIXFRAC(frac)); \
     ( MASK_UNLESS((#i[0] == '-') | (i < 0), fix_neg(f)) | \
       MASK_UNLESS((#i[0] != '-') | (i > 0), f) ); })
 
-#define EXTEND_BIT_32(b) ({ uint32_t v = b; \
-  v |= v << 1; \
-  v |= v << 2; \
-  v |= v << 4; \
-  v |= v << 8; \
-  v |= v << 16; \
-  v; })
+#define FIX_PI      FIXNUM(3,14159265359)
+#define FIX_TAU     FIXNUM(6,28318530718)
+#define FIX_E       FIXNUM(2,71828182846)
+#define FIX_EPSILON ((fixed) (1 << FIX_FLAG_BITS))
+#define FIX_ZERO    0
 
-#define FIX_PI  FIXNUM(3,14159265359)
-#define FIX_TAU FIXNUM(6,28318530718)
-#define FIX_E   FIXNUM(2,71828182846)
-#define FIX_EPSILON ((fixed) (1 << n_flag_bits))
-#define FIX_ZERO 0
-
-#define FIX_MAX 0x7ffffffc
-#define FIX_MIN 0x80000000
+#define FIX_MAX     0x7ffffffc
+#define FIX_MIN     0x80000000
 
 /* TODO: handle infinity and nan properly in rounding methods */
 
@@ -167,7 +159,7 @@ typedef uint32_t fixed;
     uint32_t nan = SIGN_EXTEND(FIX_IS_NAN(op1), 1); \
     uint32_t infpos = SIGN_EXTEND(FIX_IS_INF_POS(op1), 1); \
     uint32_t infneg = SIGN_EXTEND(FIX_IS_INF_NEG(op1), 1); \
-    uint32_t result = SIGN_EXTEND(ROUND_TO_EVEN(op1, n_flag_bits + n_frac_bits), n_int_bits); \
+    uint32_t result = SIGN_EXTEND(ROUND_TO_EVEN(op1, FIX_FLAG_BITS + FIX_FRAC_BITS), FIX_INT_BITS); \
     ((~nan) & ((INT_MAX & infpos) | (INT_MIN & infneg) | ( ~(nan | infpos | infneg) & result))); \
     })
 
@@ -176,7 +168,7 @@ typedef uint32_t fixed;
     uint32_t nan = SIGN_EXTEND(FIX_IS_NAN(op1), 1); \
     uint32_t infpos = SIGN_EXTEND(FIX_IS_INF_POS(op1), 1); \
     uint32_t infneg = SIGN_EXTEND(FIX_IS_INF_NEG(op1), 1); \
-    uint32_t result = SIGN_EXTEND(((op1) >> (n_flag_bits + n_frac_bits)) + (op1 >> (n_flag_bits + n_frac_bits-1) & 0x1), n_int_bits); \
+    uint32_t result = SIGN_EXTEND(((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)) + (op1 >> (FIX_FLAG_BITS + FIX_FRAC_BITS-1) & 0x1), FIX_INT_BITS); \
     ((~nan) & ((INT_MAX & infpos) | (INT_MIN & infneg) | ( ~(nan | infpos | infneg) & result))); \
     })
 
@@ -184,7 +176,7 @@ typedef uint32_t fixed;
     uint32_t nan = SIGN_EXTEND(FIX_IS_NAN(op1), 1); \
     uint32_t infpos = SIGN_EXTEND(FIX_IS_INF_POS(op1), 1); \
     uint32_t infneg = SIGN_EXTEND(FIX_IS_INF_NEG(op1), 1); \
-    uint32_t result = SIGN_EXTEND(((op1) >> (n_flag_bits + n_frac_bits)) + !!(op1 & FRAC_MASK), n_int_bits); \
+    uint32_t result = SIGN_EXTEND(((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)) + !!(op1 & FIX_FRAC_MASK), FIX_INT_BITS); \
     ((~nan) & ((INT_MAX & infpos) | (INT_MIN & infneg) | ( ~(nan | infpos | infneg) & result))); \
     })
 
@@ -192,13 +184,12 @@ typedef uint32_t fixed;
     uint32_t nan = SIGN_EXTEND(FIX_IS_NAN(op1), 1); \
     uint32_t infpos = SIGN_EXTEND(FIX_IS_INF_POS(op1), 1); \
     uint32_t infneg = SIGN_EXTEND(FIX_IS_INF_NEG(op1), 1); \
-    uint32_t result = SIGN_EXTEND(((op1) >> (n_flag_bits + n_frac_bits)), n_int_bits); \
+    uint32_t result = SIGN_EXTEND(((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)), FIX_INT_BITS); \
     ((~nan) & ((INT_MAX & infpos) | (INT_MIN & infneg) | ( ~(nan | infpos | infneg) & result))); \
     })
 
 fixed fix_neg(fixed op1);
 fixed fix_abs(fixed op1);
-
 
 fixed fix_add(fixed op1, fixed op2);
 fixed fix_sub(fixed op1, fixed op2);
@@ -213,7 +204,6 @@ fixed fix_sqrt(fixed op1);
 fixed fix_sin(fixed op1);
 
 fixed fix_convert_double(double d);
-
 
 void fix_print(char* buffer, fixed f);
 
