@@ -488,6 +488,36 @@ SIN_CUST(inf_neg   , FIX_INF_NEG                          , FIX_INF_NEG);
 SIN_CUST(nan       , FIX_NAN                              , FIX_NAN);
 
 
+#define unit_print(name) unit_test(print_##name)
+#define PRINT_CUST(name, op1, result) static void print_##name(void **state) { \
+  fixed o1 = op1; \
+  char buf[23]; \
+  fix_print_const(buf, o1); \
+  char* expected = result; \
+  if(strcmp(buf, expected))  { \
+    printf("Strings not equal: '%s' != '%s'\n", buf, expected); \
+    fix_print(buf, o1); \
+    printf("I should have expected: '%s'\n", buf); \
+  } \
+  assert_memory_equal(buf, expected, 23); \
+}
+
+PRINT_CUST(zero    , 0x0               , " 00000.000000000000000");
+PRINT_CUST(half    , FIXNUM(0,5)       , " 00000.500000000000000");
+PRINT_CUST(half_neg, FIXNUM(-0,5)      , "-00000.500000000000000");
+PRINT_CUST(one     , FIXNUM(1,0)       , " 00001.000000000000000");
+PRINT_CUST(one_neg , FIXNUM(-1,0)      , "-00001.000000000000000");
+PRINT_CUST(two     , FIXNUM(2,0)       , " 00002.000000000000000");
+PRINT_CUST(e       , FIX_E             , " 00002.718292236328125");
+PRINT_CUST(e_neg   , fix_neg(FIX_E)    , "-00002.718292236328125");
+PRINT_CUST(ten     , FIXNUM(10,0)      , " 00010.000000000000000");
+PRINT_CUST(big     , FIXNUM(10000,5345), " 10000.534484863281250");
+PRINT_CUST(max     , FIX_MAX           , " 16383.999969482421875");
+PRINT_CUST(inf     , FIX_INF_POS       , " Inf                  ");
+PRINT_CUST(inf_neg , FIX_INF_NEG       , "-Inf                  ");
+PRINT_CUST(nan     , FIX_NAN           , " NaN                  ");
+
+
 int main(int argc, char** argv) {
 
   const UnitTest tests[] = {
@@ -726,6 +756,21 @@ int main(int argc, char** argv) {
     unit_sin(inf_pos),
     unit_sin(inf_neg),
     unit_sin(nan),
+
+    unit_print(zero),
+    unit_print(half),
+    unit_print(half_neg),
+    unit_print(one),
+    unit_print(one_neg),
+    unit_print(two),
+    unit_print(e),
+    unit_print(e_neg),
+    unit_print(ten),
+    unit_print(big),
+    unit_print(max),
+    unit_print(inf),
+    unit_print(inf_neg),
+    unit_print(nan),
   };
 
   return run_tests(tests);
