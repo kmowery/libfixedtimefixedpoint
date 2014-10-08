@@ -160,8 +160,8 @@ TEST_ROUND_TO_EVEN(eight      , 0x10 , 0x3 , 0x2);
 TEST_ROUND_TO_EVEN(eight_plus , 0x10 , 0x3 , 0x2);
 
 #define unit_rounding(name) unit_test(rounding_##name)
-#define TEST_ROUNDING(name, value, res_even, res_up, res_ceil, res_floor) static void rounding_##name(void **state) { \
-  fixed input = fix_convert_double(value); \
+#define TEST_ROUNDING_CUST(name, value, res_even, res_up, res_ceil, res_floor) static void rounding_##name(void **state) { \
+  fixed input = value; \
   int32_t round_even  = FIX_ROUND_INT(input); \
   int32_t round_up    = FIX_ROUND_UP_INT(input); \
   int32_t round_ceil  = FIX_CEIL(input); \
@@ -175,6 +175,8 @@ TEST_ROUND_TO_EVEN(eight_plus , 0x10 , 0x3 , 0x2);
   CHECK_INT_EQUAL("ceiling"       , round_ceil  , exp_ceil); \
   CHECK_INT_EQUAL("floor"         , round_floor , exp_floor); \
 }
+#define TEST_ROUNDING(name, value, res_even, res_up, res_ceil, res_floor)  \
+ TEST_ROUNDING_CUST(name, fix_convert_double(value), res_even, res_up, res_ceil, res_floor)
 
 /*            Name       Value       Even      Up        Ceil      Down */
 TEST_ROUNDING(zero     , 0         , 0       , 0       , 0       , 0);
@@ -191,6 +193,8 @@ TEST_ROUNDING(one3_neg , -1.3      , -1      , -1      , -1      , -2);
 TEST_ROUNDING(one5_neg , -1.5      , -2      , -1      , -1      , -2);
 TEST_ROUNDING(two3_neg , -2.3      , -2      , -2      , -2      , -3);
 TEST_ROUNDING(two5_neg , -2.5      , -2      , -2      , -2      , -3);
+TEST_ROUNDING_CUST(max , FIX_MAX   , 16384   , 16384   , 16384   , 16383);
+TEST_ROUNDING_CUST(min , FIX_MIN   ,-16384   ,-16384   ,-16384   ,-16384);
 TEST_ROUNDING(nan      , NaN       , 0       , 0       , 0       , 0);
 TEST_ROUNDING(inf      , INFINITY  , INT_MAX , INT_MAX , INT_MAX , INT_MAX);
 TEST_ROUNDING(inf_neg  , -INFINITY , INT_MIN , INT_MIN , INT_MIN , INT_MIN);
@@ -621,6 +625,8 @@ int main(int argc, char** argv) {
     unit_rounding(one5_neg),
     unit_rounding(two3_neg),
     unit_rounding(two5_neg),
+    unit_rounding(max),
+    unit_rounding(min),
     unit_rounding(nan),
     unit_rounding(inf),
     unit_rounding(inf_neg),

@@ -152,41 +152,38 @@ typedef uint32_t fixed;
 #define FIX_MAX     0x7ffffffc
 #define FIX_MIN     0x80000000
 
-/* TODO: handle infinity and nan properly in rounding methods */
+/* We do this stupid nosign thing to prevent FIX_MAX from rolling over into the
+ * negative. It 'rounds' to FIX_MAX + 1 == FIX_MIN, which causes trouble.
+ * There's gotta be a better way... */
+
+#define FIX_ROUND_BASE(op1, round_exp) ({ \
+    uint8_t isinfpos = FIX_IS_INF_POS(op1); \
+    uint8_t isinfneg = FIX_IS_INF_NEG(op1); \
+    uint8_t isnan = FIX_IS_NAN(op1); \
+    uint8_t isneg = FIX_IS_NEG(op1); \
+    uint8_t ex = isinfpos | isinfneg | isnan; \
+    uint32_t result_nosign = round_exp; \
+    uint32_t result = SIGN_EXTEND(result_nosign, FIX_INT_BITS); \
+    (MASK_UNLESS(isinfpos, INT_MAX) | \
+     MASK_UNLESS(isinfneg, INT_MIN) | \
+     MASK_UNLESS(isneg  & !ex, result) | \
+     MASK_UNLESS(!isneg & !ex, result_nosign)); \
+    })
 
 /* Uses round to even semantics */
-#define FIX_ROUND_INT(op1) ({\
-    uint32_t nan = SIGN_EXTEND(FIX_IS_NAN(op1), 1); \
-    uint32_t infpos = SIGN_EXTEND(FIX_IS_INF_POS(op1), 1); \
-    uint32_t infneg = SIGN_EXTEND(FIX_IS_INF_NEG(op1), 1); \
-    uint32_t result = SIGN_EXTEND(ROUND_TO_EVEN(op1, FIX_FLAG_BITS + FIX_FRAC_BITS), FIX_INT_BITS); \
-    ((~nan) & ((INT_MAX & infpos) | (INT_MIN & infneg) | ( ~(nan | infpos | infneg) & result))); \
-    })
+#define FIX_ROUND_INT(op1) \
+    FIX_ROUND_BASE(op1, ROUND_TO_EVEN(op1, FIX_FLAG_BITS + FIX_FRAC_BITS))
 
 /* 0.5 rounds up always */
-#define FIX_ROUND_UP_INT(op1)  ({ \
-    uint32_t nan = SIGN_EXTEND(FIX_IS_NAN(op1), 1); \
-    uint32_t infpos = SIGN_EXTEND(FIX_IS_INF_POS(op1), 1); \
-    uint32_t infneg = SIGN_EXTEND(FIX_IS_INF_NEG(op1), 1); \
-    uint32_t result = SIGN_EXTEND(((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)) + (op1 >> (FIX_FLAG_BITS + FIX_FRAC_BITS-1) & 0x1), FIX_INT_BITS); \
-    ((~nan) & ((INT_MAX & infpos) | (INT_MIN & infneg) | ( ~(nan | infpos | infneg) & result))); \
-    })
+#define FIX_ROUND_UP_INT(op1) \
+  FIX_ROUND_BASE(op1, (((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)) + (op1 >> (FIX_FLAG_BITS + FIX_FRAC_BITS-1) & 0x1)))
 
-#define FIX_CEIL(op1)  ({ \
-    uint32_t nan = SIGN_EXTEND(FIX_IS_NAN(op1), 1); \
-    uint32_t infpos = SIGN_EXTEND(FIX_IS_INF_POS(op1), 1); \
-    uint32_t infneg = SIGN_EXTEND(FIX_IS_INF_NEG(op1), 1); \
-    uint32_t result = SIGN_EXTEND(((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)) + !!(op1 & FIX_FRAC_MASK), FIX_INT_BITS); \
-    ((~nan) & ((INT_MAX & infpos) | (INT_MIN & infneg) | ( ~(nan | infpos | infneg) & result))); \
-    })
+#define FIX_CEIL(op1) \
+  FIX_ROUND_BASE(op1, ((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)) + !!(op1 & FIX_FRAC_MASK))
 
-#define FIX_FLOOR(op1) ({ \
-    uint32_t nan = SIGN_EXTEND(FIX_IS_NAN(op1), 1); \
-    uint32_t infpos = SIGN_EXTEND(FIX_IS_INF_POS(op1), 1); \
-    uint32_t infneg = SIGN_EXTEND(FIX_IS_INF_NEG(op1), 1); \
-    uint32_t result = SIGN_EXTEND(((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)), FIX_INT_BITS); \
-    ((~nan) & ((INT_MAX & infpos) | (INT_MIN & infneg) | ( ~(nan | infpos | infneg) & result))); \
-    })
+#define FIX_FLOOR(op1) \
+  FIX_ROUND_BASE(op1, ((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)))
+
 
 fixed fix_neg(fixed op1);
 fixed fix_abs(fixed op1);
