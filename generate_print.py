@@ -66,7 +66,7 @@ print "\n".join(["  uint32_t bit%d = (((f) >> (%d))&1);"%(i,i) for i in range(2,
 for position in reversed(range(frac_loc, frac_loc+frac_chars)):
     poly = poly_for(position)
     print "  scratch = %s + carry;"%(poly)
-    print "  buffer[%d] = number_lut[((scratch %% 10) * (1-isinfpos) * (1-isinfneg) * (1-isnan)) + (excep * 16)];"%(position), "carry = scratch / 10;"
+    print "  buffer[%d] = number_lut[((scratch %% 10) * (1-excep)) + (excep * 16)];"%(position), "carry = scratch / 10;"
 
 print
 print "  buffer[%d] = number_lut[excep*16 + (1-excep)*10];"%(point_loc)
@@ -81,7 +81,7 @@ extra_polynomials = {
 for position in reversed(range(int_loc,int_loc+int_chars)):
     poly = poly_for(position)
     print "  scratch = %s + carry;"%(poly)
-    print "  buffer[%d] = number_lut[((scratch %% 10) * (1-isinfpos) * (1-isinfneg) * (1-isnan)) %s];"%(position,
+    print "  buffer[%d] = number_lut[((scratch %% 10) * (1-excep)) %s];"%(position,
         extra_polynomials.get(position, "+ (excep * 16)")), "carry = scratch / 10;"
 
 print """
