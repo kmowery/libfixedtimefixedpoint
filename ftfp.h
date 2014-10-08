@@ -6,6 +6,20 @@
 #include <string.h>
 #include <math.h>
 
+/*
+ * TODO:
+ * exp
+ * log10
+ *
+ * fixed floor
+ * fixed ceil
+ *
+ * cos / arccos
+ * tan / arctan
+ * arcsin
+ */
+
+
 typedef uint32_t fixed;
 
 #define FIX_FLAGS_MASK 0x3
@@ -204,18 +218,5 @@ fixed fix_convert_double(double d);
 
 void fix_print(char* buffer, fixed f);
 void fix_print_const(char* buffer, fixed f);
-
-
-/*
- * TODO:
- * exp
- * log
- *
- * floor
- * ceil
- *
- * sqrt
- * sin / cos / arctan
- */
 
 #endif
