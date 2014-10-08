@@ -513,6 +513,7 @@ PRINT_CUST(e_neg   , fix_neg(FIX_E)    , "-00002.718292236328125");
 PRINT_CUST(ten     , FIXNUM(10,0)      , " 00010.000000000000000");
 PRINT_CUST(big     , FIXNUM(10000,5345), " 10000.534484863281250");
 PRINT_CUST(max     , FIX_MAX           , " 16383.999969482421875");
+PRINT_CUST(min     , FIX_MIN           , "-16384.000000000000000");
 PRINT_CUST(inf     , FIX_INF_POS       , " Inf                  ");
 PRINT_CUST(inf_neg , FIX_INF_NEG       , "-Inf                  ");
 PRINT_CUST(nan     , FIX_NAN           , " NaN                  ");
@@ -768,6 +769,7 @@ int main(int argc, char** argv) {
     unit_print(ten),
     unit_print(big),
     unit_print(max),
+    unit_print(min),
     unit_print(inf),
     unit_print(inf_neg),
     unit_print(nan),
