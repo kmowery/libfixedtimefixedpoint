@@ -199,6 +199,27 @@ TEST_ROUNDING(nan      , NaN       , 0       , 0       , 0       , 0);
 TEST_ROUNDING(inf      , INFINITY  , INT_MAX , INT_MAX , INT_MAX , INT_MAX);
 TEST_ROUNDING(inf_neg  , -INFINITY , INT_MIN , INT_MIN , INT_MIN , INT_MIN);
 
+#define unit_floor_ceil(name) unit_test(floor_ceil_##name)
+#define FLOOR_CEIL_CUST(name, value, floor_result, ceil_result) static void floor_ceil_##name(void **state) { \
+  fixed input = value; \
+  fixed floor = fix_floor(input); \
+  fixed floor_expected = floor_result; \
+  CHECK_EQ_NAN("floori "#name, floor, floor_expected); \
+}
+FLOOR_CEIL_CUST(zero     , FIXNUM(0  , 0)  , FIXNUM(0  , 0)  , FIXNUM(0  , 0));
+FLOOR_CEIL_CUST(half     , FIXNUM(0  , 5)  , FIXNUM(0  , 0)  , FIXNUM(1  , 0));
+FLOOR_CEIL_CUST(half_neg , FIXNUM(-0 , 5)  , FIXNUM(-1 , 0)  , FIXNUM(0  , 0));
+FLOOR_CEIL_CUST(one      , FIXNUM(1  , 0)  , FIXNUM(1  , 0)  , FIXNUM(1  , 0));
+FLOOR_CEIL_CUST(one_neg  , FIXNUM(-1 , 0)  , FIXNUM(-1 , 0)  , FIXNUM(-1 , 0));
+FLOOR_CEIL_CUST(pi       , FIX_PI          , FIXNUM(3  , 0)  , FIXNUM(4 , 0));
+FLOOR_CEIL_CUST(pi_neg   , fix_neg(FIX_PI) , FIXNUM(-4 , 0)  , FIXNUM(-3 , 0));
+FLOOR_CEIL_CUST(max      , FIX_MAX         , FIXNUM(16383, 0), FIX_INF_POS);
+FLOOR_CEIL_CUST(min      , FIX_MIN         , FIXNUM(-16384,0), FIXNUM(4 , 0));
+FLOOR_CEIL_CUST(inf_pos , FIX_INF_POS      , FIX_INF_POS     , FIX_INF_POS);
+FLOOR_CEIL_CUST(inf_neg , FIX_INF_NEG      , FIX_INF_NEG     , FIX_INF_NEG);
+FLOOR_CEIL_CUST(nan     , FIX_NAN          , FIX_NAN         , FIX_NAN);
+
+
 static void constants(void **state) {
   assert_true(FIX_PI  == 0x00064880);
   assert_true(FIX_TAU == 0x000c90fc);
@@ -630,6 +651,18 @@ int main(int argc, char** argv) {
     unit_rounding(nan),
     unit_rounding(inf),
     unit_rounding(inf_neg),
+
+    unit_floor_ceil(zero),
+    unit_floor_ceil(half),
+    unit_floor_ceil(half_neg),
+    unit_floor_ceil(one),
+    unit_floor_ceil(one_neg),
+    unit_floor_ceil(pi),
+    unit_floor_ceil(pi_neg),
+    unit_floor_ceil(max),
+    unit_floor_ceil(min),
+    unit_floor_ceil(inf_pos),
+    unit_floor_ceil(inf_neg),
 
     unit_test(constants),
 
