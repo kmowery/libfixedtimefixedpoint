@@ -195,6 +195,26 @@ fixed fix_floor(fixed op1) {
     FIX_DATA_BITS(tempresult);
 }
 
+fixed fix_ceil(fixed op1) {
+  uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isinfneg = FIX_IS_INF_NEG(op1);
+  uint8_t isnan = FIX_IS_NAN(op1);
+  uint8_t ispos = !FIX_IS_NEG(op1);
+
+  uint32_t frac_mask = (1 << (FIX_FRAC_BITS + FIX_FLAG_BITS))-1;
+
+  fixed tempresult = (op1 & ~frac_mask) +
+    ((!!(op1 & frac_mask)) << (FIX_FRAC_BITS + FIX_FLAG_BITS));
+
+  // If we used to be positive and we wrapped around, switch to INF_POS.
+  isinfpos |= ((tempresult == FIX_MIN) & ispos);
+
+  return FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS(isinfpos & (!isnan)) |
+    FIX_IF_INF_NEG(isinfneg & (!isnan)) |
+    FIX_DATA_BITS(tempresult);
+}
+
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
 
 fixed fix_ln(fixed op1) {

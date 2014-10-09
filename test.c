@@ -204,7 +204,10 @@ TEST_ROUNDING(inf_neg  , -INFINITY , INT_MIN , INT_MIN , INT_MIN , INT_MIN);
   fixed input = value; \
   fixed floor = fix_floor(input); \
   fixed floor_expected = floor_result; \
-  CHECK_EQ_NAN("floori "#name, floor, floor_expected); \
+  CHECK_EQ_NAN("floor "#name, floor, floor_expected); \
+  fixed ceil = fix_ceil(input); \
+  fixed ceil_expected = ceil_result; \
+  CHECK_EQ_NAN("ceil "#name, ceil, ceil_expected); \
 }
 FLOOR_CEIL_CUST(zero     , FIXNUM(0  , 0)  , FIXNUM(0  , 0)  , FIXNUM(0  , 0));
 FLOOR_CEIL_CUST(half     , FIXNUM(0  , 5)  , FIXNUM(0  , 0)  , FIXNUM(1  , 0));
@@ -214,10 +217,12 @@ FLOOR_CEIL_CUST(one_neg  , FIXNUM(-1 , 0)  , FIXNUM(-1 , 0)  , FIXNUM(-1 , 0));
 FLOOR_CEIL_CUST(pi       , FIX_PI          , FIXNUM(3  , 0)  , FIXNUM(4 , 0));
 FLOOR_CEIL_CUST(pi_neg   , fix_neg(FIX_PI) , FIXNUM(-4 , 0)  , FIXNUM(-3 , 0));
 FLOOR_CEIL_CUST(max      , FIX_MAX         , FIXNUM(16383, 0), FIX_INF_POS);
-FLOOR_CEIL_CUST(min      , FIX_MIN         , FIXNUM(-16384,0), FIXNUM(4 , 0));
-FLOOR_CEIL_CUST(inf_pos , FIX_INF_POS      , FIX_INF_POS     , FIX_INF_POS);
-FLOOR_CEIL_CUST(inf_neg , FIX_INF_NEG      , FIX_INF_NEG     , FIX_INF_NEG);
-FLOOR_CEIL_CUST(nan     , FIX_NAN          , FIX_NAN         , FIX_NAN);
+FLOOR_CEIL_CUST(max_almost,FIXNUM(16382,4) , FIXNUM(16382, 0), FIXNUM(16383,0));
+FLOOR_CEIL_CUST(min      , FIX_MIN         , FIXNUM(-16384,0), FIXNUM(-16384 , 0));
+FLOOR_CEIL_CUST(min_almost,FIXNUM(-16383,5), FIXNUM(-16384,0), FIXNUM(-16383 , 0));
+FLOOR_CEIL_CUST(inf_pos  , FIX_INF_POS     , FIX_INF_POS     , FIX_INF_POS);
+FLOOR_CEIL_CUST(inf_neg  , FIX_INF_NEG     , FIX_INF_NEG     , FIX_INF_NEG);
+FLOOR_CEIL_CUST(nan      , FIX_NAN         , FIX_NAN         , FIX_NAN);
 
 
 static void constants(void **state) {
@@ -660,7 +665,9 @@ int main(int argc, char** argv) {
     unit_floor_ceil(pi),
     unit_floor_ceil(pi_neg),
     unit_floor_ceil(max),
+    unit_floor_ceil(max_almost),
     unit_floor_ceil(min),
+    unit_floor_ceil(min_almost),
     unit_floor_ceil(inf_pos),
     unit_floor_ceil(inf_neg),
 
