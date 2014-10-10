@@ -32,10 +32,10 @@ typedef uint32_t fixed;
 #define FIX_ALL_BIT_MASK 0xffffffff
 
 #define FIX_TOP_BIT_MASK (1<<31)
-#define FIX_TOP_BIT(f) (f & FIX_TOP_BIT_MASK)
+#define FIX_TOP_BIT(f) ((f) & FIX_TOP_BIT_MASK)
 
-#define FIX_FRAC_MASK (((1<<FIX_FRAC_BITS)-1) << FIX_FLAG_BITS)
-#define FIX_INT_MASK  (((1<<FIX_INT_BITS)-1) << (FIX_FLAG_BITS + FIX_FRAC_BITS))
+#define FIX_FRAC_MASK (((1<<(FIX_FRAC_BITS))-1) << (FIX_FLAG_BITS))
+#define FIX_INT_MASK  (((1<<(FIX_INT_BITS))-1) << ((FIX_FLAG_BITS) + (FIX_FRAC_BITS)))
 
 #define FIX_SIGN_TO_64(f) ((int64_t)((int32_t)(f)))
 
@@ -44,13 +44,13 @@ typedef uint32_t fixed;
 #define MASK_UNLESS(expression, value) (SIGN_EXTEND(!!(expression), 1) & (value))
 
 #define FIX_DATA_BIT_MASK (0xFFFFFFFC)
-#define FIX_DATA_BITS(f) (f & FIX_DATA_BIT_MASK)
+#define FIX_DATA_BITS(f) ((f) & FIX_DATA_BIT_MASK)
 
-#define FIX_IS_NEG(f) ((FIX_TOP_BIT(f)) == FIX_TOP_BIT_MASK)
+#define FIX_IS_NEG(f) ((FIX_TOP_BIT(f)) == (FIX_TOP_BIT_MASK))
 
-#define FIX_IS_NAN(f) ((f&FIX_FLAGS_MASK) == FIX_NAN)
-#define FIX_IS_INF_POS(f) ((f&FIX_FLAGS_MASK) == FIX_INF_POS)
-#define FIX_IS_INF_NEG(f) ((f&FIX_FLAGS_MASK) == FIX_INF_NEG)
+#define FIX_IS_NAN(f) (((f)&FIX_FLAGS_MASK) == FIX_NAN)
+#define FIX_IS_INF_POS(f) (((f)&FIX_FLAGS_MASK) == FIX_INF_POS)
+#define FIX_IS_INF_NEG(f) (((f)&FIX_FLAGS_MASK) == FIX_INF_NEG)
 
 #define FIX_IF_NAN(isnan) (((isnan) | ((isnan) << 1)) & FIX_NAN)
 #define FIX_IF_INF_POS(isinfpos) (((isinfpos) | ((isinfpos) << 1)) & FIX_INF_POS)
@@ -61,14 +61,14 @@ typedef uint32_t fixed;
     !(FIX_IS_NAN(op1) | FIX_IS_NAN(op2)) & \
     ((FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2)) | \
     (FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2)) | \
-    (op1 == op2)))
+    ((op1) == (op2))))
 
 /* Returns true if the numbers are equal (and also if they are both NaN) */
 #define FIX_EQ_NAN(op1, op2) ( \
     (FIX_IS_NAN(op1) & FIX_IS_NAN(op2)) | \
     (FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2)) | \
     (FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2)) | \
-    (op1 == op2))
+    ((op1) == (op2)))
 
 #define FIX_CMP(op1, op2) ({ \
       uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2)); \
@@ -78,8 +78,8 @@ typedef uint32_t fixed;
       lt = (!FIX_IS_INF_POS(op1) && FIX_IS_INF_POS(op2)) | (FIX_IS_INF_NEG(op1) && !FIX_IS_INF_NEG(op2)); \
       gt |= (pos1 && !pos2); \
       lt |= (!pos1 && pos2); \
-      cmp_gt = ((fixed) op1 > (fixed) op2); \
-      cmp_lt = ((fixed) op1 < (fixed) op2); \
+      cmp_gt = ((fixed) (op1) > (fixed) (op2)); \
+      cmp_lt = ((fixed) (op1) < (fixed) (op2)); \
       uint32_t result = ((nans ? 1 : 0) | \
         (gt & !nans ? 1 : 0) | \
         (lt & !nans ? 0xffffffff : 0) | \
