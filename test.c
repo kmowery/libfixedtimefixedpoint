@@ -415,13 +415,14 @@ ABS_CUST(nan     , nan("0")  , FIX_NAN);
 #define LN(name, op1, val) LN_CUST(name, op1, fix_convert_double(val))
 
 LN_CUST(zero   , 0x0               , FIX_INF_NEG);
-LN_CUST(0xf0   , 0xf0              , 0xfff2020c);
+LN_CUST(0xf0   , 0xf0              , FIXNUM(-6,3028564453)); // -6.302863146
 LN_CUST(0x80   , 0x80              , 0xfff22318);
 LN_CUST(0xa0   , 0xa0              , 0xfff29358);
 LN_CUST(two    , FIXNUM(2,0)       , FIXNUM(0 , 69314718));
 LN_CUST(one    , FIXNUM(1,0)       , FIXNUM(0 , 0));
 LN_CUST(e      , FIX_E             , 0x0001fda8 ); // not quite FIXNUM(1 , 0), but close
 LN_CUST(ten    , FIXNUM(10,0)      , 0x000498ec ); // not quite FIXNUM(2 , 30258509), but close
+LN_CUST(max    , FIX_MAX           , FIXNUM(9,7040405273 ));  // not quite 9.70406052597
 LN_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
 LN_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
 LN_CUST(nan    , FIX_NAN           , FIX_NAN);
@@ -437,13 +438,18 @@ LN_CUST(nan    , FIX_NAN           , FIX_NAN);
 #define LOG2(name, op1, val) LOG2_CUST(name, op1, fix_convert_double(val))
 
 LOG2_CUST(zero   , 0x0               , FIX_INF_NEG);
-LOG2_CUST(0xf0   , 0xf0              , 0xffebd050);
+LOG2_CUST(0xf0   , 0xf0              , FIXNUM(-9,093139648)); //9.093139648
 LOG2_CUST(0x80   , 0x80              , 0xffec0000);
 LOG2_CUST(0xa0   , 0xa0              , 0xffeca29c);
 LOG2_CUST(one    , FIXNUM(1,0)       , FIXNUM(0 , 0));
 LOG2_CUST(two    , FIXNUM(2,0)       , FIXNUM(1 , 0));
 LOG2_CUST(e      , FIX_E             , 0x0002e064 ); // not quite 1.4426 but close
 LOG2_CUST(ten    , FIXNUM(10,0)      , 0x0006a29c ); // not quite 3.3219 but close
+LOG2_CUST(63     , FIXNUM(63,0)      , FIXNUM(5,977355957 )); // 5.9772799236
+LOG2_CUST(64     , FIXNUM(64,0)      , FIXNUM(6, 0) );
+LOG2_CUST(64_5   , FIXNUM(64,5)      , FIXNUM(6, 01116943359)); // 6.011227255423254
+LOG2_CUST(max    , FIX_MAX           , FIXNUM(13,9999999) ); // not quite 3.3219 but close
+LOG2_CUST(min    , FIX_MIN           , FIX_NAN );
 LOG2_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
 LOG2_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
 LOG2_CUST(nan    , FIX_NAN           , FIX_NAN);
@@ -751,11 +757,12 @@ int main(int argc, char** argv) {
     unit_abs(inf_neg),
     unit_abs(nan),
 
+    unit_ln(zero),
     unit_ln(one),
     unit_ln(two),
     unit_ln(e),
     unit_ln(ten),
-    unit_ln(zero),
+    unit_ln(max),
     unit_ln(inf),
     unit_ln(neg),
     unit_ln(nan),
@@ -763,11 +770,16 @@ int main(int argc, char** argv) {
     unit_ln(0x80),
     unit_ln(0xa0),
 
+    unit_log2(zero),
     unit_log2(one),
     unit_log2(two),
     unit_log2(e),
     unit_log2(ten),
-    unit_log2(zero),
+    unit_log2(63),
+    unit_log2(64),
+    unit_log2(64_5),
+    unit_log2(max),
+    unit_log2(min),
     unit_log2(inf),
     unit_log2(neg),
     unit_log2(nan),

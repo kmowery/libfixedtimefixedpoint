@@ -235,14 +235,21 @@ fixed fix_ln(fixed op1) {
   log2 |= (scratch >> 1);
   //log2 is now log2(op1), considered as a uint32_t
 
+  // We need to figure out how to map op1 into [-.5, .5], to use our polynomial
+  // approxmation. First, we'll map op1 into [0.5, 1.5].
+  //
+  // We'll look at the top 2 bits of the number. If they're both 1, then we'll
+  // move it to be just above 0.5. In that case, though, we need to increment
+  // the log2 by 1.
   uint32_t top2mask = (3 << (log2 - 1));
   uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0;
+  log2 += top2set;
 
   // we need to move op1 into [-0.5, 0.5] in xx.2.28
   //
   // first, let's move to [0.5, 1.5] in xx.2.28...
-  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2 + top2set))) |
-    MASK_UNLESS(log2 > 28, op1 >> (log2 + top2set - 28));
+  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2))) |
+    MASK_UNLESS(log2 > 28, op1 >> (log2 - 28));
 
   // and then shift down by '1'. (1.28 bits of zero)
   m -= (1 << 28);
@@ -297,14 +304,21 @@ fixed fix_log2(fixed op1) {
   log2 |= (scratch >> 1);
   //log2 is now log2(op1), considered as a uint32_t
 
+  // We need to figure out how to map op1 into [-.5, .5], to use our polynomial
+  // approxmation. First, we'll map op1 into [0.5, 1.5].
+  //
+  // We'll look at the top 2 bits of the number. If they're both 1, then we'll
+  // move it to be just above 0.5. In that case, though, we need to increment
+  // the log2 by 1.
   uint32_t top2mask = (3 << (log2 - 1));
   uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0;
+  log2 += top2set;
 
   // we need to move op1 into [-0.5, 0.5] in xx.2.28
   //
   // first, let's move to [0.5, 1.5] in xx.2.28...
-  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2 + top2set))) |
-    MASK_UNLESS(log2 > 28, op1 >> (log2 + top2set - 28));
+  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2))) |
+    MASK_UNLESS(log2 > 28, op1 >> (log2 - 28));
 
   // and then shift down by '1'. (1.28 bits of zero)
   m -= (1 << 28);
