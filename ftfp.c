@@ -358,6 +358,89 @@ fixed fix_log2(fixed op1) {
     FIX_DATA_BITS(tempresult);
 }
 
+fixed fix_log10(fixed op1) {
+  /* Approach taken from http://eesite.bitbucket.org/html/software/log_app/log_app.html */
+
+  uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
+  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
+
+  uint32_t scratch = op1;
+  uint32_t log2; // compute (int) log2(op1)  (as a uint32_t, not fixed)
+  uint32_t shift;
+
+  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
+  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
+  log2 |= (scratch >> 1);
+  //log2 is now log2(op1), considered as a uint32_t
+
+  uint32_t top2mask = (3 << (log2 - 1));
+  uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0;
+  log2 += top2set;
+
+  // we need to move op1 into [-0.5, 0.5] in xx.2.28
+  //
+  // first, let's move to [0.5, 1.5] in xx.2.28...
+  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2))) |
+    MASK_UNLESS(log2 > 28, op1 >> (log2 - 28));
+
+  // and then shift down by '1'. (1.28 bits of zero)
+  m -= (1 << 28);
+
+  fixed log10_2 = 0x00009a20; // python: "0x%08x"%(math.log(2,10) * 2**17)
+  fixed nlog10_2 = log10_2 * (log2 - FIX_FRAC_BITS - FIX_FLAG_BITS); // correct for nonsense
+    // we want this to go negative for numbers < 1.
+
+  // A third-order or fourth-order approximation polynomial does very poorly on
+  // log10. Use a 5th order approximation instead:
+
+  // octave:31> x = -0.5:1/10000:0.5;
+  // octave:32> polyfit( x, log10(x+1), 5)
+  // ans =
+
+  //    1.1942e-01  -1.3949e-01   1.4074e-01  -2.1438e-01   4.3441e-01  -3.4210e-05
+
+  // now, calculate log10(1+m):
+  //
+  // constants:
+  //
+  // print "\n".join(["uint32_t k%d = 0x%08x;"%(5-i, num * 2**28) for
+  // i,num in enumerate([abs(eval(x)) for x in re.split(" +", "1.1942e-01
+  // -1.3949e-01   1.4074e-01  -2.1438e-01   4.3441e-01  -3.4210e-05" )])])
+  //
+
+  uint32_t k5 = 0x01e924f2;
+  uint32_t k4 = 0x023b59dd;
+  uint32_t k3 = 0x02407896;
+  uint32_t k2 = 0x036e19b9;
+  uint32_t k1 = 0x06f357e6;
+  uint32_t k0 = 0x000023df;
+
+  uint32_t tempresult =
+    (MUL_2x28(m,
+       MUL_2x28(m,
+         MUL_2x28(m,
+            MUL_2x28(m,
+              MUL_2x28(m,
+                k5)
+              - k4)
+            + k3)
+          - k2)
+        + k1)
+       - k0);
+
+  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - FIX_FRAC_BITS - FIX_FLAG_BITS);
+  tempresult += nlog10_2;
+
+  return FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS(isinfpos) |
+    FIX_IF_INF_NEG(isinfneg) |
+    FIX_DATA_BITS(tempresult);
+}
+
+
 fixed fix_sqrt(fixed op1) {
   // We're going to use Newton's Method with a fixed number of iterations.
   // The polynomial to use is:

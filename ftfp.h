@@ -209,6 +209,7 @@ fixed fix_ceil(fixed op1);
 
 fixed fix_ln(fixed op1);
 fixed fix_log2(fixed op1);
+fixed fix_log10(fixed op1);
 
 fixed fix_sqrt(fixed op1);
 

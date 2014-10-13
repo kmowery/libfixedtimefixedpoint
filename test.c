@@ -454,6 +454,28 @@ LOG2_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
 LOG2_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
 LOG2_CUST(nan    , FIX_NAN           , FIX_NAN);
 
+#define unit_log10(name) unit_test(log10_##name)
+#define LOG10_CUST(name, op1, result) static void log10_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed log10 = fix_log10(o1); \
+  fixed expected = result; \
+  CHECK_EQ_NAN(#name, log10, expected); \
+}
+#define LOG10(name, op1, val) LOG10_CUST(name, op1, fix_convert_double(val))
+
+LOG10_CUST(zero   , 0x0               , FIX_INF_NEG);
+LOG10_CUST(one    , FIXNUM(1,0)       , FIXNUM(-0 , 000061035)); // almost 0.
+LOG10_CUST(two    , FIXNUM(2,0)       , FIXNUM(0 , 30096435));   // almost 0.30102999
+LOG10_CUST(e      , FIX_E             , FIXNUM(0 , 434265136));  // 0.43429448
+LOG10_CUST(ten    , FIXNUM(10,0)      , FIXNUM(1 , 0));
+LOG10_CUST(fifteen, FIXNUM(15,0)      , FIXNUM(1 , 1760253906 )); // 1.176091259));
+LOG10_CUST(63     , FIXNUM(63,0)      , FIXNUM(1 , 7992553710 )); // 1.79934054945
+LOG10_CUST(64     , FIXNUM(64,0)      , FIXNUM(1 , 8060913085 )); // 1.80617997398
+LOG10_CUST(64_5   , FIXNUM(64,5)      , FIXNUM(1 , 8094787597 )); // 1.80955971463
+LOG10_CUST(max    , FIX_MAX           , FIXNUM(4 , 214294433)); // 4.21441993848
+LOG10_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
+LOG10_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
+LOG10_CUST(nan    , FIX_NAN           , FIX_NAN);
 
 #define unit_sqrt(name) unit_test(sqrt_##name)
 #define SQRT_CUST(name, op1, result) static void sqrt_##name(void **state) { \
@@ -786,6 +808,20 @@ int main(int argc, char** argv) {
     unit_log2(0xf0),
     unit_log2(0x80),
     unit_log2(0xa0),
+
+    unit_log10(zero),
+    unit_log10(one),
+    unit_log10(two),
+    unit_log10(e),
+    unit_log10(ten),
+    unit_log10(fifteen),
+    unit_log10(63),
+    unit_log10(64),
+    unit_log10(64_5),
+    unit_log10(max),
+    unit_log10(inf),
+    unit_log10(neg),
+    unit_log10(nan),
 
     unit_sqrt(zero),
     unit_sqrt(half),
