@@ -477,38 +477,21 @@ fixed fix_sqrt(fixed op1) {
 
 
   // We're going to do all math in a 47.17 uint64_t
-  //int64_t x = op1;
-  //int64_t x = 1<< 19;
 
   uint64_t op1neg = FIX_SIGN_TO_64(fix_neg(op1));
-
-  //printf("\n\n");
-  //d("op1", op1);
-  //d("guess", x);
-  //d("op1neg", op1neg);
 
   // we're going to use 15.17 fixed point numbers to do the calculation, and
   // then mask off our flag bits later
   for(int i = 0; i < 8; i++) {
-    //printf("\n");
     int64_t x2 = (x * x) >> 17;
     int64_t t = x2 + op1neg;
-
-    //d("x         ", x);
-    //d("x2        ", x2);
-    //d("f(x)      ", t);
-    //d("f'(x)     ", x<<1);
 
     x = x | (x==0); // don't divide by zero...
 
     // t = t / f'(x) = t / 2x
     t = ROUND_TO_EVEN((t<<22) / (x<<1), 5);
 
-    //d("f(x)/f'(x)", t);
-
     x = x - t;
-
-    //d("x'        ", x);
   }
 
   return FIX_IF_NAN(isnan) |
