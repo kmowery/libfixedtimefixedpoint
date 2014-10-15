@@ -55,9 +55,6 @@ void fix_print_const(char* buffer, fixed f) {
   uint32_t scratch = 0;
   uint32_t neg = f >> 31;
 
-  char sign_lut[2] = {' ', '-'};
-  char number_lut[17] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', 'N', 'a', 'I', 'n', 'f', ' '};
-
   f = fix_abs(f);"""
 
 print "\n".join(["  uint32_t bit%d = (((f) >> (%d))&1);"%(i,i) for i in range(2,32)])
@@ -66,27 +63,28 @@ print "\n".join(["  uint32_t bit%d = (((f) >> (%d))&1);"%(i,i) for i in range(2,
 for position in reversed(range(frac_loc, frac_loc+frac_chars)):
     poly = poly_for(position)
     print "  scratch = %s + carry;"%(poly)
-    print "  buffer[%d] = number_lut[((scratch %% 10) * (1-excep)) + (excep * 16)];"%(position), "carry = scratch / 10;"
+    print "  buffer[%d] = ((%d + (scratch %% 10)) * (1-excep) + (excep * %d));"%(position, ord('0'), ord(' ')), "carry = scratch / 10;"
 
 print
-print "  buffer[%d] = number_lut[excep*16 + (1-excep)*10];"%(point_loc)
+print "  buffer[%d] = excep*%d + (1-excep)*%d;"%(point_loc, ord(' '), ord('.'))
 print
 
 extra_polynomials = {
-        1: " + (isnan * 11) + (isinfpos | isinfneg) * 13",
-        2: " + (isnan * 12) + (isinfpos | isinfneg) * 14",
-        3: " + (isnan * 11) + (isinfpos | isinfneg) * 15",
+        1: " + (isnan * %d) + (isinfpos | isinfneg) * %d"%(ord('N'), ord('I')),
+        2: " + (isnan * %d) + (isinfpos | isinfneg) * %d"%(ord('a'), ord('n')),
+        3: " + (isnan * %d) + (isinfpos | isinfneg) * %d"%(ord('N'), ord('f')),
         }
 
 for position in reversed(range(int_loc,int_loc+int_chars)):
     poly = poly_for(position)
     print "  scratch = %s + carry;"%(poly)
-    print "  buffer[%d] = number_lut[((scratch %% 10) * (1-excep)) %s];"%(position,
-        extra_polynomials.get(position, "+ (excep * 16)")), "carry = scratch / 10;"
+    print "  buffer[%d] = ((%d + (scratch %% 10)) * (1-excep)) %s;"%(position, ord('0'),
+        extra_polynomials.get(position, "+ (excep * %d)"%(ord(' ')))), "carry = scratch / 10;"
 
 print """
-  buffer[0] = sign_lut[(neg*(1-excep) + isinfneg)];
-"""
+  uint8_t n = (neg*(1-excep) + isinfneg);
+  buffer[0] = %d * n + %d * (1-n);
+"""%(ord('-'), ord(' '))
 
 print "  buffer[%d] = '\\0';"%(length);
 
