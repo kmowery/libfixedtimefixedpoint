@@ -6,6 +6,7 @@ LDFLAGS := -lcmocka -lm
 progs             := test
 test_ftfp_src     := test.c ftfp.c autogen.c
 test_ftfp_obj     := $(test_ftfp_src:.c=.o)
+test_ftfp_pre     := $(test_ftfp_src:.c=.pre)
 
 .PHONY: all clean depend
 all: test
@@ -19,5 +20,10 @@ autogen.c : generate_print.py
 test: $(test_ftfp_obj)
 	$(CC) ${CFLAGS} -o $@ $+ ${LDFLAGS}
 
+pre: $(test_ftfp_pre)
+
+%.pre: %.c Makefile
+	$(CC) -c -E -o $@ $(CFLAGS) $<
+
 clean:
-	$(RM) -r $(progs) $(test_ftfp_obj)
+	$(RM) -r $(progs) $(test_ftfp_obj) $(test_ftfp_pre)
