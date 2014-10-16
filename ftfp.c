@@ -1,6 +1,19 @@
 #include "ftfp.h"
 #include <math.h>
 
+inline int uint32_log2(uint32_t o) {
+  uint32_t scratch = o;
+  uint32_t log2;
+  uint32_t shift;
+
+  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
+  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
+  log2 |= (scratch >> 1);
+  return log2;
+}
+
 fixed fix_neg(fixed op1){
   uint8_t isinfpos;
   uint8_t isinfneg;
@@ -224,16 +237,8 @@ fixed fix_ln(fixed op1) {
   uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
   uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
 
-  uint32_t scratch = op1;
-  uint32_t log2; // compute (int) log2(op1)  (as a uint32_t, not fixed)
-  uint32_t shift;
-
-  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
-  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
-  log2 |= (scratch >> 1);
-  //log2 is now log2(op1), considered as a uint32_t
+  // compute (int) log2(op1)  (as a uint32_t, not fixed)
+  uint32_t log2 = uint32_log2(op1);
 
   // We need to figure out how to map op1 into [-.5, .5], to use our polynomial
   // approxmation. First, we'll map op1 into [0.5, 1.5].
@@ -293,16 +298,8 @@ fixed fix_log2(fixed op1) {
   uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
   uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
 
-  uint32_t scratch = op1;
-  uint32_t log2; // compute (int) log2(op1)  (as a uint32_t, not fixed)
-  uint32_t shift;
-
-  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
-  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
-  log2 |= (scratch >> 1);
-  //log2 is now log2(op1), considered as a uint32_t
+  // compute (int) log2(op1)  (as a uint32_t, not fixed)
+  uint32_t log2 = uint32_log2(op1);
 
   // We need to figure out how to map op1 into [-.5, .5], to use our polynomial
   // approxmation. First, we'll map op1 into [0.5, 1.5].
@@ -365,16 +362,8 @@ fixed fix_log10(fixed op1) {
   uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
   uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
 
-  uint32_t scratch = op1;
-  uint32_t log2; // compute (int) log2(op1)  (as a uint32_t, not fixed)
-  uint32_t shift;
-
-  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
-  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
-  log2 |= (scratch >> 1);
-  //log2 is now log2(op1), considered as a uint32_t
+  // compute (int) log2(op1)  (as a uint32_t, not fixed)
+  uint32_t log2 = uint32_log2(op1);
 
   uint32_t top2mask = (3 << (log2 - 1));
   uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0;
