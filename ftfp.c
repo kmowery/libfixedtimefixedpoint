@@ -110,51 +110,42 @@ fixed fix_div(fixed op1, fixed op2) {
 }
 
 
+// Sign extend it all, this will help us correctly catch overflow
+#define FIX_UNSAFE_MUL_32(op1, op2) \
+  (ROUND_TO_EVEN(FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2),17))
+
+#define FIX_MUL_32(op1, op2, overflow) \
+  ({ \
+    uint64_t tmp = FIX_UNSAFE_MUL_32(op1, op2); \
+    /* inf only if overflow, and not a sign thing */ \
+    overflow |= \
+      !(((tmp & 0xFFFFFFFF80000000) == 0xFFFFFFFF80000000) \
+       | ((tmp & 0xFFFFFFFF80000000) == 0)); \
+    tmp; \
+   })
+
 fixed fix_mul(fixed op1, fixed op2) {
 
-  uint8_t isnan;
-  uint8_t isinf;
-  uint8_t isinfpos;
-  uint8_t isinfneg;
+  uint8_t isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
+  uint8_t isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
+  uint8_t isnegop1 = FIX_IS_INF_NEG(op1) | (FIX_IS_NEG(op1) & !isinfop1);
+  uint8_t isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
 
-  uint8_t isinfop1;
-  uint8_t isinfop2;
-  uint8_t isnegop1;
-  uint8_t isnegop2;
-
+  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
+  uint8_t isinf = 0;
   uint64_t tmp;
-  uint64_t tmp2;
 
-  fixed tempresult;
+  tmp = FIX_MUL_32(op1, op2, isinf);
 
-  isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
-
-  // Sign extend it all, this will help us correctly catch overflow
-  tmp = ROUND_TO_EVEN(FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2),19)<<2;
-
-  // inf only if overflow, and not a sign thing
-  tmp2 = tmp & 0xFFFFFFFF80000000;
-  isinf = !((tmp2 == 0xFFFFFFFF80000000) | (tmp2 == 0));
-
-  tempresult = tmp & 0xFFFFFFFC;
-
-  //TODO Cache these maybe due to O0?
-  isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
-  isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
-  isnegop1 = FIX_IS_INF_NEG(op1) | (FIX_IS_NEG(op1) & !isinfop1);
-  isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
-
-  //Update isinf
   isinf = (isinfop1 | isinfop2 | isinf) & (!isnan);
 
-  isinfpos = isinf & !(isnegop1 ^ isnegop2);
-
-  isinfneg = isinf & (isnegop1 ^ isnegop2);
+  uint8_t isinfpos = isinf & !(isnegop1 ^ isnegop2);
+  uint8_t isinfneg = isinf & (isnegop1 ^ isnegop2);
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
     FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    FIX_DATA_BITS(tempresult);
+    FIX_DATA_BITS(tmp);
 }
 
 
