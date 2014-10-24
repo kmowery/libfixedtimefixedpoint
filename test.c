@@ -335,6 +335,9 @@ MUL_CUST(nan_pos          , nan("0")    , 10           ,FIX_NAN);
 MUL_CUST(nan_neg          , nan("0")    , -10          ,FIX_NAN);
 MUL_CUST(nan_inf          , nan("0")    , INFINITY     ,FIX_NAN);
 MUL_CUST(nan_ninf         , nan("0")    , -INFINITY    ,FIX_NAN);
+MUL_CUST(tinyoverflow     , 148.5       , 148.5        ,FIX_INF_POS);
+MUL_CUST(tinyoverflow_neg , 148.5       , -148.5       ,FIX_INF_NEG);
+MUL_CUST(tinyoverflow_neg_neg , -148.5  , -148.5       ,FIX_INF_POS);
 
 #define unit_div(name) unit_test(div_##name)
 #define DIV_CUST(name, op1, op2, result) static void div_##name(void **state) { \
@@ -738,6 +741,9 @@ int main(int argc, char** argv) {
     unit_mul(nan_neg),
     unit_mul(nan_inf),
     unit_mul(nan_ninf),
+    unit_mul(tinyoverflow),
+    unit_mul(tinyoverflow_neg),
+    unit_mul(tinyoverflow_neg_neg),
 
 
     unit_div(one_zero),

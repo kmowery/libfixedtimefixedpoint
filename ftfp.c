@@ -131,11 +131,10 @@ fixed fix_mul(fixed op1, fixed op2) {
 
   // Sign extend it all, this will help us correctly catch overflow
   tmp = ROUND_TO_EVEN(FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2),19)<<2;
-   //tmp = (FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2)) >>17;
 
   // inf only if overflow, and not a sign thing
-  tmp2 = tmp & 0xFFFFFFFF00000000;
-  isinf = !((tmp2 == 0xFFFFFFFF00000000) | (tmp2 == 0));
+  tmp2 = tmp & 0xFFFFFFFF80000000;
+  isinf = !((tmp2 == 0xFFFFFFFF80000000) | (tmp2 == 0));
 
   tempresult = tmp & 0xFFFFFFFC;
 
