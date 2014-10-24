@@ -8,9 +8,6 @@
 
 /*
  * TODO:
- * exp
- * log10
- *
  * cos / arccos
  * tan / arctan
  * arcsin
