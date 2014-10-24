@@ -480,6 +480,30 @@ LOG10_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
 LOG10_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
 LOG10_CUST(nan    , FIX_NAN           , FIX_NAN);
 
+#define unit_exp(name) unit_test(exp_##name)
+#define EXP_CUST(name, op1, result) static void exp_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed exp = fix_exp(o1); \
+  fixed expected = result; \
+  CHECK_EQ_NAN(#name, exp, expected); \
+}
+#define EXP(name, op1, val) EXP_CUST(name, op1, fix_convert_double(val))
+
+EXP_CUST(zero   , FIX_ZERO          , FIXNUM(1,0));
+EXP_CUST(one    , FIXNUM(1,0)       , FIX_E);
+EXP_CUST(two    , FIXNUM(2,0)       , FIXNUM(7,3890991210));     // not 7,3890560989
+EXP_CUST(e      , FIX_E             , FIXNUM(15,154296875));     // not 15,15426224147
+EXP_CUST(ten    , FIXNUM(10,0)      , FIX_INF_POS);
+EXP_CUST(one_neg, FIXNUM(-1,0)      , FIXNUM(0,3678794411));
+EXP_CUST(two_neg, FIXNUM(-2,0)      , FIXNUM(0,1353352832));
+EXP_CUST(e_neg  , fix_neg(FIX_E)    , FIXNUM(0,0659484863));     // not 0.0659880358
+EXP_CUST(ten_neg, FIXNUM(-10,0)     , FIXNUM(0,0000453999));
+EXP_CUST(neg_many,FIXNUM(-128,0)    , FIX_ZERO);
+EXP_CUST(max    , FIX_MAX           , FIX_INF_POS);
+EXP_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
+EXP_CUST(inf_neg, FIX_INF_NEG       , FIX_ZERO);
+EXP_CUST(nan    , FIX_NAN           , FIX_NAN);
+
 #define unit_sqrt(name) unit_test(sqrt_##name)
 #define SQRT_CUST(name, op1, result) static void sqrt_##name(void **state) { \
   fixed o1 = op1; \
@@ -828,6 +852,21 @@ int main(int argc, char** argv) {
     unit_log10(inf),
     unit_log10(neg),
     unit_log10(nan),
+
+    unit_exp(zero),
+    unit_exp(one),
+    unit_exp(two),
+    unit_exp(e),
+    unit_exp(ten),
+    unit_exp(one_neg),
+    unit_exp(two_neg),
+    unit_exp(e_neg),
+    unit_exp(ten_neg),
+    unit_exp(neg_many),
+    unit_exp(max),
+    unit_exp(inf),
+    unit_exp(inf_neg),
+    unit_exp(nan),
 
     unit_sqrt(zero),
     unit_sqrt(half),

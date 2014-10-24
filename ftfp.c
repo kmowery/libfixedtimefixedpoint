@@ -218,6 +218,88 @@ fixed fix_ceil(fixed op1) {
     FIX_DATA_BITS(tempresult);
 }
 
+
+#define FIX_UNSAFE_DIV_32(op1, op2) \
+  (ROUND_TO_EVEN(((FIX_SIGN_TO_64(FIX_DATA_BITS(op1))<<32) / \
+                  FIX_SIGN_TO_64(op2 | (FIX_DATA_BITS(op2) == 0))),17)<<2)
+
+#define FIX_UNSAFE_MUL_32(op1, op2) \
+  (ROUND_TO_EVEN(FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2),17))
+
+fixed fix_exp(fixed op1) {
+  uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isnan = FIX_IS_NAN(op1);
+
+  uint32_t log2 = uint32_log2(op1);
+  uint32_t log2_neg = uint32_log2((~op1) + 4);
+
+  fixed scratch =
+    MASK_UNLESS(!FIX_IS_NEG(op1),
+      MASK_UNLESS(log2 <= FIX_POINT_BITS, op1) |
+      MASK_UNLESS(log2 > FIX_POINT_BITS, op1 >> (log2 - FIX_POINT_BITS))
+    ) |
+    MASK_UNLESS(FIX_IS_NEG(op1),
+      MASK_UNLESS(log2_neg <= FIX_POINT_BITS, op1) |
+      MASK_UNLESS(log2_neg > FIX_POINT_BITS, SIGN_EX_SHIFT_RIGHT_32(op1, (log2_neg - FIX_POINT_BITS)))
+      );
+
+  uint8_t squarings =
+    MASK_UNLESS(!FIX_IS_NEG(op1),
+      MASK_UNLESS(log2 <= FIX_POINT_BITS, 0) |
+      MASK_UNLESS(log2 > FIX_POINT_BITS, (log2 - FIX_POINT_BITS))
+    ) |
+    MASK_UNLESS(FIX_IS_NEG(op1),
+      MASK_UNLESS(log2_neg <= FIX_POINT_BITS, 0) |
+      MASK_UNLESS(log2_neg > FIX_POINT_BITS, (log2_neg - FIX_POINT_BITS))
+      );
+
+  fixed x_i = FIXINT(1);
+  fixed x_factorial = FIXINT(1);
+  fixed e_x = FIXINT(1);
+  fixed term = FIXINT(1);
+
+  fixed temp = FIXINT(1);
+
+  for(int i = 1; i < 12; i ++) {
+
+    x_i = FIX_UNSAFE_MUL_32(x_i, scratch);
+    x_factorial = FIX_UNSAFE_MUL_32(x_factorial, FIXINT(i));
+
+    temp = FIX_UNSAFE_DIV_32(x_i, x_factorial);
+
+    term = FIX_UNSAFE_MUL_32(term, scratch);
+    term = FIX_UNSAFE_DIV_32(term, FIXINT(i));
+    e_x += term;
+
+  }
+
+  fixed result = e_x;
+
+  uint8_t inf;
+
+  // X is approximately in the range [-2^16, 2^16], and we map it down to [-2,
+  // 2]. We need one squaring for each halving, which means that squarings can
+  // be at most log2(2^16)-2, or 14.
+  //
+  // But that's overzealous: e^x must fit in 2^16. If we reduced the number
+  // before the approximation, then it will be at least 1, and so the
+  // approximation will produce at least e^1, or ~2.718. This requires only
+  // log2(ln(2**16)) successive doublings, or about 3.4. Round up to 4.
+  for(int i = 0; i < 4; i++) {
+    inf = 0;
+    fixed r2 = FIX_MUL_32(result, result, inf);
+    result = MASK_UNLESS(squarings > 0, r2) | MASK_UNLESS(squarings == 0, result);
+    isinfpos |= MASK_UNLESS(squarings > 0, inf);
+
+    squarings = MASK_UNLESS(squarings > 0, squarings-1);
+  }
+
+  // note that we want to return 0 if op1 is FIX_INF_NEG...
+  return FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS(isinfpos & (!isnan)) |
+    MASK_UNLESS(!FIX_IS_INF_NEG(op1), FIX_DATA_BITS(result));
+}
+
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
 
 fixed fix_ln(fixed op1) {

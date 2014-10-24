@@ -28,6 +28,7 @@ typedef uint32_t fixed;
 #define FIX_FLAG_BITS 2
 #define FIX_FRAC_BITS 15
 #define FIX_INT_BITS  15
+#define FIX_POINT_BITS (FIX_FRAC_BITS + FIX_FLAG_BITS)
 
 #define FIX_ALL_BIT_MASK 0xffffffff
 
@@ -207,6 +208,7 @@ fixed fix_div(fixed op1, fixed op2);
 fixed fix_floor(fixed op1);
 fixed fix_ceil(fixed op1);
 
+fixed fix_exp(fixed op1);
 fixed fix_ln(fixed op1);
 fixed fix_log2(fixed op1);
 fixed fix_log10(fixed op1);
