@@ -258,14 +258,10 @@ fixed fix_exp(fixed op1) {
   fixed e_x = FIXINT(1);
   fixed term = FIXINT(1);
 
-  fixed temp = FIXINT(1);
-
   for(int i = 1; i < 12; i ++) {
 
     x_i = FIX_UNSAFE_MUL_32(x_i, scratch);
     x_factorial = FIX_UNSAFE_MUL_32(x_factorial, FIXINT(i));
-
-    temp = FIX_UNSAFE_DIV_32(x_i, x_factorial);
 
     term = FIX_UNSAFE_MUL_32(term, scratch);
     term = FIX_UNSAFE_DIV_32(term, FIXINT(i));
