@@ -8,8 +8,8 @@
 
 /*
  * TODO:
- * cos / arccos
- * tan / arctan
+ * arccos
+ * arctan
  * arcsin
  */
 
@@ -113,6 +113,13 @@ typedef uint32_t fixed;
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
+#define ROUND_TO_EVEN_SIGNED(value, n_shift_bits) \
+  (SIGN_EX_SHIFT_RIGHT_32(value, n_shift_bits) + \
+   !!( \
+     (((value) & (1 << ((n_shift_bits)-1))) && !!((value) & ((1 << ((n_shift_bits)-1))-1))) | \
+     ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
+   ))
+
 /*
  * General idea:
  *   This creates the fractional portion of a fixed point, given a decimal
@@ -156,6 +163,7 @@ typedef uint32_t fixed;
 #define FIX_TAU     FIXNUM(6,28318530718)
 #define FIX_E       FIXNUM(2,71828182846)
 #define FIX_EPSILON ((fixed) (1 << FIX_FLAG_BITS))
+#define FIX_EPSILON_NEG ((fixed) ~((1 << FIX_FLAG_BITS)-1))
 #define FIX_ZERO    0
 
 #define FIX_MAX     0x7ffffffc
@@ -214,6 +222,14 @@ fixed fix_sqrt(fixed op1);
 
 uint32_t fix_circle_frac(fixed op1);
 uint32_t uint32_log2(uint32_t o);
+
+// "%x"%(0.607252935 * 2**28)
+#define CORDIC_P 0x09b74eda
+void cordic(uint32_t* Z, uint32_t* C, uint32_t* S);
+
+fixed fix_cordic_sin(fixed op1);
+fixed fix_cordic_cos(fixed op1);
+fixed fix_cordic_tan(fixed op1);
 
 fixed fix_sin(fixed op1);
 

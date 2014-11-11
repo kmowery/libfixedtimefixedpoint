@@ -584,6 +584,55 @@ SIN_CUST(inf_pos   , FIX_INF_POS                          , FIX_INF_POS);
 SIN_CUST(inf_neg   , FIX_INF_NEG                          , FIX_INF_NEG);
 SIN_CUST(nan       , FIX_NAN                              , FIX_NAN);
 
+#define unit_trig(name) unit_test(trig_##name)
+#define TRIG(name, op1, sinx, cosx, tanx) static void trig_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed sin = fix_cordic_sin(o1); \
+  CHECK_EQ_NAN(#name " sin", sin, sinx); \
+  fixed cos = fix_cordic_cos(o1); \
+  CHECK_EQ_NAN(#name " cos", cos, cosx); \
+  fixed tan = fix_cordic_tan(o1); \
+  CHECK_EQ_NAN(#name " tan", tan, tanx); \
+}
+
+#define n3_2 fix_div(FIXNUM(3,0), FIXNUM(2,0))
+
+// Note that tan is poorly defined near pi/2 + n*pi. It's either positive
+// infinity or negative infinity, with very little separating them.
+
+TRIG(zero  , FIX_ZERO                          , FIX_ZERO             , FIXNUM(1,0),            FIX_ZERO );
+TRIG(pi_2  , fix_div(FIX_PI , FIXNUM(2,0))     , FIXNUM(1,0)          , FIX_EPSILON_NEG,        FIX_INF_NEG );
+TRIG(pi    , FIX_PI                            , fix_neg(FIX_EPSILON) , FIXNUM(-1,0),           FIX_ZERO );
+TRIG(pi3_2 , fix_mul(FIX_PI, n3_2)             , FIXNUM(-1,0)         , FIX_ZERO,               FIX_INF_NEG);
+TRIG(pi2   , fix_mul(FIX_PI, FIXNUM(2,0))      , FIX_ZERO             , FIXNUM(1,0),            FIX_ZERO );
+
+TRIG(pi5_2 , fix_div(fix_mul(FIX_PI, FIXNUM(5,0)), FIXNUM(2,0)) ,
+             FIXNUM(1,0), FIX_EPSILON_NEG, FIX_INF_NEG);
+TRIG(pi3   , fix_mul(FIX_PI, FIXNUM(3,0))                       ,
+             FIX_EPSILON_NEG, FIXNUM(-1,0), FIX_EPSILON );
+TRIG(pi7_2 , fix_div(fix_mul(FIX_PI, FIXNUM(7,0)), FIXNUM(2,0)) ,
+             FIXNUM(-1,0), FIX_EPSILON, FIX_INF_NEG);
+TRIG(pi4   , fix_mul(FIX_PI, FIXNUM(4,0)),
+             FIX_EPSILON, FIXNUM(1,0), FIX_EPSILON );
+
+TRIG(neg_pi_2  , fix_neg(fix_div(FIX_PI , FIXNUM(2 , 0))),
+                 FIXNUM(-1,0)         , FIX_EPSILON_NEG,               FIX_INF_POS);
+TRIG(neg_pi    , fix_neg(FIX_PI),
+                 FIX_ZERO, FIXNUM(-1,0), FIX_ZERO );
+TRIG(neg_pi3_2 , fix_neg(fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0))) ,
+                 FIXNUM(1,0)          , FIX_ZERO,   FIX_INF_POS );
+TRIG(neg_pi2   , fix_neg(fix_mul(FIX_PI, FIXNUM(2,0))),
+                 FIX_EPSILON_NEG, FIXNUM(1,0), FIX_ZERO );
+
+TRIG(q1       , FIXNUM(1,0),                  FIXNUM(0,8414709848), FIXNUM(0,54028320) , FIXNUM(1,5574077246));
+TRIG(q2      ,  fix_add(fix_div(FIX_PI, FIXNUM(2,0)), FIXNUM(1,0)),
+                                              FIXNUM(0,54028320) , FIXNUM(-0,84149169) , FIXNUM(-0,64209261));
+TRIG(q3      ,  fix_add(FIX_PI, FIXNUM(0,5)), FIXNUM(-0,47942553), FIXNUM(-0,877582561), FIXNUM(0,5463256835));
+TRIG(q4      ,  FIXNUM(-0,5),                 FIXNUM(-0,47942553), FIXNUM(0,877563476) , FIXNUM(-0,546302489));
+
+TRIG(inf_pos   , FIX_INF_POS, FIX_NAN, FIX_NAN, FIX_NAN);
+TRIG(inf_neg   , FIX_INF_NEG, FIX_NAN, FIX_NAN, FIX_NAN);
+TRIG(nan       , FIX_NAN, FIX_NAN, FIX_NAN, FIX_NAN);
 
 #define unit_print(name) unit_test(print_##name)
 #define PRINT_CUST(name, op1, result) static void print_##name(void **state) { \
@@ -910,6 +959,27 @@ int main(int argc, char** argv) {
     unit_sin(inf_pos),
     unit_sin(inf_neg),
     unit_sin(nan),
+
+    unit_trig(zero),
+    unit_trig(pi_2),
+    unit_trig(pi),
+    unit_trig(pi3_2),
+    unit_trig(pi2),
+    unit_trig(pi5_2),
+    unit_trig(pi3),
+    unit_trig(pi7_2),
+    unit_trig(pi4),
+    unit_trig(neg_pi_2),
+    unit_trig(neg_pi),
+    unit_trig(neg_pi3_2),
+    unit_trig(neg_pi2),
+    unit_trig(inf_pos),
+    unit_trig(inf_neg),
+    unit_trig(nan),
+    unit_trig(q1),
+    unit_trig(q2),
+    unit_trig(q3),
+    unit_trig(q4),
 
     unit_print(zero),
     unit_print(half),
