@@ -212,6 +212,7 @@ fixed fix_log10(fixed op1);
 
 fixed fix_sqrt(fixed op1);
 
+uint32_t fix_circle_frac(fixed op1);
 fixed fix_sin(fixed op1);
 
 fixed fix_convert_double(double d);
