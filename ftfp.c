@@ -1,7 +1,7 @@
 #include "ftfp.h"
 #include <math.h>
 
-inline int uint32_log2(uint32_t o) {
+inline uint32_t uint32_log2(uint32_t o) {
   uint32_t scratch = o;
   uint32_t log2;
   uint32_t shift;
