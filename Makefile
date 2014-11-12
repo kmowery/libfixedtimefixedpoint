@@ -4,7 +4,7 @@ CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-al
 LDFLAGS := -lcmocka -lm
 
 progs             := test
-test_ftfp_src     := test.c ftfp.c autogen.c
+test_ftfp_src     := test.c ftfp.c autogen.c internal.c cordic.c power.c
 test_ftfp_obj     := $(test_ftfp_src:.c=.o)
 test_ftfp_pre     := $(test_ftfp_src:.c=.pre)
 

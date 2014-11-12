@@ -3,3 +3,6 @@ test
 *.pre
 autogen.c
 
+*.asm
+*.so
+perf_test
