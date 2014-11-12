@@ -347,9 +347,6 @@ MUL_CUST(tinyoverflow_neg_neg , -148.5  , -148.5       ,FIX_INF_POS);
   fixed expected = result; \
   if( !FIX_EQ_NAN(divd, expected) ) { \
     char b1[100], b2[100]; \
-    fix_print(b1, op1); \
-    fix_print(b2, op2); \
-    printf("Op Mismatch: %s (%x) != %s (%x)", b1, op1, b2, op2); \
     fix_print(b1, divd); \
     fix_print(b2, expected); \
     fail_msg("Mismatch: %s (%x) != %s (%x)", b1, divd, b2, expected); \
@@ -384,6 +381,8 @@ DIV_CUST_RESULT(nan_neg          , nan("0")    , -10          ,FIX_NAN);
 DIV_CUST_RESULT(nan_inf          , nan("0")    , INFINITY     ,FIX_NAN);
 DIV_CUST_RESULT(nan_ninf         , nan("0")    , -INFINITY    ,FIX_NAN);
 DIV_CUST(regression1             , 0xf0000000  , 0x000022e8   ,FIX_INF_NEG);
+DIV_CUST(regression2             , 0xf0000000  , fix_neg(0x000022e8) ,FIX_INF_POS);
+DIV_CUST(regression3             , 0xf0000000  , 0x00004470          ,FIXNUM(-15321,658447265));
 
 
 #define unit_neg(name) unit_test(neg_##name)
@@ -807,7 +806,8 @@ int main(int argc, char** argv) {
     unit_div(nan_ninf),
     unit_div(overflow),
     unit_div(regression1),
-
+    unit_div(regression2),
+    unit_div(regression3),
 
     unit_neg(zero),
     unit_neg(one),

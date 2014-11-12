@@ -1,6 +1,37 @@
 #include "ftfp.h"
 #include <math.h>
 
+// ensure that we never divide by 0. Caller is responsible for checking.
+#define FIX_UNSAFE_DIV_32(op1, op2) \
+  (ROUND_TO_EVEN(((FIX_SIGN_TO_64(FIX_DATA_BITS(op1))<<32) / \
+                   FIX_SIGN_TO_64((op2) | (FIX_DATA_BITS(op2) == 0))),FIX_POINT_BITS)<<2)
+
+// Note that you will lose the bottom bit of op2 for overflow safety
+// Shift op2 right by 2 to gain 2 extra overflow bits
+#define FIX_DIV_32(op1, op2, overflow) \
+  ({ \
+    uint64_t fdiv32tmp = FIX_UNSAFE_DIV_32(op1, \
+      SIGN_EX_SHIFT_RIGHT_32(op2, 1)); \
+    uint64_t masked = fdiv32tmp & 0xFFFFFFFF00000000; \
+    overflow = !((masked == 0xFFFFFFFF00000000) | (masked == 0)); \
+    (fdiv32tmp >> 1) & 0xffffffff; \
+  })
+
+// Sign extend it all, this will help us correctly catch overflow
+#define FIX_UNSAFE_MUL_32(op1, op2) \
+  (ROUND_TO_EVEN(FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2),17))
+
+#define FIX_MUL_32(op1, op2, overflow) \
+  ({ \
+    uint64_t tmp = FIX_UNSAFE_MUL_32(op1, op2); \
+    /* inf only if overflow, and not a sign thing */ \
+    overflow |= \
+      !(((tmp & 0xFFFFFFFF80000000) == 0xFFFFFFFF80000000) \
+       | ((tmp & 0xFFFFFFFF80000000) == 0)); \
+    tmp; \
+   })
+
+
 inline uint32_t uint32_log2(uint32_t o) {
   uint32_t scratch = o;
   uint32_t log2;
@@ -73,23 +104,12 @@ fixed fix_div(fixed op1, fixed op2) {
   uint8_t isnegop1;
   uint8_t isnegop2;
 
-  uint64_t tmp;
-  uint64_t tmp2;
-
-  fixed tempresult,op2nz;
+  fixed tempresult;
 
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2) | (op2 == 0);
 
   // Take advantage of the extra bits we get out from doing this in uint64_t
-  // op2 is never allowed to be 0, if it is set it to something like 1 so div doesn't fall over
-  op2nz = op2 | (FIX_DATA_BITS(op2) == 0);
-  tmp = ROUND_TO_EVEN(((FIX_SIGN_TO_64(FIX_DATA_BITS(op1))<<32) /
-                       FIX_SIGN_TO_64(op2nz)),17)<<2;
-
-  tmp2 = tmp & 0xFFFFFFFF00000000;
-  isinf = !((tmp2 == 0xFFFFFFFF00000000) | (tmp2 == 0));
-
-  tempresult = tmp & 0xFFFFFFFC;
+  tempresult = FIX_DIV_32(op1, op2, isinf);
 
   isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
   isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
@@ -109,20 +129,6 @@ fixed fix_div(fixed op1, fixed op2) {
     FIX_DATA_BITS(tempresult);
 }
 
-
-// Sign extend it all, this will help us correctly catch overflow
-#define FIX_UNSAFE_MUL_32(op1, op2) \
-  (ROUND_TO_EVEN(FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2),17))
-
-#define FIX_MUL_32(op1, op2, overflow) \
-  ({ \
-    uint64_t tmp = FIX_UNSAFE_MUL_32(op1, op2); \
-    /* inf only if overflow, and not a sign thing */ \
-    overflow |= \
-      !(((tmp & 0xFFFFFFFF80000000) == 0xFFFFFFFF80000000) \
-       | ((tmp & 0xFFFFFFFF80000000) == 0)); \
-    tmp; \
-   })
 
 fixed fix_mul(fixed op1, fixed op2) {
 
@@ -217,14 +223,6 @@ fixed fix_ceil(fixed op1) {
     FIX_IF_INF_NEG(isinfneg & (!isnan)) |
     FIX_DATA_BITS(tempresult);
 }
-
-
-#define FIX_UNSAFE_DIV_32(op1, op2) \
-  (ROUND_TO_EVEN(((FIX_SIGN_TO_64(FIX_DATA_BITS(op1))<<32) / \
-                  FIX_SIGN_TO_64(op2 | (FIX_DATA_BITS(op2) == 0))),17)<<2)
-
-#define FIX_UNSAFE_MUL_32(op1, op2) \
-  (ROUND_TO_EVEN(FIX_SIGN_TO_64(op1) * FIX_SIGN_TO_64(op2),17))
 
 fixed fix_exp(fixed op1) {
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
