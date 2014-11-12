@@ -341,13 +341,25 @@ MUL_CUST(tinyoverflow_neg_neg , -148.5  , -148.5       ,FIX_INF_POS);
 
 #define unit_div(name) unit_test(div_##name)
 #define DIV_CUST(name, op1, op2, result) static void div_##name(void **state) { \
-  fixed o1 = fix_convert_double(op1); \
-  fixed o2 = fix_convert_double(op2); \
+  fixed o1 = op1; \
+  fixed o2 = op2; \
   fixed divd = fix_div(o1,o2); \
   fixed expected = result; \
-  CHECK_EQ_NAN("div", divd, expected); \
+  if( !FIX_EQ_NAN(divd, expected) ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, op1); \
+    fix_print(b2, op2); \
+    printf("Op Mismatch: %s (%x) != %s (%x)", b1, op1, b2, op2); \
+    fix_print(b1, divd); \
+    fix_print(b2, expected); \
+    fail_msg("Mismatch: %s (%x) != %s (%x)", b1, divd, b2, expected); \
+  } \
 }
-#define DIV(name, op1, op2, val) DIV_CUST(name, op1, op2, fix_convert_double(val))
+
+#define DIV_CUST_RESULT(name, op1, op2, result) \
+  DIV_CUST(name, fix_convert_double(op1), fix_convert_double(op2), result)
+#define DIV(name, op1, op2, result) \
+  DIV_CUST(name, fix_convert_double(op1), fix_convert_double(op2), fix_convert_double(result))
 DIV(one_one               , 1           , 1            ,1);
 DIV(fifteen_one           , 15          , 1            ,15);
 DIV(sixteen_two           , 16          , 2            ,8);
@@ -355,22 +367,23 @@ DIV(fifteen_nthree        , 15          , -3           ,-5);
 DIV(nfifteen_nthree       , -15         , -3           ,5);
 DIV(nfifteen_three        , -15         , 3            ,-5);
 DIV(fifteen_frac5         , 15          , 0.5          ,30);
-DIV_CUST(overflow         , 1<<13       , 0.1          ,FIX_INF_POS);
-DIV_CUST(one_zero         , 1           ,0             ,FIX_NAN);
-DIV_CUST(inf_zero         , INFINITY    ,0             ,FIX_NAN);
-DIV_CUST(zero_inf         , 0           ,INFINITY      ,FIX_INF_POS);
-DIV_CUST(inf_neg          , INFINITY    , -10          ,FIX_INF_NEG);
-DIV_CUST(ninf_neg         ,  -INFINITY  , -10          ,FIX_INF_POS);
-DIV_CUST(neg_inf          , -10         , INFINITY     ,FIX_INF_NEG);
-DIV_CUST(neg_ninf         , -10         ,  -INFINITY   ,FIX_INF_POS);
-DIV_CUST(pos_nan          , 10          , nan("1")     ,FIX_NAN);
-DIV_CUST(neg_nan          , -10         , nan("1")     ,FIX_NAN);
-DIV_CUST(inf_nan          , INFINITY    , nan("1")     ,FIX_NAN);
-DIV_CUST(ninf_nan         , -INFINITY   , nan("1")     ,FIX_NAN);
-DIV_CUST(nan_pos          , nan("0")    , 10           ,FIX_NAN);
-DIV_CUST(nan_neg          , nan("0")    , -10          ,FIX_NAN);
-DIV_CUST(nan_inf          , nan("0")    , INFINITY     ,FIX_NAN);
-DIV_CUST(nan_ninf         , nan("0")    , -INFINITY    ,FIX_NAN);
+DIV_CUST_RESULT(overflow         , 1<<13       , 0.1          ,FIX_INF_POS);
+DIV_CUST_RESULT(one_zero         , 1           ,0             ,FIX_NAN);
+DIV_CUST_RESULT(inf_zero         , INFINITY    ,0             ,FIX_NAN);
+DIV_CUST_RESULT(zero_inf         , 0           ,INFINITY      ,FIX_INF_POS);
+DIV_CUST_RESULT(inf_neg          , INFINITY    , -10          ,FIX_INF_NEG);
+DIV_CUST_RESULT(ninf_neg         ,  -INFINITY  , -10          ,FIX_INF_POS);
+DIV_CUST_RESULT(neg_inf          , -10         , INFINITY     ,FIX_INF_NEG);
+DIV_CUST_RESULT(neg_ninf         , -10         ,  -INFINITY   ,FIX_INF_POS);
+DIV_CUST_RESULT(pos_nan          , 10          , nan("1")     ,FIX_NAN);
+DIV_CUST_RESULT(neg_nan          , -10         , nan("1")     ,FIX_NAN);
+DIV_CUST_RESULT(inf_nan          , INFINITY    , nan("1")     ,FIX_NAN);
+DIV_CUST_RESULT(ninf_nan         , -INFINITY   , nan("1")     ,FIX_NAN);
+DIV_CUST_RESULT(nan_pos          , nan("0")    , 10           ,FIX_NAN);
+DIV_CUST_RESULT(nan_neg          , nan("0")    , -10          ,FIX_NAN);
+DIV_CUST_RESULT(nan_inf          , nan("0")    , INFINITY     ,FIX_NAN);
+DIV_CUST_RESULT(nan_ninf         , nan("0")    , -INFINITY    ,FIX_NAN);
+DIV_CUST(regression1             , 0xf0000000  , 0x000022e8   ,FIX_INF_NEG);
 
 
 #define unit_neg(name) unit_test(neg_##name)
@@ -793,6 +806,7 @@ int main(int argc, char** argv) {
     unit_div(nan_inf),
     unit_div(nan_ninf),
     unit_div(overflow),
+    unit_div(regression1),
 
 
     unit_neg(zero),
