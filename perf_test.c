@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 #include "ftfp.h"
 
@@ -45,7 +46,7 @@ void run_test_d(char* name, fixed (*function) (fixed,fixed), fixed a, fixed b){
   }
   end = rdtscp();
 
-  printf("%s  %u\n",name,(end-st-offset)/PERF_ITRS);
+  printf("%s  %" PRIu64 "\n",name,(end-st-offset)/PERF_ITRS);
 }
 void run_test_s(char* name, fixed (*function) (fixed), fixed a){
   int ctr = 0;
@@ -76,26 +77,33 @@ void run_test_s(char* name, fixed (*function) (fixed), fixed a){
   end = rdtscp();
 
 
-  printf("%s  %u\n",name,(end-st-offset)/PERF_ITRS);
+  printf("%s  %" PRIu64 "\n",name,(end-st-offset)/PERF_ITRS);
 }
 
 int main(int argc, char* argv[]){
   printf(    "function ""  cycles\n");
   printf(    "=================\n");
+  run_test_s("fix_neg  ",fix_neg,10);
+  run_test_s("fix_abs  ",fix_abs,10);
+
   run_test_d("fix_add  ",fix_add,0,0);
   run_test_d("fix_sub  ",fix_sub,0,0);
   run_test_d("fix_mul  ",fix_mul,0,0);
   run_test_d("fix_div  ",fix_div,0,0);
 
   run_test_s("fix_floor",fix_floor,10);
-  run_test_s("fix_neg  ",fix_neg,10);
-  run_test_s("fix_abs  ",fix_abs,10);
   run_test_s("fix_ceil ",fix_ceil,10);
+
   run_test_s("fix_exp  ",fix_exp,10);
-  run_test_s("fix_log2 ",fix_log2,10);
   run_test_s("fix_ln   ",fix_ln,10);
+  run_test_s("fix_log2 ",fix_log2,10);
   run_test_s("fix_log10",fix_log10,10);
+
   run_test_s("fix_sqrt ",fix_sqrt,10);
+
+  run_test_s("fix_cordic_sin  ",fix_cordic_sin,10);
+  run_test_s("fix_cordic_cos  ",fix_cordic_cos,10);
+  run_test_s("fix_cordic_tan  ",fix_cordic_tan,10);
 
   run_test_s("fix_sin  ",fix_sin,10);
 }
