@@ -321,7 +321,7 @@ fixed fix_convert_double(double d) {
 
   /* note that this breaks with denorm numbers. However, we'll shift those all
    * away with the exponent later */
-  uint64_t mantissa = (bits & ((1ull <<52)-1)) | (d != 0 ? (1ull<<52) : 0);
+  uint64_t mantissa = (bits & ((1ull <<52)-1)) + (((uint64_t)(d != 0)) << 52);
   uint32_t shift = 52 - (FIX_FRAC_BITS) - exponent;
 
   fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << FIX_FLAG_BITS) & 0xffffffff;
@@ -337,6 +337,6 @@ fixed fix_convert_double(double d) {
     FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    MASK_UNLESS(sign == 0, FIX_DATA_BITS(result)) |
+    MASK_UNLESS(!sign, FIX_DATA_BITS(result)) |
     MASK_UNLESS(sign, FIX_DATA_BITS(result_neg));
 }
