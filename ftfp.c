@@ -316,7 +316,10 @@ void fix_print(char* buffer, fixed f) {
 
 fixed fix_convert_double(double d) {
   uint64_t bits = *(uint64_t*) &d;
-  uint32_t exponent = ((bits >> 52) & 0x7ff) - 1023;
+  uint32_t exponent_base = ((bits >> 52) & 0x7ff);
+  uint64_t mantissa_base = (bits & ((1ull <<52)-1));
+
+  uint32_t exponent = exponent_base - 1023;
   uint32_t sign = bits >> 63;
 
   /* note that this breaks with denorm numbers. However, we'll shift those all
@@ -326,10 +329,13 @@ fixed fix_convert_double(double d) {
 
   fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << FIX_FLAG_BITS) & 0xffffffff;
 
-  uint8_t isinf = (isinf(d) | (((mantissa >> shift) & ~((1ull << (FIX_FRAC_BITS + FIX_INT_BITS)) -1)) != 0));
+  /* use IEEE 754 definition of INF */
+  uint8_t isinf = (exponent_base == 0x7ff) && (mantissa_base == 0);
+  isinf |= (((mantissa >> shift) & ~((1ull << (FIX_FRAC_BITS + FIX_INT_BITS)) -1)) != 0);
+
   uint8_t isinfpos = (d > 0) & isinf;
   uint8_t isinfneg = (d < 0) & isinf;
-  uint8_t isnan = isnan(d);
+  uint8_t isnan = (exponent_base == 0x7ff) && (mantissa_base != 0);
 
   fixed result_neg = fix_neg(result);
 
