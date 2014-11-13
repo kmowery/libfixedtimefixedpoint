@@ -235,9 +235,14 @@ static void constants(void **state) {
 #define TEST_CMP(name, op1, op2, result) static void cmp_##name(void **state) { \
   fixed o1 = fix_convert_double(op1); \
   fixed o2 = fix_convert_double(op2); \
-  int32_t cmp = FIX_CMP(o1, o2); \
+  int32_t cmp = fix_cmp(o1, o2); \
   int32_t expected = result; \
-  assert_memory_equal( &cmp, &expected, sizeof(uint32_t)); \
+  if( cmp != expected ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, o1); \
+    fix_print(b2, o2); \
+    fail_msg("Mismatch: (%d %d) %s (%x) != %s (%x)", cmp, expected, b1, o1, b2, o2); \
+  } \
 }
 
 TEST_CMP(zero_zero_eq    , 0         , 0         , 0);

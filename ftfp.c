@@ -2,6 +2,34 @@
 #include "internal.h"
 #include <math.h>
 
+int8_t fix_cmp(fixed op1, fixed op2) {
+  uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2));
+
+  uint32_t pos1 = !FIX_IS_NEG(op1);
+  uint32_t pos2 = !FIX_IS_NEG(op2);
+
+  uint32_t gt = (FIX_IS_INF_POS(op1) & !FIX_IS_INF_POS(op2))
+    | (!FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2));
+  uint32_t lt = (!FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2))
+    | (FIX_IS_INF_NEG(op1) & !FIX_IS_INF_NEG(op2));
+
+  gt |= (pos1 & !pos2);
+  lt |= (!pos1 & pos2);
+
+  uint32_t cmp_gt = ((fixed) (op1) > (fixed) (op2));
+  uint32_t cmp_lt = ((fixed) (op1) < (fixed) (op2));
+
+  int8_t result =
+    MASK_UNLESS( nans, 1 ) |
+    MASK_UNLESS( !nans,
+        MASK_UNLESS( gt, 1) |
+        MASK_UNLESS( lt, -1) |
+        MASK_UNLESS(!(gt|lt),
+          MASK_UNLESS(cmp_gt, 1) |
+          MASK_UNLESS(cmp_lt, -1)));
+  return result;
+}
+
 fixed fix_neg(fixed op1){
   uint8_t isinfpos;
   uint8_t isinfneg;
