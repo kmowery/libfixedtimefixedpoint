@@ -318,13 +318,14 @@ fixed fix_convert_double(double d) {
   uint64_t bits = *(uint64_t*) &d;
   uint32_t exponent_base = ((bits >> 52) & 0x7ff);
   uint64_t mantissa_base = (bits & ((1ull <<52)-1));
+  uint8_t d_is_zero = exponent_base == 0 & mantissa_base == 0;
 
   uint32_t exponent = exponent_base - 1023;
   uint32_t sign = bits >> 63;
 
   /* note that this breaks with denorm numbers. However, we'll shift those all
    * away with the exponent later */
-  uint64_t mantissa = mantissa_base | MASK_UNLESS_64(d != 0, (1ull << 52));
+  uint64_t mantissa = mantissa_base | MASK_UNLESS_64(!d_is_zero, (1ull << 52));
 
   uint32_t shift = 52 - (FIX_FRAC_BITS) - exponent;
 
