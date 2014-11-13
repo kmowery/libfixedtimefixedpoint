@@ -132,8 +132,8 @@ fixed fix_cordic_tan(fixed op1) {
   uint8_t isinf;
   uint64_t result = FIX_DIV_32(S, C, isinf);
 
-  isinfpos |= (isinf | (C==0)) && !FIX_IS_NEG(S);
-  isinfneg |= (isinf | (C==0)) && FIX_IS_NEG(S);
+  isinfpos |= !!(isinf | (C==0)) & !FIX_IS_NEG(S);
+  isinfneg |= !!(isinf | (C==0)) & FIX_IS_NEG(S);
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
