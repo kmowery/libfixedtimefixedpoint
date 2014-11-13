@@ -14,6 +14,7 @@
  * arccos
  * arctan
  * arcsin
+ * fix_to_double
  */
 
 #define FIX_NORMAL   0x0
@@ -25,11 +26,10 @@
 #define FIX_FRAC_BITS 15
 #define FIX_INT_BITS  15
 
-#define FIX_IS_NEG(f) ((FIX_TOP_BIT(f)) == (FIX_TOP_BIT_MASK))
-
-#define FIX_IS_NAN(f) (((f)&FIX_FLAGS_MASK) == FIX_NAN)
-#define FIX_IS_INF_POS(f) (((f)&FIX_FLAGS_MASK) == FIX_INF_POS)
-#define FIX_IS_INF_NEG(f) (((f)&FIX_FLAGS_MASK) == FIX_INF_NEG)
+int8_t fix_is_neg(fixed op1);
+int8_t fix_is_nan(fixed op1);
+int8_t fix_is_inf_pos(fixed op1);
+int8_t fix_is_inf_neg(fixed op1);
 
 // Create a fixnum constant. Use:
 //   fixed x = FIX(-3,14159);
@@ -37,21 +37,17 @@
     ( MASK_UNLESS((#i[0] == '-') | (i < 0), fix_neg(f)) | \
       MASK_UNLESS((#i[0] != '-') | (i > 0), f) ); })
 
-
 /* Returns true if the numbers are equal (NaNs are always unequal.) */
-#define FIX_EQ(op1, op2) ( \
-    (!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2))) &    \
-    ((FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2)) | \
-    (FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2)) | \
-    ((op1) == (op2))))
+int8_t fix_eq(fixed op1, fixed op2);
 
 /* Returns true if the numbers are equal (and also if they are both NaN) */
-#define FIX_EQ_NAN(op1, op2) ( \
-    (FIX_IS_NAN(op1) & FIX_IS_NAN(op2)) | \
-    (FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2)) | \
-    (FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2)) | \
-    ((op1) == (op2)))
+int8_t fix_eq_nan(fixed op1, fixed op2);
 
+/* Returns:
+ *   -1 if op1 < op2
+ *    0 if they are equal
+ *    1 if op1 > op2 (or either is * NaN)
+ */
 int8_t fix_cmp(fixed op1, fixed op2);
 
 // Useful constants

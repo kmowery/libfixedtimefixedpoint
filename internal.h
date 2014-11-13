@@ -37,6 +37,29 @@
 #define FIX_IF_INF_POS(isinfpos) (((isinfpos) | ((isinfpos) << 1)) & FIX_INF_POS)
 #define FIX_IF_INF_NEG(isinfneg) (((isinfneg) | ((isinfneg) << 1)) & FIX_INF_NEG)
 
+#define FIX_IS_NEG(f) ((FIX_TOP_BIT(f)) == (FIX_TOP_BIT_MASK))
+
+#define FIX_IS_NAN(f) (((f)&FIX_FLAGS_MASK) == FIX_NAN)
+#define FIX_IS_INF_POS(f) (((f)&FIX_FLAGS_MASK) == FIX_INF_POS)
+#define FIX_IS_INF_NEG(f) (((f)&FIX_FLAGS_MASK) == FIX_INF_NEG)
+
+
+/* Returns true if the numbers are equal (NaNs are always unequal.) */
+#define FIX_EQ(op1, op2) ( \
+    (!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2))) &    \
+    ((FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2)) | \
+    (FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2)) | \
+    ((op1) == (op2))))
+
+/* Returns true if the numbers are equal (and also if they are both NaN) */
+#define FIX_EQ_NAN(op1, op2) ( \
+    (FIX_IS_NAN(op1) & FIX_IS_NAN(op2)) | \
+    (FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2)) | \
+    (FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2)) | \
+    ((op1) == (op2)))
+
+
+
 /* Lops off the rightmost n_shift_bits of value and rounds to an even value
  * (so 0.5 will round to 0, but 1.5 will round to 2)
  *

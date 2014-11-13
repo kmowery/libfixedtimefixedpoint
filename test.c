@@ -17,13 +17,13 @@ static void null_test_success(void **state) {
 }
 
 #define CHECK_EQ(error_msg, var1, var2) \
-  if( !FIX_EQ(var1, var2) ) { \
+  if( !fix_eq(var1, var2) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, var1); fix_print(b2, var2); \
     fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, var1, b2, var2); \
   }
 #define CHECK_EQ_NAN(error_msg, var1, var2) \
-  if( !FIX_EQ_NAN(var1, var2) ) { \
+  if( !fix_eq_nan(var1, var2) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, var1); fix_print(b2, var2); \
     fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, var1, b2, var2); \
@@ -114,12 +114,12 @@ TEST_FIXNUM(regress4 ,     1 , 9999999999999, 0x00040000);
 #define TEST_EQ(name, op1, op2, value, valuenan) static void equal_##name(void **state) { \
   fixed o1 = op1; \
   fixed o2 = op2; \
-  if( FIX_EQ(o1, o2) != value ) { \
+  if( fix_eq(o1, o2) != value ) { \
     char b1[100], b2[100]; \
     fix_print(b1, o1); fix_print(b2, o2); \
     fail_msg( "values not right: %s (%x) %s %s (%x)", b1, o1, value ? "!=" : "==", b2, o2); \
   } \
-  if( FIX_EQ_NAN(o1, o2) != valuenan ) { \
+  if( fix_eq_nan(o1, o2) != valuenan ) { \
     char b1[100], b2[100]; \
     fix_print(b1, o1); fix_print(b2, o2); \
     fail_msg( "NaN values not right: %s (%x) %s %s (%x)", b1, o1, value ? "!=" : "==", b2, o2); \
@@ -279,7 +279,7 @@ TEST_CMP(neg_pos         , -17.3     , 24.5      , -1);
   fixed o2 = fix_convert_double(op2); \
   fixed added = fix_add(o1,o2); \
   fixed expected = result; \
-  if( !FIX_EQ_NAN(added, expected) ) { \
+  if( !fix_eq_nan(added, expected) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, added); \
     fix_print(b2, expected); \
@@ -310,7 +310,7 @@ ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , FIX_INF_POS);
   fixed o2 = fix_convert_double(op2); \
   fixed muld = fix_mul(o1,o2); \
   fixed expected = result; \
-  if( !FIX_EQ_NAN(muld, expected) ) { \
+  if( !fix_eq_nan(muld, expected) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, muld); \
     fix_print(b2, expected); \
@@ -350,7 +350,7 @@ MUL_CUST(tinyoverflow_neg_neg , -148.5  , -148.5       ,FIX_INF_POS);
   fixed o2 = op2; \
   fixed divd = fix_div(o1,o2); \
   fixed expected = result; \
-  if( !FIX_EQ_NAN(divd, expected) ) { \
+  if( !fix_eq_nan(divd, expected) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, divd); \
     fix_print(b2, expected); \
@@ -395,7 +395,7 @@ DIV_CUST(regression3             , 0xf0000000  , 0x00004470          ,FIXNUM(-15
   fixed o1 = fix_convert_double(op1); \
   fixed negd = fix_neg(o1); \
   fixed expected = result; \
-  assert_true( FIX_EQ_NAN(negd, expected) ); \
+  assert_true( fix_eq_nan(negd, expected) ); \
 }
 #define NEG(name, op1, val) NEG_CUST(name, op1, fix_convert_double(val))
 
