@@ -14,7 +14,6 @@
  * arccos
  * arctan
  * arcsin
- * fix_to_double
  */
 
 #define FIX_NORMAL   0x0
@@ -86,6 +85,7 @@ fixed fix_cordic_tan(fixed op1);
 fixed fix_sin(fixed op1);
 
 fixed fix_convert_double(double d);
+double fix_convert_to_double(fixed op1);
 
 void fix_print(char* buffer, fixed f);
 void fix_print_const(char* buffer, fixed f);

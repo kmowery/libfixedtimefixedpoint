@@ -68,8 +68,15 @@ void bounds(fixed f) {
 #define unit_fixint_dbl(name) unit_test(convert_dbl_##name)
 #define CONVERT_DBL(name, d, bits) static void convert_dbl_##name(void **state) { \
   fixed f = bits; \
-  fixed g = fix_convert_double(d); \
+  double locald = d; \
+  fixed g = fix_convert_double(locald); \
   CHECK_EQ_NAN(#name, f, g); \
+  double d2 = fix_convert_to_double(g); \
+  if( !((abs(d - d2) < 0.000001) || (isnan(d) && isnan(d2))) ) { \
+    char b1[100]; \
+    fix_print(b1, g); \
+    fail_msg( #name " convert_to_double failed : %g (%s %08x) != %g", d2, b1, g, locald); \
+  } \
 }
 
 CONVERT_DBL(zero     , 0         , 0x00000);

@@ -366,3 +366,41 @@ fixed fix_convert_double(double d) {
     MASK_UNLESS(!sign, FIX_DATA_BITS(result)) |
     MASK_UNLESS(sign, FIX_DATA_BITS(result_neg));
 }
+
+double fix_convert_to_double(fixed op1) {
+  uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isinfneg = FIX_IS_INF_NEG(op1);
+  uint8_t isnan = FIX_IS_NAN(op1);
+  uint8_t exception = isinfpos | isinfneg | isnan;
+
+  // Doubles don't use two's complement. Record the sign and flip back into positive land...
+  uint64_t sign = FIX_IS_NEG(op1);
+  op1 = fix_abs(op1);
+
+  uint32_t log2op1 = uint32_log2(op1);
+
+  uint64_t mantissa = (((uint64_t) op1) << (53 - 1 - log2op1)) & ((1ull << 52) -1);
+  uint64_t exponent = log2op1 - FIX_POINT_BITS + 1023;
+
+  // We would include
+  //  MASK_UNLESS( isinfpos | isinfneg , 0 ),
+  // but that's implied by masking everything else.
+  mantissa =
+    MASK_UNLESS_64( isnan, 1 ) |
+    MASK_UNLESS_64(!exception, mantissa );
+
+  sign =
+    MASK_UNLESS_64( isinfneg, 1ull ) |
+    MASK_UNLESS_64(!exception, sign );
+
+  exponent =
+    MASK_UNLESS_64( exception, 0x7ff) |
+    MASK_UNLESS_64(!exception, exponent);
+
+  uint64_t result = (sign << 63) |
+    (exponent << 52) |
+    (mantissa);
+
+  double d = *(double*) &result;
+  return d;
+}
