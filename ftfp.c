@@ -130,12 +130,12 @@ fixed fix_add(fixed op1, fixed op2) {
   // 'negative' number:
   //   if both inputs are positive (top bit == 0) and the result is 'negative'
   //   (top bit nonzero)
-  isinfpos |= (FIX_TOP_BIT(op1) | FIX_TOP_BIT(op2)) ==
-    0x0 && (FIX_TOP_BIT(tempresult) != 0x0);
+  isinfpos |= ((FIX_TOP_BIT(op1) | FIX_TOP_BIT(op2)) == 0x0)
+    & (FIX_TOP_BIT(tempresult) != 0x0);
 
   // check if there's negative infinity overflow
-  isinfneg |= (FIX_TOP_BIT(op1) & FIX_TOP_BIT(op2)) ==
-    FIX_TOP_BIT_MASK && (FIX_TOP_BIT(tempresult) == 0x0);
+  isinfneg |= ((FIX_TOP_BIT(op1) & FIX_TOP_BIT(op2)) == FIX_TOP_BIT_MASK)
+    & (FIX_TOP_BIT(tempresult) == 0x0);
 
   // Force infpos to win in cases where it is unclear
   isinfneg &= !isinfpos;
