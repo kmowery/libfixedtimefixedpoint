@@ -58,14 +58,14 @@
 #define ROUND_TO_EVEN(value, n_shift_bits) \
   (((value) >> (n_shift_bits)) + \
    !!( \
-     (((value) & (1 << ((n_shift_bits)-1))) && !!((value) & ((1 << ((n_shift_bits)-1))-1))) | \
+     (!!((value) & (1 << ((n_shift_bits)-1))) & !!((value) & ((1 << ((n_shift_bits)-1))-1))) | \
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
 #define ROUND_TO_EVEN_SIGNED(value, n_shift_bits) \
   (SIGN_EX_SHIFT_RIGHT_32(value, n_shift_bits) + \
    !!( \
-     (((value) & (1 << ((n_shift_bits)-1))) && !!((value) & ((1 << ((n_shift_bits)-1))-1))) | \
+     (!!((value) & (1 << ((n_shift_bits)-1))) & !!((value) & ((1 << ((n_shift_bits)-1))-1))) | \
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
