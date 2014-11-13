@@ -8,13 +8,13 @@ int8_t fix_cmp(fixed op1, fixed op2) {
   uint32_t pos1 = !FIX_IS_NEG(op1);
   uint32_t pos2 = !FIX_IS_NEG(op2);
 
-  uint32_t gt = (FIX_IS_INF_POS(op1) & !FIX_IS_INF_POS(op2))
-    | (!FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2));
-  uint32_t lt = (!FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2))
-    | (FIX_IS_INF_NEG(op1) & !FIX_IS_INF_NEG(op2));
+  uint32_t gt = (FIX_IS_INF_POS(op1) & (!FIX_IS_INF_POS(op2)))
+    | ((!FIX_IS_INF_NEG(op1)) & FIX_IS_INF_NEG(op2));
+  uint32_t lt = ((!FIX_IS_INF_POS(op1)) & FIX_IS_INF_POS(op2))
+    | (FIX_IS_INF_NEG(op1) & (!FIX_IS_INF_NEG(op2)));
 
-  gt |= (pos1 & !pos2);
-  lt |= (!pos1 & pos2);
+  gt |= (pos1 & (!pos2));
+  lt |= ((!pos1) & pos2);
 
   uint32_t cmp_gt = ((fixed) (op1) > (fixed) (op2));
   uint32_t cmp_lt = ((fixed) (op1) < (fixed) (op2));
@@ -318,7 +318,7 @@ fixed fix_convert_double(double d) {
   uint64_t bits = *(uint64_t*) &d;
   uint32_t exponent_base = ((bits >> 52) & 0x7ff);
   uint64_t mantissa_base = (bits & ((1ull <<52)-1));
-  uint8_t d_is_zero = exponent_base == 0 & mantissa_base == 0;
+  uint8_t d_is_zero = (exponent_base == 0) & (mantissa_base == 0);
 
   uint32_t exponent = exponent_base - 1023;
   uint32_t sign = bits >> 63;
