@@ -80,6 +80,39 @@ void run_test_s(char* name, fixed (*function) (fixed), fixed a){
   printf("%s  %" PRIu64 "\n",name,(end-st-offset)/PERF_ITRS);
 }
 
+void run_test_p(char* name, void (*function) (char*,fixed), fixed a){
+  int ctr = 0;
+  char buf[40];
+  uint64_t st = rdtscp();
+  // Offset for running the loop and rdtscp
+  for(ctr=0;ctr<PERF_ITRS;ctr++){
+  }
+  uint64_t end = rdtscp();
+  uint64_t offset = end-st;
+
+  st = rdtscp();
+  for(ctr=0;ctr<PERF_ITRS;ctr++){
+    (*function)(buf, a);
+  }
+  end = rdtscp();
+
+  // Run everything for real, previous was just warmup
+  st = rdtscp();
+  for(ctr=0;ctr<PERF_ITRS;ctr++){
+  }
+  end = rdtscp();
+  offset = end-st;
+
+  st = rdtscp();
+  for(ctr=0;ctr<PERF_ITRS;ctr++){
+    (*function)(buf, a);
+  }
+  end = rdtscp();
+
+
+  printf("%s  %" PRIu64 "\n",name,(end-st-offset)/PERF_ITRS);
+}
+
 int main(int argc, char* argv[]){
   printf(    "function ""  cycles\n");
   printf(    "=================\n");
@@ -104,6 +137,7 @@ int main(int argc, char* argv[]){
   run_test_s("fix_cordic_sin  ",fix_cordic_sin,10);
   run_test_s("fix_cordic_cos  ",fix_cordic_cos,10);
   run_test_s("fix_cordic_tan  ",fix_cordic_tan,10);
-
   run_test_s("fix_sin  ",fix_sin,10);
+
+  run_test_p("fix_print_const ",fix_print_const,10);
 }
