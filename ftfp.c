@@ -335,8 +335,8 @@ fixed fix_convert_double(double d) {
   uint8_t isinf = (exponent_base == 0x7ff) && (mantissa_base == 0);
   isinf |= (((mantissa >> shift) & ~((1ull << (FIX_FRAC_BITS + FIX_INT_BITS)) -1)) != 0);
 
-  uint8_t isinfpos = (d > 0) & isinf;
-  uint8_t isinfneg = (d < 0) & isinf;
+  uint8_t isinfpos = (sign == 0) & isinf;
+  uint8_t isinfneg = (sign != 0) & isinf;
   uint8_t isnan = (exponent_base == 0x7ff) && (mantissa_base != 0);
 
   fixed result_neg = fix_neg(result);
