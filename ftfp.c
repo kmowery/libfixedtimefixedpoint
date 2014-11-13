@@ -298,7 +298,7 @@ fixed fix_convert_double(double d) {
 
   fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << FIX_FLAG_BITS) & 0xffffffff;
 
-  uint8_t isinf = (isinf(d) || ((mantissa >> shift) & ~((1ull << (FIX_FRAC_BITS + FIX_INT_BITS)) -1)) != 0);
+  uint8_t isinf = (isinf(d) | (((mantissa >> shift) & ~((1ull << (FIX_FRAC_BITS + FIX_INT_BITS)) -1)) != 0));
   uint8_t isinfpos = (d > 0) & isinf;
   uint8_t isinfneg = (d < 0) & isinf;
   uint8_t isnan = isnan(d);
