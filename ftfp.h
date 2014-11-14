@@ -78,6 +78,13 @@ fixed fix_log10(fixed op1);
 
 fixed fix_sqrt(fixed op1);
 
+/* Computes x^y.
+ *
+ * Note that this is undefined when x < 0 and y is not an integer, and will
+ * return NaN.
+ */
+fixed fix_pow(fixed x, fixed y);
+
 fixed fix_sin(fixed op1);
 fixed fix_cos(fixed op1);
 fixed fix_tan(fixed op1);

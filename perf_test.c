@@ -100,6 +100,7 @@ int main(int argc, char* argv[]){
   printf("\n");
 
   run_test_s ("fix_sqrt       ",fix_sqrt,10);
+  run_test_d ("fix_pow        ",fix_pow,10,10);
   printf("\n");
 
   run_test_s ("fix_sin        ",fix_sin,10);

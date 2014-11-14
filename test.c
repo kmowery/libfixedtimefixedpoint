@@ -548,6 +548,39 @@ SQRT_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
 SQRT_CUST(neg    , FIXNUM(-1,0)      , FIX_NAN);
 SQRT_CUST(nan    , FIX_NAN           , FIX_NAN);
 
+#define unit_pow(name) unit_test(pow_##name)
+#define POW_CUST(name, op1, op2, result)      static void pow_##name(void **state) { \
+  fixed o1 = op1; \
+  fixed o2 = op2; \
+  fixed powresult = fix_pow(o1, o2); \
+  fixed expected = result; \
+  CHECK_EQ_NAN(#name, powresult, expected); \
+}
+
+POW_CUST(zero_zero       , FIX_ZERO          , FIX_ZERO,      FIX_ZERO);
+POW_CUST(zero_one        , FIX_ZERO          , FIXNUM(1,0),   FIX_ZERO);
+POW_CUST(half_zero       , FIXNUM(0,5)       , FIX_ZERO   ,   FIXNUM(1,0) );
+POW_CUST(half_square     , FIXNUM(0,5)       , FIXNUM(2,0),   FIXNUM(0,249938964) );
+POW_CUST(half_nsquare    , FIXNUM(0,5)       , FIXNUM(-2,0),  FIXNUM(3,999908447) );
+POW_CUST(half_neight     , FIXNUM(0,5)       , FIXNUM(-8,0),  FIXNUM(255,97656250) );
+POW_CUST(one2            , FIXNUM(1,0)       , FIXNUM(2,0),   FIXNUM(1,0));
+POW_CUST(one4            , FIXNUM(1,0)       , FIXNUM(4,0),   FIXNUM(1,0));
+POW_CUST(ten_square      , FIXNUM(10,0)      , FIXNUM(2,0),   FIXNUM(99,20523071));
+POW_CUST(ten_cubed       , FIXNUM(10,0)      , FIXNUM(3,0),   FIXNUM(988,28616333));
+POW_CUST(neg_one2        , FIXNUM(-1,0)      , FIXNUM(2,0),   FIXNUM(1,0));
+POW_CUST(neg_one3        , FIXNUM(-1,0)      , FIXNUM(3,0),   FIXNUM(-1,0));
+POW_CUST(neg_two2        , FIXNUM(-2,0)      , FIXNUM(2,0),   FIXNUM(3,9999084472));
+POW_CUST(neg_two3        , FIXNUM(-2,0)      , FIXNUM(3,0),   FIXNUM(-7,9998474121));
+POW_CUST(neg_two_neg2    , FIXNUM(-2,0)      , FIXNUM(-2,0),  FIXNUM(0,249938964));
+POW_CUST(neg_two_nan     , FIXNUM(-2,0)      , FIXNUM(2,5),   FIX_NAN);
+POW_CUST(neg_pos_overflow, FIXNUM(-2,0)      , FIXNUM(128,0), FIX_INF_POS);
+POW_CUST(neg_overflow    , FIXNUM(-2,0)      , FIXNUM(127,0), FIX_INF_NEG);
+POW_CUST(ten_overflow    , FIXNUM(10,0)      , FIXNUM(100,0), FIX_INF_POS);
+POW_CUST(inf_not         , FIX_INF_POS       , FIXNUM(1,0),   FIX_INF_POS);
+POW_CUST(not_inf         , FIXNUM(2,0)       , FIX_INF_POS,   FIX_INF_POS);
+POW_CUST(not_inf_neg     , FIXNUM(2,0)       , FIX_INF_NEG,   FIX_ZERO);
+POW_CUST(nan_not         , FIX_NAN           , FIXNUM(1,0),   FIX_NAN    );
+POW_CUST(not_nan         , FIXNUM(2,0)       , FIX_NAN    ,   FIX_NAN    );
 
 // To print out all sins:
 //int roots_of_unity = 16;
@@ -953,6 +986,31 @@ int main(int argc, char** argv) {
     unit_sqrt(inf),
     unit_sqrt(neg),
     unit_sqrt(nan),
+
+    unit_pow(zero_zero),
+    unit_pow(zero_one),
+    unit_pow(half_zero),
+    unit_pow(half_square),
+    unit_pow(half_nsquare),
+    unit_pow(half_neight),
+    unit_pow(one2),
+    unit_pow(one4),
+    unit_pow(ten_square),
+    unit_pow(ten_cubed),
+    unit_pow(ten_overflow),
+    unit_pow(neg_one2),
+    unit_pow(neg_one3),
+    unit_pow(neg_two2),
+    unit_pow(neg_two3),
+    unit_pow(neg_two_neg2),
+    unit_pow(neg_two_nan),
+    unit_pow(neg_pos_overflow),
+    unit_pow(neg_overflow),
+    unit_pow(inf_not),
+    unit_pow(not_inf),
+    unit_pow(not_inf_neg),
+    unit_pow(nan_not),
+    unit_pow(not_nan),
 
     unit_sin(zero),
     unit_sin(pi_2),

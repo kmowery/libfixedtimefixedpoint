@@ -332,4 +332,47 @@ fixed fix_sqrt(fixed op1) {
     FIX_DATA_BITS(x & 0xffffffff);
 }
 
+/* fix_pow: Computes x^y.
+ *
+ *  Uses the exponential method:
+ *
+ *        z = x^y
+ *     ln z = y ln(x)
+ *        z = e ^ (y ln(x))
+ *
+ * */
+
+/* We might be able to make this a little bit more precise by not casting to a
+ * fixed each time... */
+
+/* The complicated bits here are to deal with the case where you do x^y, but x
+ * is negative and y is non-integer... */
+fixed fix_pow(fixed x, fixed y) {
+
+  /* Store x's sign, and then check if it's positive. */
+  uint8_t xneg = FIX_IS_NEG(x);
+  x = fix_abs(x);
+
+  // To know if y is an integer, we need it to be positive.
+  fixed yabs = fix_abs(y);
+  uint8_t y_is_int = (yabs & FIX_FRAC_MASK) == 0;
+  uint8_t y_int_mod_2 = ((yabs & FIX_INT_MASK) >> FIX_POINT_BITS) & 0x1;
+
+  fixed lnx = fix_ln(x);
+  fixed prod = fix_mul(lnx, y);
+  fixed result = fix_exp(prod);
+
+  /* if x > 0, then return the result.
+   * if x < 0 and y is an integer, then return the result with the proper sign.
+   * if x < 0 and y is not an int, then return NaN.
+   */
+  result =
+    MASK_UNLESS( !xneg, result ) |
+    MASK_UNLESS( xneg & y_is_int,
+        MASK_UNLESS(y_int_mod_2 == 0, result) |
+        MASK_UNLESS(y_int_mod_2 == 1, fix_neg(result))) |
+    MASK_UNLESS( xneg & !y_is_int, FIX_NAN);
+
+  return result;
+}
 
