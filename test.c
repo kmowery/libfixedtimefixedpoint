@@ -69,7 +69,7 @@ void bounds(fixed f) {
 #define CONVERT_DBL(name, d, bits) static void convert_dbl_##name(void **state) { \
   fixed f = bits; \
   double locald = d; \
-  fixed g = fix_convert_double(locald); \
+  fixed g = fix_convert_from_double(locald); \
   CHECK_EQ_NAN(#name, f, g); \
   double d2 = fix_convert_to_double(g); \
   if( !((abs(d - d2) < 0.000001) || (isnan(d) && isnan(d2))) ) { \
@@ -183,7 +183,7 @@ TEST_ROUND_TO_EVEN(eight_plus , 0x10 , 0x3 , 0x2);
   CHECK_INT_EQUAL("floor"         , round_floor , exp_floor); \
 }
 #define TEST_ROUNDING(name, value, res_even, res_up, res_ceil, res_floor)  \
- TEST_ROUNDING_CUST(name, fix_convert_double(value), res_even, res_up, res_ceil, res_floor)
+ TEST_ROUNDING_CUST(name, fix_convert_from_double(value), res_even, res_up, res_ceil, res_floor)
 
 /*            Name       Value       Even      Up        Ceil      Down */
 TEST_ROUNDING(zero     , 0         , 0       , 0       , 0       , 0);
@@ -240,8 +240,8 @@ static void constants(void **state) {
 
 #define unit_cmp(name) unit_test(cmp_##name)
 #define TEST_CMP(name, op1, op2, result) static void cmp_##name(void **state) { \
-  fixed o1 = fix_convert_double(op1); \
-  fixed o2 = fix_convert_double(op2); \
+  fixed o1 = fix_convert_from_double(op1); \
+  fixed o2 = fix_convert_from_double(op2); \
   int32_t cmp = fix_cmp(o1, o2); \
   int32_t expected = result; \
   if( cmp != expected ) { \
@@ -282,8 +282,8 @@ TEST_CMP(neg_pos         , -17.3     , 24.5      , -1);
 
 #define unit_add(name) unit_test(add_##name)
 #define ADD_CUST(name, op1, op2, result) static void add_##name(void **state) { \
-  fixed o1 = fix_convert_double(op1); \
-  fixed o2 = fix_convert_double(op2); \
+  fixed o1 = fix_convert_from_double(op1); \
+  fixed o2 = fix_convert_from_double(op2); \
   fixed added = fix_add(o1,o2); \
   fixed expected = result; \
   if( !fix_eq_nan(added, expected) ) { \
@@ -293,7 +293,7 @@ TEST_CMP(neg_pos         , -17.3     , 24.5      , -1);
     fail_msg("Mismatch: %s (%x) != %s (%x)", b1, added, b2, expected); \
   } \
 }
-#define ADD(name, op1, op2, val) ADD_CUST(name, op1, op2, fix_convert_double(val))
+#define ADD(name, op1, op2, val) ADD_CUST(name, op1, op2, fix_convert_from_double(val))
 
 ADD(one_zero               , 1        , 0             , 1);
 ADD(one_one                , 1        , 1             , 2);
@@ -313,8 +313,8 @@ ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , FIX_INF_POS);
 
 #define unit_mul(name) unit_test(mul_##name)
 #define MUL_CUST(name, op1, op2, result) static void mul_##name(void **state) { \
-  fixed o1 = fix_convert_double(op1); \
-  fixed o2 = fix_convert_double(op2); \
+  fixed o1 = fix_convert_from_double(op1); \
+  fixed o2 = fix_convert_from_double(op2); \
   fixed muld = fix_mul(o1,o2); \
   fixed expected = result; \
   if( !fix_eq_nan(muld, expected) ) { \
@@ -324,7 +324,7 @@ ADD_CUST(inf_inf_neg       , INFINITY , -INFINITY     , FIX_INF_POS);
     fail_msg("Mismatch: %s (%x) != %s (%x)", b1, muld, b2, expected); \
   } \
 }
-#define MUL(name, op1, op2, val) MUL_CUST(name, op1, op2, fix_convert_double(val))
+#define MUL(name, op1, op2, val) MUL_CUST(name, op1, op2, fix_convert_from_double(val))
 MUL(one_zero              , 1           ,0             ,0);
 MUL(one_one               , 1           , 1            ,1);
 MUL(fifteen_one           , 15          , 1            ,15);
@@ -366,9 +366,9 @@ MUL_CUST(tinyoverflow_neg_neg , -148.5  , -148.5       ,FIX_INF_POS);
 }
 
 #define DIV_CUST_RESULT(name, op1, op2, result) \
-  DIV_CUST(name, fix_convert_double(op1), fix_convert_double(op2), result)
+  DIV_CUST(name, fix_convert_from_double(op1), fix_convert_from_double(op2), result)
 #define DIV(name, op1, op2, result) \
-  DIV_CUST(name, fix_convert_double(op1), fix_convert_double(op2), fix_convert_double(result))
+  DIV_CUST(name, fix_convert_from_double(op1), fix_convert_from_double(op2), fix_convert_from_double(result))
 DIV(one_one               , 1           , 1            ,1);
 DIV(fifteen_one           , 15          , 1            ,15);
 DIV(sixteen_two           , 16          , 2            ,8);
@@ -399,12 +399,12 @@ DIV_CUST(regression3             , 0xf0000000  , 0x00004470          ,FIXNUM(-15
 
 #define unit_neg(name) unit_test(neg_##name)
 #define NEG_CUST(name, op1, result) static void neg_##name(void **state) { \
-  fixed o1 = fix_convert_double(op1); \
+  fixed o1 = fix_convert_from_double(op1); \
   fixed negd = fix_neg(o1); \
   fixed expected = result; \
   assert_true( fix_eq_nan(negd, expected) ); \
 }
-#define NEG(name, op1, val) NEG_CUST(name, op1, fix_convert_double(val))
+#define NEG(name, op1, val) NEG_CUST(name, op1, fix_convert_from_double(val))
 
 NEG(zero,    0, 0);
 NEG(one,     1, -1);
@@ -415,12 +415,12 @@ NEG_CUST(nan, nan("0"), FIX_NAN);
 
 #define unit_abs(name) unit_test(abs_##name)
 #define ABS_CUST(name, op1, result) static void abs_##name(void **state) { \
-  fixed o1 = fix_convert_double(op1); \
+  fixed o1 = fix_convert_from_double(op1); \
   fixed absd = fix_abs(o1); \
   fixed expected = result; \
   CHECK_EQ_NAN(#name, absd, expected); \
 }
-#define ABS(name, op1, val) ABS_CUST(name, op1, fix_convert_double(val))
+#define ABS(name, op1, val) ABS_CUST(name, op1, fix_convert_from_double(val))
 
 ABS(zero         , 0         , 0);
 ABS(one          , 1         , 1);
@@ -439,7 +439,7 @@ ABS_CUST(nan     , nan("0")  , FIX_NAN);
   fixed expected = result; \
   CHECK_EQ_NAN(#name, ln, expected); \
 }
-#define LN(name, op1, val) LN_CUST(name, op1, fix_convert_double(val))
+#define LN(name, op1, val) LN_CUST(name, op1, fix_convert_from_double(val))
 
 LN_CUST(zero   , 0x0               , FIX_INF_NEG);
 LN_CUST(0xf0   , 0xf0              , FIXNUM(-6,3028564453)); // -6.302863146
@@ -462,7 +462,7 @@ LN_CUST(nan    , FIX_NAN           , FIX_NAN);
   fixed expected = result; \
   CHECK_EQ_NAN(#name, log2, expected); \
 }
-#define LOG2(name, op1, val) LOG2_CUST(name, op1, fix_convert_double(val))
+#define LOG2(name, op1, val) LOG2_CUST(name, op1, fix_convert_from_double(val))
 
 LOG2_CUST(zero   , 0x0               , FIX_INF_NEG);
 LOG2_CUST(0xf0   , 0xf0              , FIXNUM(-9,093139648)); //9.093139648
@@ -488,7 +488,7 @@ LOG2_CUST(nan    , FIX_NAN           , FIX_NAN);
   fixed expected = result; \
   CHECK_EQ_NAN(#name, log10, expected); \
 }
-#define LOG10(name, op1, val) LOG10_CUST(name, op1, fix_convert_double(val))
+#define LOG10(name, op1, val) LOG10_CUST(name, op1, fix_convert_from_double(val))
 
 LOG10_CUST(zero   , 0x0               , FIX_INF_NEG);
 LOG10_CUST(one    , FIXNUM(1,0)       , FIXNUM(-0 , 000061035)); // almost 0.
@@ -511,7 +511,7 @@ LOG10_CUST(nan    , FIX_NAN           , FIX_NAN);
   fixed expected = result; \
   CHECK_EQ_NAN(#name, exp, expected); \
 }
-#define EXP(name, op1, val) EXP_CUST(name, op1, fix_convert_double(val))
+#define EXP(name, op1, val) EXP_CUST(name, op1, fix_convert_from_double(val))
 
 EXP_CUST(zero   , FIX_ZERO          , FIXNUM(1,0));
 EXP_CUST(one    , FIXNUM(1,0)       , FIX_E);
@@ -535,7 +535,7 @@ EXP_CUST(nan    , FIX_NAN           , FIX_NAN);
   fixed expected = result; \
   CHECK_EQ_NAN(#name, sqrt, expected); \
 }
-#define sqrt(name, op1, val) sqrt_CUST(name, op1, fix_convert_double(val))
+#define sqrt(name, op1, val) sqrt_CUST(name, op1, fix_convert_from_double(val))
 
 SQRT_CUST(zero   , 0x0               , FIXNUM(0,0));
 SQRT_CUST(half   , FIXNUM(0,5)       , FIXNUM(0,707092));
@@ -571,11 +571,11 @@ SQRT_CUST(nan    , FIX_NAN           , FIX_NAN);
 #define unit_sin(name) unit_test(sin_##name)
 #define SIN_CUST(name, op1, result) static void sin_##name(void **state) { \
   fixed o1 = op1; \
-  fixed sin = fix_sin(o1); \
+  fixed sin = fix_sin_fast(o1); \
   fixed expected = result; \
   CHECK_EQ_NAN(#name, sin, expected); \
 }
-#define SIN(name, op1, val) SIN_CUST(name, op1, fix_convert_double(val))
+#define SIN(name, op1, val) SIN_CUST(name, op1, fix_convert_from_double(val))
 
 SIN(zero       , FIX_ZERO                                           , 0);
 SIN_CUST(pi_2  , fix_div(FIX_PI , FIXNUM(2 , 0))                    , 0x1fffc);
@@ -599,11 +599,11 @@ SIN_CUST(nan       , FIX_NAN                              , FIX_NAN);
 #define unit_trig(name) unit_test(trig_##name)
 #define TRIG(name, op1, sinx, cosx, tanx) static void trig_##name(void **state) { \
   fixed o1 = op1; \
-  fixed sin = fix_cordic_sin(o1); \
+  fixed sin = fix_sin(o1); \
   CHECK_EQ_NAN(#name " sin", sin, sinx); \
-  fixed cos = fix_cordic_cos(o1); \
+  fixed cos = fix_cos(o1); \
   CHECK_EQ_NAN(#name " cos", cos, cosx); \
-  fixed tan = fix_cordic_tan(o1); \
+  fixed tan = fix_tan(o1); \
   CHECK_EQ_NAN(#name " tan", tan, tanx); \
 }
 
@@ -650,7 +650,7 @@ TRIG(nan       , FIX_NAN, FIX_NAN, FIX_NAN, FIX_NAN);
 #define PRINT_CUST(name, op1, result) static void print_##name(void **state) { \
   fixed o1 = op1; \
   char buf[23]; \
-  fix_print_const(buf, o1); \
+  fix_print(buf, o1); \
   char* expected = result; \
   if(strcmp(buf, expected))  { \
     printf("Strings not equal: '%s' != '%s'\n", buf, expected); \

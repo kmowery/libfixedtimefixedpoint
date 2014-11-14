@@ -57,7 +57,7 @@ void cordic(uint32_t* Zext, uint32_t* Cext, uint32_t* Sext) {
 
 }
 
-fixed fix_cordic_sin(fixed op1) {
+fixed fix_sin(fixed op1) {
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
   uint8_t isinfneg = FIX_IS_INF_NEG(op1);
   uint8_t isnan = FIX_IS_NAN(op1);
@@ -78,7 +78,7 @@ fixed fix_cordic_sin(fixed op1) {
     FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED(S, (28 - (FIX_POINT_BITS))));
 }
 
-fixed fix_cordic_cos(fixed op1) {
+fixed fix_cos(fixed op1) {
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
   uint8_t isinfneg = FIX_IS_INF_NEG(op1);
   uint8_t isnan = FIX_IS_NAN(op1);
@@ -105,7 +105,7 @@ fixed fix_cordic_cos(fixed op1) {
     FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED(S, (28 - (FIX_POINT_BITS))));
 }
 
-fixed fix_cordic_tan(fixed op1) {
+fixed fix_tan(fixed op1) {
   // We will return NaN if you pass in infinity, but we might return infinity
   // anyway...
   uint8_t isinfpos = 0;

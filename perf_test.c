@@ -102,11 +102,11 @@ int main(int argc, char* argv[]){
   run_test_s ("fix_sqrt       ",fix_sqrt,10);
   printf("\n");
 
-  run_test_s ("fix_cordic_sin ",fix_cordic_sin,10);
-  run_test_s ("fix_cordic_cos ",fix_cordic_cos,10);
-  run_test_s ("fix_cordic_tan ",fix_cordic_tan,10);
   run_test_s ("fix_sin        ",fix_sin,10);
+  run_test_s ("fix_cos        ",fix_cos,10);
+  run_test_s ("fix_tan        ",fix_tan,10);
+  run_test_s ("fix_sin_fast   ",fix_sin_fast,10);
   printf("\n");
 
-  run_test_p ("fix_print_const ",fix_print_const,10);
+  run_test_p ("fix_print      ",fix_print,10);
 }

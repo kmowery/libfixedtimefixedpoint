@@ -45,7 +45,7 @@ print """#include "ftfp.h"
  * Please don't modify it manually.
  *********/
 
-void fix_print_const(char* buffer, fixed f) {
+void fix_print(char* buffer, fixed f) {
   uint8_t isinfpos = FIX_IS_INF_POS(f);
   uint8_t isinfneg = FIX_IS_INF_NEG(f);
   uint8_t isnan = FIX_IS_NAN(f);

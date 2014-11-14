@@ -78,16 +78,23 @@ fixed fix_log10(fixed op1);
 
 fixed fix_sqrt(fixed op1);
 
-fixed fix_cordic_sin(fixed op1);
-fixed fix_cordic_cos(fixed op1);
-fixed fix_cordic_tan(fixed op1);
-
 fixed fix_sin(fixed op1);
+fixed fix_cos(fixed op1);
+fixed fix_tan(fixed op1);
 
-fixed fix_convert_double(double d);
+/* Uses a polynomial approximation of sin. Very quick, but less accurate at the
+ * edges. */
+fixed fix_sin_fast(fixed op1);
+
+fixed  fix_convert_from_double(double d);
 double fix_convert_to_double(fixed op1);
 
+/* Prints the fixed into a buffer in base 10. The buffer must be at least 23
+ * characters long. */
 void fix_print(char* buffer, fixed f);
-void fix_print_const(char* buffer, fixed f);
+
+/* Note that this is not constant time, but will return a buffer sized to the
+ * number. */
+void fix_print_variable(char* buffer, fixed f);
 
 #endif

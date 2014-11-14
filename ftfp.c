@@ -227,7 +227,7 @@ fixed fix_ceil(fixed op1) {
     FIX_DATA_BITS(tempresult);
 }
 
-fixed fix_sin(fixed op1) {
+fixed fix_sin_fast(fixed op1) {
   uint8_t isinfpos;
   uint8_t isinfneg;
   uint8_t isnan;
@@ -298,8 +298,8 @@ fixed fix_sin(fixed op1) {
 
 }
 
-// TODO: not constant time. will work for now.
-void fix_print(char* buffer, fixed f) {
+// Note that this is not constant time.
+void fix_print_variable(char* buffer, fixed f) {
   double d;
   fixed f_ = f;
 
@@ -332,7 +332,7 @@ void fix_print(char* buffer, fixed f) {
   sprintf(buffer, "%.015f", d);
 }
 
-fixed fix_convert_double(double d) {
+fixed fix_convert_from_double(double d) {
   uint64_t bits = *(uint64_t*) &d;
   uint32_t exponent_base = ((bits >> 52) & 0x7ff);
   uint64_t mantissa_base = (bits & ((1ull <<52)-1));
