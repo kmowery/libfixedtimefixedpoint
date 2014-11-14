@@ -398,20 +398,19 @@ DIV_CUST(regression3             , 0xf0000000  , 0x00004470          ,FIXNUM(-15
 
 
 #define unit_neg(name) unit_test(neg_##name)
-#define NEG_CUST(name, op1, result) static void neg_##name(void **state) { \
-  fixed o1 = fix_convert_from_double(op1); \
+#define NEG(name, op1, result) static void neg_##name(void **state) { \
+  fixed o1 = op1; \
   fixed negd = fix_neg(o1); \
   fixed expected = result; \
-  assert_true( fix_eq_nan(negd, expected) ); \
+  CHECK_EQ_NAN(#name, negd, expected); \
 }
-#define NEG(name, op1, val) NEG_CUST(name, op1, fix_convert_from_double(val))
 
-NEG(zero,    0, 0);
-NEG(one,     1, -1);
-NEG(one_neg, -1, 1);
-NEG_CUST(inf, INFINITY, FIX_INF_NEG);
-NEG_CUST(inf_neg, -INFINITY, FIX_INF_POS);
-NEG_CUST(nan, nan("0"), FIX_NAN);
+NEG(zero,    FIXNUM(0,0),  FIXNUM(0,0));
+NEG(one,     FIXNUM(1,0),  FIXNUM(-1,0));
+NEG(one_neg, FIXNUM(-1,0), FIXNUM(1,0));
+NEG(inf,     FIX_INF_POS,  FIX_INF_NEG);
+NEG(inf_neg, FIX_INF_NEG,  FIX_INF_POS);
+NEG(nan,     FIX_NAN,      FIX_NAN);
 
 #define unit_abs(name) unit_test(abs_##name)
 #define ABS_CUST(name, op1, result) static void abs_##name(void **state) { \

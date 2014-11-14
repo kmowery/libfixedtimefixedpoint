@@ -50,24 +50,16 @@ int8_t fix_cmp(fixed op1, fixed op2) {
 }
 
 fixed fix_neg(fixed op1){
-  uint8_t isinfpos;
-  uint8_t isinfneg;
-  uint8_t isnan;
-
-  fixed tempresult;
-
   // Flip our infs
-  isinfpos = FIX_IS_INF_NEG(op1);
-  isinfneg = FIX_IS_INF_POS(op1);
-
   // NaN is still NaN
-  isnan = FIX_IS_NAN(op1);
+  uint8_t isinfpos = FIX_IS_INF_NEG(op1);
+  uint8_t isinfneg = FIX_IS_INF_POS(op1);
+  uint8_t isnan = FIX_IS_NAN(op1);
 
   // 2s comp negate the data bits
-  tempresult = FIX_DATA_BITS(((~op1) + 4));
+  fixed tempresult = FIX_DATA_BITS(((~op1) + 4));
 
   //TODO: Check overflow? other issues?
-
 
   // Combine
   return FIX_IF_NAN(isnan) |
