@@ -8,6 +8,7 @@ libs              := libftfp.so
 ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c
 ftfp_inc          := ftfp.h internal.h
 ftfp_obj          := $(ftfp_src:.c=.o)
+ftfp_pre          := $(ftfp_src:.c=.pre)
 
 test_ftfp_src     := test.c
 test_ftfp_obj     := $(test_ftfp_src:.c=.o)
@@ -35,7 +36,7 @@ perf_test: $(perf_ftfp_obj) $(libs)
 test: $(test_ftfp_obj) $(libs)
 	$(CC) -lftfp -L . ${CFLAGS} -o $@ $< ${LDFLAGS}
 
-pre: $(test_ftfp_pre)
+pre: $(test_ftfp_pre) $(ftfp_pre) $(perf_ftfp_pre)
 
 %.pre: %.c Makefile
 	$(CC) -c -E -o $@ $(CFLAGS) $<
