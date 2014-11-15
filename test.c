@@ -513,19 +513,20 @@ LOG10_CUST(nan    , FIX_NAN           , FIX_NAN);
 #define EXP(name, op1, val) EXP_CUST(name, op1, fix_convert_from_double(val))
 
 EXP_CUST(zero   , FIX_ZERO          , FIXNUM(1,0));
-EXP_CUST(one    , FIXNUM(1,0)       , FIX_E);
-EXP_CUST(two    , FIXNUM(2,0)       , FIXNUM(7,3890991210));     // not 7,3890560989
+EXP_CUST(one    , FIXNUM(1,0)       , FIXNUM(2,71826171875));     // not exactly our E, but close
+EXP_CUST(two    , FIXNUM(2,0)       , FIXNUM(7,38897705078));     // not 7,3890560989
 EXP_CUST(e      , FIX_E             , FIXNUM(15,154296875));     // not 15,15426224147
 EXP_CUST(ten    , FIXNUM(10,0)      , FIX_INF_POS);
-EXP_CUST(one_neg, FIXNUM(-1,0)      , FIXNUM(0,3678794411));
-EXP_CUST(two_neg, FIXNUM(-2,0)      , FIXNUM(0,1353352832));
-EXP_CUST(e_neg  , fix_neg(FIX_E)    , FIXNUM(0,0659484863));     // not 0.0659880358
+EXP_CUST(one_neg, FIXNUM(-1,0)      , FIXNUM(0,3678588867));
+EXP_CUST(two_neg, FIXNUM(-2,0)      , FIXNUM(0,1353149414));
+EXP_CUST(e_neg  , fix_neg(FIX_E)    , FIXNUM(0,065979003906));     // not 0.0659880358
 EXP_CUST(ten_neg, FIXNUM(-10,0)     , FIXNUM(0,0000453999));
 EXP_CUST(neg_many,FIXNUM(-128,0)    , FIX_ZERO);
 EXP_CUST(max    , FIX_MAX           , FIX_INF_POS);
 EXP_CUST(inf    , FIX_INF_POS       , FIX_INF_POS);
 EXP_CUST(inf_neg, FIX_INF_NEG       , FIX_ZERO);
 EXP_CUST(nan    , FIX_NAN           , FIX_NAN);
+EXP_CUST(regress, FIXNUM(-1,3862915039), FIXNUM(0,25));
 
 #define unit_sqrt(name) unit_test(sqrt_##name)
 #define SQRT_CUST(name, op1, result) static void sqrt_##name(void **state) { \
@@ -560,18 +561,18 @@ SQRT_CUST(nan    , FIX_NAN           , FIX_NAN);
 POW_CUST(zero_zero       , FIX_ZERO          , FIX_ZERO,      FIX_ZERO);
 POW_CUST(zero_one        , FIX_ZERO          , FIXNUM(1,0),   FIX_ZERO);
 POW_CUST(half_zero       , FIXNUM(0,5)       , FIX_ZERO   ,   FIXNUM(1,0) );
-POW_CUST(half_square     , FIXNUM(0,5)       , FIXNUM(2,0),   FIXNUM(0,249938964) );
-POW_CUST(half_nsquare    , FIXNUM(0,5)       , FIXNUM(-2,0),  FIXNUM(3,999908447) );
-POW_CUST(half_neight     , FIXNUM(0,5)       , FIXNUM(-8,0),  FIXNUM(255,97656250) );
+POW_CUST(half_square     , FIXNUM(0,5)       , FIXNUM(2,0),   FIXNUM(0,25) );
+POW_CUST(half_nsquare    , FIXNUM(0,5)       , FIXNUM(-2,0),  FIXNUM(3,99996948242) );
+POW_CUST(half_neight     , FIXNUM(0,5)       , FIXNUM(-8,0),  FIXNUM(255,994140625) );
 POW_CUST(one2            , FIXNUM(1,0)       , FIXNUM(2,0),   FIXNUM(1,0));
 POW_CUST(one4            , FIXNUM(1,0)       , FIXNUM(4,0),   FIXNUM(1,0));
-POW_CUST(ten_square      , FIXNUM(10,0)      , FIXNUM(2,0),   FIXNUM(99,20523071));
-POW_CUST(ten_cubed       , FIXNUM(10,0)      , FIXNUM(3,0),   FIXNUM(988,28616333));
+POW_CUST(ten_square      , FIXNUM(10,0)      , FIXNUM(2,0),   FIXNUM(99,2214660644));
+POW_CUST(ten_cubed       , FIXNUM(10,0)      , FIXNUM(3,0),   FIXNUM(988,31304931640));
 POW_CUST(neg_one2        , FIXNUM(-1,0)      , FIXNUM(2,0),   FIXNUM(1,0));
 POW_CUST(neg_one3        , FIXNUM(-1,0)      , FIXNUM(3,0),   FIXNUM(-1,0));
-POW_CUST(neg_two2        , FIXNUM(-2,0)      , FIXNUM(2,0),   FIXNUM(3,9999084472));
-POW_CUST(neg_two3        , FIXNUM(-2,0)      , FIXNUM(3,0),   FIXNUM(-7,9998474121));
-POW_CUST(neg_two_neg2    , FIXNUM(-2,0)      , FIXNUM(-2,0),  FIXNUM(0,249938964));
+POW_CUST(neg_two2        , FIXNUM(-2,0)      , FIXNUM(2,0),   FIXNUM(3,999969482421));
+POW_CUST(neg_two3        , FIXNUM(-2,0)      , FIXNUM(3,0),   FIXNUM(-7,9999084472));
+POW_CUST(neg_two_neg2    , FIXNUM(-2,0)      , FIXNUM(-2,0),  FIXNUM(0,25));
 POW_CUST(neg_two_nan     , FIXNUM(-2,0)      , FIXNUM(2,5),   FIX_NAN);
 POW_CUST(neg_pos_overflow, FIXNUM(-2,0)      , FIXNUM(128,0), FIX_INF_POS);
 POW_CUST(neg_overflow    , FIXNUM(-2,0)      , FIXNUM(127,0), FIX_INF_NEG);

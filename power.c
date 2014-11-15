@@ -4,6 +4,22 @@
 // Contains the logarithmic, exponential, and square root functions for libftfp.
 
 fixed fix_exp(fixed op1) {
+  // [("%x"% ((1./x)* 2**17), x) for x in range(1,12)]
+  // Note that you need to add some padding at the first element
+  fixed inv_i_LUT[12] = {
+       0x40000,
+       0x20000,
+       0x10000,
+       0xaaaa,
+       0x8000,
+       0x6666,
+       0x5555,
+       0x4924,
+       0x4000,
+       0x38e3,
+       0x3333,
+       0x2e8b};
+
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
   uint8_t isnan = FIX_IS_NAN(op1);
 
@@ -30,20 +46,13 @@ fixed fix_exp(fixed op1) {
       MASK_UNLESS(log2_neg > FIX_POINT_BITS, (log2_neg - FIX_POINT_BITS))
       );
 
-  fixed x_i = FIXINT(1);
-  fixed x_factorial = FIXINT(1);
   fixed e_x = FIXINT(1);
   fixed term = FIXINT(1);
 
   for(int i = 1; i < 12; i ++) {
-
-    x_i = FIX_UNSAFE_MUL_32(x_i, scratch);
-    x_factorial = FIX_UNSAFE_MUL_32(x_factorial, FIXINT(i));
-
     term = FIX_UNSAFE_MUL_32(term, scratch);
-    term = FIX_UNSAFE_DIV_32(term, FIXINT(i));
+    term = FIX_UNSAFE_MUL_32(term, inv_i_LUT[i]);
     e_x += term;
-
   }
 
   fixed result = e_x;
@@ -375,4 +384,3 @@ fixed fix_pow(fixed x, fixed y) {
 
   return result;
 }
-
