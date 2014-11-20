@@ -373,7 +373,7 @@ MUL(neg_inf              , FIXNUM(-10,0)       , FIX_INF_POS , FIX_INF_NEG)     
 MUL(neg_ninf             , FIXNUM(-10,0)       , FIX_INF_NEG , FIX_INF_POS)           \
 MUL(pos_nan              , FIXNUM(10,0)        , FIX_NAN     , FIX_NAN)               \
 MUL(neg_nan              , FIXNUM(-10,0)       , FIX_NAN     , FIX_NAN)               \
-MUL(inf_nan              , INFINITY    , FIX_NAN     , FIX_NAN)                       \
+MUL(inf_nan              , FIX_INF_POS    , FIX_NAN     , FIX_NAN)                       \
 MUL(ninf_nan             , FIX_INF_NEG , FIX_NAN     , FIX_NAN)                       \
 MUL(nan_pos              , FIX_NAN     , FIXNUM(10,0)        , FIX_NAN)               \
 MUL(nan_neg              , FIX_NAN     , FIXNUM(-10,0)       , FIX_NAN)               \
