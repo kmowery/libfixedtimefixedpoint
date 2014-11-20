@@ -142,7 +142,8 @@ TEST_FIXNUM(regress1 ,   100 , 002655,        0x00c8015c)  \
 TEST_FIXNUM(regress12,   100 , 0026550292968, 0x00c8015c)  \
 TEST_FIXNUM(regress2 ,     1 , 4142150878906, 0x0002d414)  \
 TEST_FIXNUM(regress3 ,     1 , 6487121582031, 0x00034c24)  \
-TEST_FIXNUM(regress4 ,     1 , 9999999999999, 0x00040000)
+TEST_FIXNUM(regress4 ,     1 , 9999999999999, 0x00040000)  \
+TEST_FIXNUM(regress5 ,    -1 , 3862915039, 0xfffd3a38 )
 FIXNUM_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
