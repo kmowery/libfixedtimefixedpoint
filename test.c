@@ -381,7 +381,8 @@ MUL(nan_inf              , FIX_NAN     , FIX_INF_POS , FIX_NAN)                 
 MUL(nan_ninf             , FIX_NAN     , FIX_INF_NEG , FIX_NAN)                       \
 MUL(tinyoverflow         , FIXNUM(148,5)       , FIXNUM(148,5)       , FIX_INF_POS)   \
 MUL(tinyoverflow_neg     , FIXNUM(148,5)       , FIXNUM(-148,5)      , FIX_INF_NEG)   \
-MUL(tinyoverflow_neg_neg , FIXNUM(-148,5)      , FIXNUM(-148,5)      , FIX_INF_POS)
+MUL(tinyoverflow_neg_neg , FIXNUM(-148,5)      , FIXNUM(-148,5)      , FIX_INF_POS)   \
+MUL(regression           , FIXNUM(-0,693145751953), FIXNUM(2,0)      , FIXNUM(-1,3862915039))
 MUL_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
@@ -457,6 +458,7 @@ TEST_HELPER(abs_##name, { \
 ABS(zero         , FIXNUM(0,0)         , FIXNUM(0,0)) \
 ABS(one          , FIXNUM(1,0)         , FIXNUM(1,0)) \
 ABS(one_neg      , FIXNUM(-1,0)        , FIXNUM(1,0)) \
+ABS(two          , FIXNUM(2,0)         , FIXNUM(2,0)) \
 ABS(inf          , FIX_INF_POS         , FIX_INF_POS) \
 ABS(inf_neg      , FIX_INF_NEG         , FIX_INF_POS) \
 ABS(nan          , FIX_NAN             , FIX_NAN)
@@ -479,6 +481,7 @@ LN(0x80   , 0x80              , 0xfff22318) \
 LN(0xa0   , 0xa0              , 0xfff29358) \
 LN(two    , FIXNUM(2,0)       , FIXNUM(0 , 69314718)) \
 LN(one    , FIXNUM(1,0)       , FIXNUM(0 , 0)) \
+LN(half   , FIXNUM(0,5)       , FIXNUM(-0,693145751953)) \
 LN(e      , FIX_E             , FIXNUM(0,9954223632) ) /* not quite FIXNUM(1 , 0), but close */ \
 LN(ten    , FIXNUM(10,0)      , FIXNUM(2,2986755371) ) /* not quite FIXNUM(2 , 30258509), but close */ \
 LN(max    , FIX_MAX           , FIXNUM(9,7040405273 ))  /* not quite 9.70406052597 */ \
