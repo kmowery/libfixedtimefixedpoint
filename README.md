@@ -28,3 +28,9 @@ libftfp currently uses a 15-15 format for numbers. That is, 15 bits are reserved
 
 This representation is expected to change.
 
+## Static Build
+We manually verify an x86_64 build for each major version.
+
+The current verified version is: 1.0
+
+Sha1sum 8aee2d5237ef9ecf67d704bd7bd165da7fc92d51
