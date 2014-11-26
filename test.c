@@ -119,30 +119,37 @@ ROUND_TO_EVEN_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define TEST_FIXNUM(name, z, frac, bits) \
+#define TEST_FIXNUM(name, inputint, inputfrac, outputsign, outputint, outputfrac) \
 TEST_HELPER(fixnum_##name, { \
-  fixed expected = bits; \
-  fixed g = FIXNUM(z, frac); \
+  fixed g = FIXNUM(inputint, inputfrac); \
+  fixed expected = (((fixed) outputint) << FIX_POINT_BITS) + \
+                   (ROUND_TO_EVEN_64(((fixed) outputfrac), \
+                                     (FIX_BITS - FIX_POINT_BITS + FIX_FLAG_BITS)) << FIX_FLAG_BITS); \
+  if(outputsign == 1) { \
+        expected = FIX_DATA_BITS((~expected) + 0x4); \
+  } else { \
+        expected = FIX_DATA_BITS(expected); \
+  }\
   CHECK_EQ("fixnum", g, expected); \
 };)
 
 #define FIXNUM_TESTS                                        \
-TEST_FIXNUM(zero      , 0     , 0             , 0x0)        \
-TEST_FIXNUM(one       , 1     , 0             , 0x20000)    \
-TEST_FIXNUM(one_neg   , -1    , 0             , 0xfffe0000) \
-TEST_FIXNUM(two       , 2     , 0             , 0x40000)    \
-TEST_FIXNUM(two_neg   , -2    , 0             , 0xfffc0000) \
-TEST_FIXNUM(many      , 1000  , 4             , 0x7d0cccc)  \
-TEST_FIXNUM(many_neg  , -1000 , 4             , 0xf82f3334) \
-TEST_FIXNUM(frac      , 0     , 5342          , 0x11184)    \
-TEST_FIXNUM(frac_neg  , -0    , 5342          , 0xfffeee7c) \
-TEST_FIXNUM(regress0  , 0     , 00932         , 0x000004c4) \
-TEST_FIXNUM(regress1  , 100   , 002655        , 0x00c8015c) \
-TEST_FIXNUM(regress12 , 100   , 0026550292968 , 0x00c8015c) \
-TEST_FIXNUM(regress2  , 1     , 4142150878906 , 0x0002d414) \
-TEST_FIXNUM(regress3  , 1     , 6487121582031 , 0x00034c24) \
-TEST_FIXNUM(regress4  , 1     , 9999999999999 , 0x00040000) \
-TEST_FIXNUM(regress5  , -1    , 3862915039    , 0xfffd3a38 )
+TEST_FIXNUM(zero      , 0     , 0                    , 0 , 0    , 0) \
+TEST_FIXNUM(one       , 1     , 0                    , 0 , 1    , 0) \
+TEST_FIXNUM(one_neg   , -1    , 0                    , 1 , 1    , 0) \
+TEST_FIXNUM(two       , 2     , 0                    , 0 , 2    , 0) \
+TEST_FIXNUM(two_neg   , -2    , 0                    , 1 , 2    , 0) \
+TEST_FIXNUM(many      , 1000  , 4                    , 0 , 1000 , 0x6666666666666666) \
+TEST_FIXNUM(many_neg  , -1000 , 4                    , 1 , 1000 , 0x6666666666666666) \
+TEST_FIXNUM(frac      , 0     , 5342                 , 0 , 0    , 0x88c154c985f06f69) \
+TEST_FIXNUM(frac_neg  , -0    , 5342                 , 1 , 0    , 0x88c154c985f06f69) \
+TEST_FIXNUM(regress0  , 0     , 00932                , 0 , 0    , 0x0262cba732df505d) \
+TEST_FIXNUM(regress1  , 100   , 002655               , 0 , 100  , 0x00adff822bbecaac) \
+TEST_FIXNUM(regress12 , 100   , 0026550292968        , 0 , 100  , 0x00adffffffeae3ae) \
+TEST_FIXNUM(regress2  , 1     , 4142150878906        , 0 , 1    , 0x6a09fffffff8f68f) \
+TEST_FIXNUM(regress3  , 1     , 6487121582031        , 0 , 1    , 0xa611fffffff8f68f) \
+TEST_FIXNUM(regress4  , 1     , 99999999999999999999 , 0 , 2    , 0x0) \
+TEST_FIXNUM(regress5  , -1    , 3862915039           , 1 , 1    , 0x62e3fffff920c809)
 FIXNUM_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
