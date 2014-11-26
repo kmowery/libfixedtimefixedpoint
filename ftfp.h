@@ -21,10 +21,6 @@
 #define FIX_INF_POS  0x2ull
 #define FIX_INF_NEG  0x3ull
 
-#define FIX_FLAG_BITS 2
-#define FIX_FRAC_BITS 15
-#define FIX_INT_BITS  15
-
 int8_t fix_is_neg(fixed op1);
 int8_t fix_is_nan(fixed op1);
 int8_t fix_is_inf_pos(fixed op1);
@@ -32,7 +28,7 @@ int8_t fix_is_inf_neg(fixed op1);
 
 // Create a fixnum constant. Use:
 //   fixed x = FIX(-3,14159);
-#define FIXNUM(i,frac) ({fixed f = (FIXINT(abs(i)) + FIXFRAC(frac)); \
+#define FIXNUM(i,frac) ({fixed f = (FIXINT(abs((fixed_signed) i)) + FIXFRAC(frac)); \
     ( MASK_UNLESS((#i[0] == '-') | (i < 0), fix_neg(f)) | \
       MASK_UNLESS((#i[0] != '-') | (i > 0), f) ); })
 

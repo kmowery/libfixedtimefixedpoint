@@ -122,13 +122,13 @@ ROUND_TO_EVEN_TESTS
 #define TEST_FIXNUM(name, inputint, inputfrac, outputsign, outputint, outputfrac) \
 TEST_HELPER(fixnum_##name, { \
   fixed g = FIXNUM(inputint, inputfrac); \
-  fixed expected = (((fixed) outputint) << FIX_POINT_BITS) + \
+  fixed expected = (((int64_t) outputint) << FIX_POINT_BITS) + \
                    (ROUND_TO_EVEN_64(((fixed) outputfrac), \
-                                     (FIX_BITS - FIX_POINT_BITS + FIX_FLAG_BITS)) << FIX_FLAG_BITS); \
+                                     (FIX_BITS - FIX_FRAC_BITS)) << FIX_FLAG_BITS); \
   if(outputsign == 1) { \
-        expected = FIX_DATA_BITS((~expected) + 0x4); \
+        expected = FIX_DATA_BITS((~(fixed) expected) + 0x4); \
   } else { \
-        expected = FIX_DATA_BITS(expected); \
+        expected = FIX_DATA_BITS((fixed) expected); \
   }\
   CHECK_EQ("fixnum", g, expected); \
 };)
@@ -780,6 +780,8 @@ PRINT(nan     , FIX_NAN           , " NaN                  ")
 PRINT_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
+
+
 
 #undef TEST_HELPER
 #define TEST_HELPER(name, code) unit_test(name),

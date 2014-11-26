@@ -284,10 +284,7 @@ fixed fix_sin_fast(fixed op1) {
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
     FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    FIX_DATA_BITS(SIGN_EXTEND(
-          result >> (30 - FIX_FRAC_BITS - FIX_FLAG_BITS),
-          (32 - (30 - FIX_FRAC_BITS - FIX_FLAG_BITS ) /* 19 */ )));
-
+    convert_228_to_fixed(result);
 }
 
 // Note that this is not constant time.
