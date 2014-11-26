@@ -89,6 +89,64 @@ void bounds(fixed f) {
 
 //////////////////////////////////////////////////////////////////////////////
 
+#define TEST_ROUND_TO_EVEN(name, value, shift, result) \
+TEST_HELPER(round_to_even_##name, { \
+  int32_t rounded = ROUND_TO_EVEN(value, shift); \
+  int32_t expected = result; \
+  CHECK_INT_EQUAL("round_to_even", rounded, expected); \
+};)
+
+#define ROUND_TO_EVEN_TESTS                                        \
+TEST_ROUND_TO_EVEN(zero       , 0x00 , 0x3 , 0x0)                  \
+TEST_ROUND_TO_EVEN(zero_plus  , 0x01 , 0x3 , 0x0)                  \
+TEST_ROUND_TO_EVEN(one        , 0x02 , 0x3 , 0x0)                  \
+TEST_ROUND_TO_EVEN(one_plus   , 0x03 , 0x3 , 0x0)                  \
+TEST_ROUND_TO_EVEN(two        , 0x04 , 0x3 , 0x0)  /* 0.5 -> 0 */  \
+TEST_ROUND_TO_EVEN(two_plus   , 0x05 , 0x3 , 0x1)  /* 0.55 -> 1 */ \
+TEST_ROUND_TO_EVEN(three      , 0x06 , 0x3 , 0x1)                  \
+TEST_ROUND_TO_EVEN(three_plus , 0x07 , 0x3 , 0x1)                  \
+TEST_ROUND_TO_EVEN(four       , 0x08 , 0x3 , 0x1)  /* 1 -> 1 */    \
+TEST_ROUND_TO_EVEN(four_plus  , 0x09 , 0x3 , 0x1)                  \
+TEST_ROUND_TO_EVEN(five       , 0x0a , 0x3 , 0x1)                  \
+TEST_ROUND_TO_EVEN(five_plus  , 0x0b , 0x3 , 0x1)                  \
+TEST_ROUND_TO_EVEN(six        , 0x0c , 0x3 , 0x2)  /* 1.5 -> 2 */  \
+TEST_ROUND_TO_EVEN(six_plus   , 0x0d , 0x3 , 0x2)                  \
+TEST_ROUND_TO_EVEN(seven      , 0x0e , 0x3 , 0x2)                  \
+TEST_ROUND_TO_EVEN(seven_plus , 0x0f , 0x3 , 0x2)                  \
+TEST_ROUND_TO_EVEN(eight      , 0x10 , 0x3 , 0x2)                  \
+TEST_ROUND_TO_EVEN(eight_plus , 0x10 , 0x3 , 0x2)
+ROUND_TO_EVEN_TESTS
+
+//////////////////////////////////////////////////////////////////////////////
+
+#define TEST_FIXNUM(name, z, frac, bits) \
+TEST_HELPER(fixnum_##name, { \
+  fixed expected = bits; \
+  fixed g = FIXNUM(z, frac); \
+  CHECK_EQ("fixnum", g, expected); \
+};)
+
+#define FIXNUM_TESTS                                        \
+TEST_FIXNUM(zero      , 0     , 0             , 0x0)        \
+TEST_FIXNUM(one       , 1     , 0             , 0x20000)    \
+TEST_FIXNUM(one_neg   , -1    , 0             , 0xfffe0000) \
+TEST_FIXNUM(two       , 2     , 0             , 0x40000)    \
+TEST_FIXNUM(two_neg   , -2    , 0             , 0xfffc0000) \
+TEST_FIXNUM(many      , 1000  , 4             , 0x7d0cccc)  \
+TEST_FIXNUM(many_neg  , -1000 , 4             , 0xf82f3334) \
+TEST_FIXNUM(frac      , 0     , 5342          , 0x11184)    \
+TEST_FIXNUM(frac_neg  , -0    , 5342          , 0xfffeee7c) \
+TEST_FIXNUM(regress0  , 0     , 00932         , 0x000004c4) \
+TEST_FIXNUM(regress1  , 100   , 002655        , 0x00c8015c) \
+TEST_FIXNUM(regress12 , 100   , 0026550292968 , 0x00c8015c) \
+TEST_FIXNUM(regress2  , 1     , 4142150878906 , 0x0002d414) \
+TEST_FIXNUM(regress3  , 1     , 6487121582031 , 0x00034c24) \
+TEST_FIXNUM(regress4  , 1     , 9999999999999 , 0x00040000) \
+TEST_FIXNUM(regress5  , -1    , 3862915039    , 0xfffd3a38 )
+FIXNUM_TESTS
+
+//////////////////////////////////////////////////////////////////////////////
+
 #define CONVERT_DBL(name, d, bits) \
 TEST_HELPER(convert_dbl_##name, { \
   fixed f = bits; \
@@ -120,34 +178,6 @@ CONVERT_DBL_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define TEST_FIXNUM(name, z, frac, bits) \
-TEST_HELPER(fixnum_##name, { \
-  fixed expected = bits; \
-  fixed g = FIXNUM(z, frac); \
-  CHECK_EQ("fixnum", g, expected); \
-};)
-
-#define FIXNUM_TESTS \
-TEST_FIXNUM(zero     , 0     , 0    , 0x0)  \
-TEST_FIXNUM(one      , 1     , 0    , 0x20000)  \
-TEST_FIXNUM(one_neg  , -1    , 0    , 0xfffe0000)  \
-TEST_FIXNUM(two      , 2     , 0    , 0x40000)  \
-TEST_FIXNUM(two_neg  , -2    , 0    , 0xfffc0000)  \
-TEST_FIXNUM(many     , 1000  , 4    , 0x7d0cccc)  \
-TEST_FIXNUM(many_neg , -1000 , 4    , 0xf82f3334)  \
-TEST_FIXNUM(frac     , 0     , 5342 , 0x11184)  \
-TEST_FIXNUM(frac_neg , -0    , 5342 , 0xfffeee7c)  \
-TEST_FIXNUM(regress0 ,     0 , 00932 ,        0x000004c4)  \
-TEST_FIXNUM(regress1 ,   100 , 002655,        0x00c8015c)  \
-TEST_FIXNUM(regress12,   100 , 0026550292968, 0x00c8015c)  \
-TEST_FIXNUM(regress2 ,     1 , 4142150878906, 0x0002d414)  \
-TEST_FIXNUM(regress3 ,     1 , 6487121582031, 0x00034c24)  \
-TEST_FIXNUM(regress4 ,     1 , 9999999999999, 0x00040000)  \
-TEST_FIXNUM(regress5 ,    -1 , 3862915039, 0xfffd3a38 )
-FIXNUM_TESTS
-
-//////////////////////////////////////////////////////////////////////////////
-
 #define TEST_EQ(name, op1, op2, value, valuenan) \
 TEST_HELPER(equal_##name, { \
   fixed o1 = op1; \
@@ -163,36 +193,6 @@ TEST_EQ(nan     , FIX_NAN     , FIX_NAN     , 0 , 1) \
 TEST_EQ(inf     , FIX_INF_POS , FIX_INF_POS , 1 , 1) \
 TEST_EQ(inf_neg , FIX_INF_NEG , FIX_INF_NEG , 1 , 1)
 EQ_TESTS
-
-//////////////////////////////////////////////////////////////////////////////
-
-#define TEST_ROUND_TO_EVEN(name, value, shift, result) \
-TEST_HELPER(round_to_even_##name, { \
-  int32_t rounded = ROUND_TO_EVEN(value, shift); \
-  int32_t expected = result; \
-  CHECK_INT_EQUAL("round_to_even", rounded, expected); \
-};)
-
-#define ROUND_TO_EVEN_TESTS \
-TEST_ROUND_TO_EVEN(zero       , 0x00 , 0x3 , 0x0) \
-TEST_ROUND_TO_EVEN(zero_plus  , 0x01 , 0x3 , 0x0) \
-TEST_ROUND_TO_EVEN(one        , 0x02 , 0x3 , 0x0) \
-TEST_ROUND_TO_EVEN(one_plus   , 0x03 , 0x3 , 0x0) \
-TEST_ROUND_TO_EVEN(two        , 0x04 , 0x3 , 0x0)  /* 0.5 -> 0 */ \
-TEST_ROUND_TO_EVEN(two_plus   , 0x05 , 0x3 , 0x1)  /* 0.55 -> 1 */ \
-TEST_ROUND_TO_EVEN(three      , 0x06 , 0x3 , 0x1) \
-TEST_ROUND_TO_EVEN(three_plus , 0x07 , 0x3 , 0x1) \
-TEST_ROUND_TO_EVEN(four       , 0x08 , 0x3 , 0x1)  /* 1 -> 1 */ \
-TEST_ROUND_TO_EVEN(four_plus  , 0x09 , 0x3 , 0x1) \
-TEST_ROUND_TO_EVEN(five       , 0x0a , 0x3 , 0x1) \
-TEST_ROUND_TO_EVEN(five_plus  , 0x0b , 0x3 , 0x1) \
-TEST_ROUND_TO_EVEN(six        , 0x0c , 0x3 , 0x2)  /* 1.5 -> 2 */ \
-TEST_ROUND_TO_EVEN(six_plus   , 0x0d , 0x3 , 0x2) \
-TEST_ROUND_TO_EVEN(seven      , 0x0e , 0x3 , 0x2) \
-TEST_ROUND_TO_EVEN(seven_plus , 0x0f , 0x3 , 0x2) \
-TEST_ROUND_TO_EVEN(eight      , 0x10 , 0x3 , 0x2) \
-TEST_ROUND_TO_EVEN(eight_plus , 0x10 , 0x3 , 0x2)
-ROUND_TO_EVEN_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -782,10 +782,10 @@ int main(int argc, char** argv) {
   const UnitTest tests[] = {
     unit_test(null_test_success),
 
-    CONVERT_DBL_TESTS
-    FIXNUM_TESTS
-    EQ_TESTS
     ROUND_TO_EVEN_TESTS
+    FIXNUM_TESTS
+    CONVERT_DBL_TESTS
+    EQ_TESTS
     ROUNDING_TESTS
     FLOOR_CEIL_TESTS
     CONSTANT_TESTS
