@@ -1,7 +1,9 @@
 #ifndef base_h
 #define base_h
 
-typedef uint32_t fixed;
+typedef uint64_t fixed;
+
+#define FIX_PRINTF_HEX "%016llx"
 
 
 
