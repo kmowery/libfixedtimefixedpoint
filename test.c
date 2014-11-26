@@ -57,22 +57,22 @@ static void null_test_success(void **state) {
 #define NaN nan("0")
 
 void p(fixed f) {
-  char buf[40];
+  char buf[100];
 
   fix_print(buf, f);
   printf("n: %s ("FIX_PRINTF_HEX")\n", buf, f);
 }
 void pl(fixed f) {
-  char buf[40];
+  char buf[100];
 
   fix_print(buf, f);
   printf("%s ("FIX_PRINTF_HEX")", buf, f);
 }
 
 void bounds(fixed f) {
-  char buf_less[40];
-  char buf[40];
-  char buf_more[40];
+  char buf_less[100];
+  char buf[100];
+  char buf_more[100];
 
   fixed less = f - 0x4;
   fixed more = f + 0x4;
@@ -122,7 +122,7 @@ ROUND_TO_EVEN_TESTS
 #define TEST_FIXNUM(name, inputint, inputfrac, outputsign, outputint, outputfrac) \
 TEST_HELPER(fixnum_##name, { \
   fixed g = FIXNUM(inputint, inputfrac); \
-  fixed expected = (((int64_t) outputint) << FIX_POINT_BITS) + \
+  fixed expected = (((int64_t) outputint % FIX_MAX_INT) << FIX_POINT_BITS) + \
                    (ROUND_TO_EVEN_64(((fixed) outputfrac), \
                                      (FIX_BITS - FIX_FRAC_BITS)) << FIX_FLAG_BITS); \
   if(outputsign == 1) { \

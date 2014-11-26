@@ -8,6 +8,8 @@
 
 typedef int64_t fixed_signed;
 
+#define FIX_MAX_INT (1 << (FIX_INT_BITS-1))
+
 ///////////////////////////////////////
 //  Useful Defines
 ///////////////////////////////////////
@@ -134,7 +136,7 @@ typedef int64_t fixed_signed;
 
 uint64_t fixfrac(char* frac);
 
-#define FIXINT(z) (((fixed_signed) z)<<(FIX_FLAG_BITS+FIX_FRAC_BITS))
+#define FIXINT(z) (((fixed_signed) z %FIX_MAX_INT)<<(FIX_FLAG_BITS+FIX_FRAC_BITS))
 
 /* We do this stupid nosign thing to prevent FIX_MAX from rolling over into the
  * negative. It 'rounds' to FIX_MAX + 1 == FIX_MIN, which causes trouble.
