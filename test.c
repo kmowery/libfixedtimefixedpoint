@@ -20,26 +20,26 @@ static void null_test_success(void **state) {
   if( !fix_eq(var1, var2) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, var1, b2, var2); \
+    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
 #define CHECK_EQ_NAN(error_msg, var1, var2) \
   if( !fix_eq_nan(var1, var2) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, var1, b2, var2); \
+    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
 
 #define CHECK_EQ_VALUE(error_msg, var1, var2, value) \
   if( fix_eq(var1, var2) != value ) { \
     char b1[100], b2[100]; \
     fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, var1, b2, var2); \
+    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
 #define CHECK_EQ_NAN_VALUE(error_msg, var1, var2, value) \
   if( fix_eq_nan(var1, var2) != value ) { \
     char b1[100], b2[100]; \
     fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, var1, b2, var2); \
+    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
 
 #define CHECK_INT_EQUAL(error_msg, var1, var2) \
@@ -51,7 +51,7 @@ static void null_test_success(void **state) {
   if( !(value == expected) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, fixed1); fix_print(b2, fixed2); \
-    fail_msg( error_msg ": %s (%08x) != %s (%08x)", b1, fixed1, b2, fixed2); \
+    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, fixed1, b2, fixed2); \
   }
 
 #define NaN nan("0")
@@ -60,13 +60,13 @@ void p(fixed f) {
   char buf[40];
 
   fix_print(buf, f);
-  printf("n: %s (%08x)\n", buf, f);
+  printf("n: %s ("FIX_PRINTF_HEX")\n", buf, f);
 }
 void pl(fixed f) {
   char buf[40];
 
   fix_print(buf, f);
-  printf("%s (%08x)", buf, f);
+  printf("%s ("FIX_PRINTF_HEX")", buf, f);
 }
 
 void bounds(fixed f) {
@@ -81,7 +81,7 @@ void bounds(fixed f) {
   fix_print(buf, f);
   fix_print(buf_more, more);
 
-  printf("%s (0x%08x) | %s (0x%08x) | %s (0x%08x)\n", buf_less, less, buf, f, buf_more, more);
+  printf("%s (0x"FIX_PRINTF_HEX") | %s (0x"FIX_PRINTF_HEX") | %s (0x"FIX_PRINTF_HEX")\n", buf_less, less, buf, f, buf_more, more);
 }
 
 // Helper macro. Define it to be this for now, for code generation
@@ -99,7 +99,7 @@ TEST_HELPER(convert_dbl_##name, { \
   if( !((abs(d - d2) < 0.000001) || (isnan(d) && isnan(d2))) ) { \
     char b1[100]; \
     fix_print(b1, g); \
-    fail_msg( #name " convert_to_double failed : %g (%s %08x) != %g", d2, b1, g, locald); \
+    fail_msg( #name " convert_to_double failed : %g (%s "FIX_PRINTF_HEX") != %g", d2, b1, g, locald); \
   } \
 };)
 

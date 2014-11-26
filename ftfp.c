@@ -191,7 +191,7 @@ fixed fix_floor(fixed op1) {
   uint8_t isinfneg = FIX_IS_INF_NEG(op1);
   uint8_t isnan = FIX_IS_NAN(op1);
 
-  fixed tempresult = op1 & ~((1 << (FIX_FRAC_BITS + FIX_FLAG_BITS))-1);
+  fixed tempresult = op1 & ~((1LL << (FIX_FRAC_BITS + FIX_FLAG_BITS))-1);
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
@@ -205,10 +205,10 @@ fixed fix_ceil(fixed op1) {
   uint8_t isnan = FIX_IS_NAN(op1);
   uint8_t ispos = !FIX_IS_NEG(op1);
 
-  uint32_t frac_mask = (1 << (FIX_FRAC_BITS + FIX_FLAG_BITS))-1;
+  uint64_t frac_mask = (1ull << (FIX_FRAC_BITS + FIX_FLAG_BITS))-1;
 
   fixed tempresult = (op1 & ~frac_mask) +
-    ((!!(op1 & frac_mask)) << (FIX_FRAC_BITS + FIX_FLAG_BITS));
+    ( (uint64_t) (!!(op1 & frac_mask)) << (FIX_FRAC_BITS + FIX_FLAG_BITS));
 
   // If we used to be positive and we wrapped around, switch to INF_POS.
   isinfpos |= ((tempresult == FIX_MIN) & ispos);
@@ -267,7 +267,7 @@ fixed fix_sin_fast(fixed op1) {
    */
   uint32_t top_bits_differ = ((circle_frac >> 28) & 0x1) ^ ((circle_frac >> 29) & 0x1);
   uint32_t zp = MASK_UNLESS(top_bits_differ, (1<<29) - circle_frac) |
-                MASK_UNLESS(!top_bits_differ, SIGN_EXTEND(circle_frac, 30));
+                MASK_UNLESS(!top_bits_differ, SIGN_EXTEND_64(circle_frac, 30));
 
   uint32_t zp2 = MUL_2x28(zp, zp);
 

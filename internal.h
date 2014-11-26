@@ -10,28 +10,28 @@
 //  Useful Defines
 ///////////////////////////////////////
 
-#define FIX_FLAGS_MASK 0x3
+#define FIX_FLAGS_MASK 0x3ull
 
 #define FIX_POINT_BITS (FIX_FRAC_BITS + FIX_FLAG_BITS)
 
-#define FIX_ALL_BIT_MASK 0xffffffff
-#define FIX_TOP_BIT_MASK (1<<31)
+#define FIX_ALL_BIT_MASK 0xffffffffffffffffLL
+#define FIX_TOP_BIT_MASK (1ull<<63)
 #define FIX_TOP_BIT(f) ((f) & FIX_TOP_BIT_MASK)
 
-#define FIX_FRAC_MASK (((1<<(FIX_FRAC_BITS))-1) << (FIX_FLAG_BITS))
-#define FIX_INT_MASK  (((1<<(FIX_INT_BITS))-1) << ((FIX_FLAG_BITS) + (FIX_FRAC_BITS)))
+#define FIX_FRAC_MASK (((1ull<<(FIX_FRAC_BITS))-1) << (FIX_FLAG_BITS))
+#define FIX_INT_MASK  (((1ull<<(FIX_INT_BITS))-1) << ((FIX_FLAG_BITS) + (FIX_FRAC_BITS)))
 
 #define FIX_SIGN_TO_64(f) ((int64_t)((int32_t)(f)))
 
-#define SIGN_EXTEND(value, n_top_bit) ({uint32_t SE_m__ = (1 << ((n_top_bit)-1)); (((uint32_t) (value)) ^ SE_m__) - SE_m__;})
+#define SIGN_EXTEND(value, n_top_bit) SIGN_EXTEND_64(value, n_top_bit)
 #define SIGN_EX_SHIFT_RIGHT_32(value, shift) SIGN_EXTEND( (value) >> (shift), 32 - (shift) )
 
 #define MASK_UNLESS(expression, value) (SIGN_EXTEND(!!(expression), 1) & (value))
 
 #define MASK_UNLESS_64(expression, value) (SIGN_EXTEND_64(!!(expression), 1) & (value))
-#define SIGN_EXTEND_64(value, n_top_bit) ({uint64_t SE_m__ = (1 << ((n_top_bit)-1)); (((uint64_t) (value)) ^ SE_m__) - SE_m__;})
+#define SIGN_EXTEND_64(value, n_top_bit) ({uint64_t SE_m__ = (1LL << ((n_top_bit)-1)); (((uint64_t) (value)) ^ SE_m__) - SE_m__;})
 
-#define FIX_DATA_BIT_MASK (0xFFFFFFFC)
+#define FIX_DATA_BIT_MASK (0xFFFFFFFFFFFFFFFCLL)
 #define FIX_DATA_BITS(f) ((f) & FIX_DATA_BIT_MASK)
 
 #define FIX_IF_NAN(isnan) (((isnan) | ((isnan) << 1)) & FIX_NAN)
@@ -85,21 +85,21 @@
 #define ROUND_TO_EVEN(value, n_shift_bits) \
   (((value) >> (n_shift_bits)) + \
    !!( \
-     (!!((value) & (1 << ((n_shift_bits)-1))) & !!((value) & ((1 << ((n_shift_bits)-1))-1))) | \
+     (!!((value) & (1ull << ((n_shift_bits)-1))) & !!((value) & ((1ull << ((n_shift_bits)-1))-1))) | \
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
 #define ROUND_TO_EVEN_64(value, n_shift_bits) \
   (((value) >> (n_shift_bits)) + \
    !!( \
-     (!!((value) & (1ULL << ((n_shift_bits)-1))) & !!((value) & ((1ULL << ((n_shift_bits)-1))-1))) | \
+     (!!((value) & (1ull << ((n_shift_bits)-1))) & !!((value) & ((1ull << ((n_shift_bits)-1))-1))) | \
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
 #define ROUND_TO_EVEN_SIGNED(value, n_shift_bits) \
   (SIGN_EX_SHIFT_RIGHT_32(value, n_shift_bits) + \
    !!( \
-     (!!((value) & (1 << ((n_shift_bits)-1))) & !!((value) & ((1 << ((n_shift_bits)-1))-1))) | \
+     (!!((value) & (1LL << ((n_shift_bits)-1))) & !!((value) & ((1LL << ((n_shift_bits)-1))-1))) | \
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
