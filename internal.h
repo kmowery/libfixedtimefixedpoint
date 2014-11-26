@@ -130,6 +130,9 @@
     ((ROUND_TO_EVEN(n, bits)) << FIX_FLAG_BITS); \
     })
 
+
+uint64_t fixfrac(char* frac);
+
 #define FIXINT(z) ((z)<<(FIX_FLAG_BITS+FIX_FRAC_BITS))
 
 /* We do this stupid nosign thing to prevent FIX_MAX from rolling over into the
