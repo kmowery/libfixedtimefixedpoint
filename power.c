@@ -132,15 +132,14 @@ fixed fix_ln(fixed op1) {
         + c994946)
       + c0022683);
 
-  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - FIX_FRAC_BITS - FIX_FLAG_BITS);
-  tempresult += nln2 - 0x128; // adjustment constant for when log should be 0
+  fixed r = convert_228_to_fixed(tempresult);
+  r += nln2 - 0x128; // adjustment constant for when log should be 0
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    FIX_DATA_BITS(tempresult);
+    FIX_DATA_BITS(r);
 }
-
 
 
 fixed fix_log2(fixed op1) {
@@ -172,7 +171,7 @@ fixed fix_log2(fixed op1) {
   // and then shift down by '1'. (1.28 bits of zero)
   m -= (1 << 28);
 
-  fixed n = (log2 - FIX_FRAC_BITS - FIX_FLAG_BITS) << (FIX_FRAC_BITS + FIX_FLAG_BITS);
+  fixed n = ((fixed) (log2 - FIX_FRAC_BITS - FIX_FLAG_BITS)) << (FIX_FRAC_BITS + FIX_FLAG_BITS);
 
   // octave:31> x = -0.5:1/10000:0.5;
   // octave:32> polyfit( x, log2(x+1), 3)
@@ -198,7 +197,7 @@ fixed fix_log2(fixed op1) {
         + c14371765)
       + c0023697);
 
-  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - FIX_FRAC_BITS - FIX_FLAG_BITS);
+  tempresult = convert_228_to_fixed(tempresult);
   tempresult += n - 0x134; // adjustment constant for when log should be 0
 
   return FIX_IF_NAN(isnan) |
@@ -272,7 +271,7 @@ fixed fix_log10(fixed op1) {
         + k1)
        - k0);
 
-  tempresult = SIGN_EX_SHIFT_RIGHT_32(tempresult, 28 - FIX_FRAC_BITS - FIX_FLAG_BITS);
+  tempresult = convert_228_to_fixed(tempresult);
   tempresult += nlog10_2;
 
   return FIX_IF_NAN(isnan) |
@@ -311,9 +310,9 @@ fixed fix_sqrt(fixed op1) {
   //log2 is now log2(op1), considered as a uint32_t
 
   // Make a guess! Use log2(op1) if op1 > 2, otherwise just uhhhh mul op1 by 2.
-  int64_t x = MASK_UNLESS(op1 >= (1<<(FIX_FRAC_BITS + FIX_FLAG_BITS+1)),
+  int64_t x = MASK_UNLESS(op1 >= (((fixed) 1)<<(FIX_FRAC_BITS + FIX_FLAG_BITS+1)),
                            FIXINT(log2 - (FIX_FLAG_BITS + FIX_FRAC_BITS))) |
-               MASK_UNLESS(op1 < (1<<(FIX_FRAC_BITS + FIX_FLAG_BITS+1)),
+               MASK_UNLESS(op1 < (((fixed) 1)<<(FIX_FRAC_BITS + FIX_FLAG_BITS+1)),
                            op1 << 1);
 
 

@@ -75,7 +75,7 @@ fixed fix_sin(fixed op1) {
   cordic(&Z, &C, &S);
 
   return FIX_IF_NAN(isnan | isinfpos | isinfneg) |
-    FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED(S, (28 - (FIX_POINT_BITS))));
+    convert_228_to_fixed_signed(S);
 }
 
 fixed fix_cos(fixed op1) {
@@ -102,7 +102,7 @@ fixed fix_cos(fixed op1) {
   cordic(&Z, &C, &S);
 
   return FIX_IF_NAN(isnan | isinfpos | isinfneg) |
-    FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED(S, (28 - (FIX_POINT_BITS))));
+    convert_228_to_fixed_signed(S);
 }
 
 fixed fix_tan(fixed op1) {

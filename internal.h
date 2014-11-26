@@ -6,6 +6,8 @@
 // This file contains things needed internally for libftfp, but that a library
 // user should never need to see.
 
+typedef int64_t fixed_signed;
+
 ///////////////////////////////////////
 //  Useful Defines
 ///////////////////////////////////////
@@ -83,14 +85,14 @@
  *  is there to compress all lower-order bits into bit 2 in the truth table
  * */
 #define ROUND_TO_EVEN(value, n_shift_bits) \
-  (((value) >> (n_shift_bits)) + \
+  ((((fixed) value) >> (n_shift_bits)) + \
    !!( \
-     (!!((value) & (1ull << ((n_shift_bits)-1))) & !!((value) & ((1ull << ((n_shift_bits)-1))-1))) | \
+     (!!((value) & (((fixed) 1) << ((n_shift_bits)-1))) & !!((value) & ((((fixed) 1) << ((n_shift_bits)-1))-1))) | \
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
 #define ROUND_TO_EVEN_64(value, n_shift_bits) \
-  (((value) >> (n_shift_bits)) + \
+  ((((fixed) value) >> (n_shift_bits)) + \
    !!( \
      (!!((value) & (1ull << ((n_shift_bits)-1))) & !!((value) & ((1ull << ((n_shift_bits)-1))-1))) | \
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
@@ -128,11 +130,11 @@
  *   To prevent octal assignment, we do some nonsense into frac_int.
  */
 #define FIXFRAC(frac) ({uint64_t fixfracr = fixfrac( #frac ); \
-        (ROUND_TO_EVEN_64( fixfracr, 32 + FIX_INT_BITS + FIX_FLAG_BITS) << FIX_FLAG_BITS);})
+        (ROUND_TO_EVEN_64( fixfracr, FIX_INT_BITS + FIX_FLAG_BITS) << FIX_FLAG_BITS);})
 
 uint64_t fixfrac(char* frac);
 
-#define FIXINT(z) ((z)<<(FIX_FLAG_BITS+FIX_FRAC_BITS))
+#define FIXINT(z) (((fixed_signed) z)<<(FIX_FLAG_BITS+FIX_FRAC_BITS))
 
 /* We do this stupid nosign thing to prevent FIX_MAX from rolling over into the
  * negative. It 'rounds' to FIX_MAX + 1 == FIX_MIN, which causes trouble.
@@ -204,6 +206,32 @@ uint64_t fixfrac(char* frac);
 
 // Multiply two 2.28 bit fixed point numbers
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
+
+// Convert a 2.28 bit value into a fixed
+#if FIX_POINT_BITS > 30
+// TODO why is this 30, i don't understand, probably 28+2 and I forgot to
+// break out the flag bits separately
+#define convert_228_to_fixed(v228) \
+  FIX_DATA_BITS(SIGN_EXTEND_64( v228 << (FIX_POINT_BITS - 30), \
+                                (32+(FIX_POINT_BITS - 30) )))
+
+#define convert_228_to_fixed_signed(v228) \
+    FIX_DATA_BITS( v228 << ((FIX_POINT_BITS) - 28));
+#else
+#define convert_228_to_fixed(v228) \
+  FIX_DATA_BITS(SIGN_EXTEND( v228 >> (30 - FIX_POINT_BITS), \
+                             (32 - (30 - FIX_POINT_BITS ) /* 19 */ )))
+#error nope
+#endif
+
+#if FIX_POINT_BITS > 28
+#define convert_228_to_fixed_signed(v228) \
+    FIX_DATA_BITS( v228 << ((FIX_POINT_BITS) - 28));
+#else
+#define convert_228_to_fixed_signed(v228) \
+    FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED(S, (28 - (FIX_POINT_BITS))));
+#error nope
+#endif
 
 ///////////////////////////////////////
 //  Helper functions
