@@ -89,6 +89,13 @@
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
+#define ROUND_TO_EVEN_64(value, n_shift_bits) \
+  (((value) >> (n_shift_bits)) + \
+   !!( \
+     (!!((value) & (1ULL << ((n_shift_bits)-1))) & !!((value) & ((1ULL << ((n_shift_bits)-1))-1))) | \
+     ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
+   ))
+
 #define ROUND_TO_EVEN_SIGNED(value, n_shift_bits) \
   (SIGN_EX_SHIFT_RIGHT_32(value, n_shift_bits) + \
    !!( \
@@ -120,16 +127,8 @@
  *
  *   To prevent octal assignment, we do some nonsense into frac_int.
  */
-#define FIXFRAC(frac) ({ \
-    uint32_t bits = 4; \
-    uint64_t log_ceil = ((uint64_t) strlen( #frac )); \
-    uint64_t one = 1ULL << (FIX_FRAC_BITS + bits); \
-    uint64_t p = (uint64_t) pow(10, log_ceil); \
-    uint64_t frac_int =  1 ## frac - ((int64_t) pow(10, log_ceil)); \
-    uint64_t n = (frac_int * one) / p; \
-    ((ROUND_TO_EVEN(n, bits)) << FIX_FLAG_BITS); \
-    })
-
+#define FIXFRAC(frac) ({uint64_t fixfracr = fixfrac( #frac ); \
+        (ROUND_TO_EVEN_64( fixfracr, 32 + FIX_INT_BITS + FIX_FLAG_BITS) << FIX_FLAG_BITS);})
 
 uint64_t fixfrac(char* frac);
 

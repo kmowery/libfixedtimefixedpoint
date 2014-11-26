@@ -51,10 +51,24 @@ uint32_t fix_circle_frac(fixed op1) {
   return circle_frac;
 }
 
-/* does what FIXFRAC does, just in 64 bits and with less preprocessor
- * garbage.
+/*
+ * Take a string consisting solely of digits, and produce a 64-bit number which
+ * corresponds to:
  *
- * The basic idea is to use LUTs for the binary values of 0.1, 0.01, and so on,
+ *   (atoi(str + padding) / 10**20) * 2^64
+ *
+ * where padding is "0" * (20 - strlen(str)).
+ *
+ * More preicsely, given "5", it will should produce 0.5 * 2^64, or
+ *               0x8000000000000000.
+ * Given "25",   0x4000000000000000.
+ * Given "125",  0x2000000000000000.
+ * Given "0625", 0x1000000000000000.
+ * Given "99999999999999999999", 0xffffffffffffffff.
+ *
+ * And so on.
+ *
+ * The basic strategy is to use LUTs for the binary values of 0.1, 0.01, and so on,
  * and add these together as we examine each decimal digit.
  *
  * Not constant time, but that could be fixed.
