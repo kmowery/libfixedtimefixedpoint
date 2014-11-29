@@ -14,16 +14,16 @@ typedef int64_t fixed_signed;
 //  Useful Defines
 ///////////////////////////////////////
 
-#define FIX_FLAGS_MASK 0x3ull
+#define FIX_FLAGS_MASK ((fixed) 0x3)
 
 #define FIX_POINT_BITS (FIX_FRAC_BITS + FIX_FLAG_BITS)
 
-#define FIX_ALL_BIT_MASK 0xffffffffffffffffLL
-#define FIX_TOP_BIT_MASK (1ull<<63)
+#define FIX_ALL_BIT_MASK (((fixed) 0) -1)
+#define FIX_TOP_BIT_MASK ((fixed) 1 << (FIX_BITS-1))
 #define FIX_TOP_BIT(f) ((f) & FIX_TOP_BIT_MASK)
 
-#define FIX_FRAC_MASK (((1ull<<(FIX_FRAC_BITS))-1) << (FIX_FLAG_BITS))
-#define FIX_INT_MASK  (((1ull<<(FIX_INT_BITS))-1) << ((FIX_FLAG_BITS) + (FIX_FRAC_BITS)))
+#define FIX_FRAC_MASK (((((fixed) 1)<<(FIX_FRAC_BITS))-1) << (FIX_FLAG_BITS))
+#define FIX_INT_MASK  (((((fixed) 1)<<(FIX_INT_BITS))-1) << ((FIX_FLAG_BITS) + (FIX_FRAC_BITS)))
 
 #define FIX_SIGN_TO_64(f) ((int64_t)((int32_t)(f)))
 

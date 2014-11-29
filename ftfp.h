@@ -16,10 +16,10 @@
  * arcsin
  */
 
-#define FIX_NORMAL   0x0ull
-#define FIX_NAN      0x1ull
-#define FIX_INF_POS  0x2ull
-#define FIX_INF_NEG  0x3ull
+#define FIX_NORMAL   ((fixed) 0x0)
+#define FIX_NAN      ((fixed) 0x1)
+#define FIX_INF_POS  ((fixed) 0x2)
+#define FIX_INF_NEG  ((fixed) 0x3)
 
 int8_t fix_is_neg(fixed op1);
 int8_t fix_is_nan(fixed op1);
@@ -51,10 +51,10 @@ int8_t fix_cmp(fixed op1, fixed op2);
 #define FIX_E       FIXNUM(2,71828182846)
 #define FIX_EPSILON ((fixed) (1 << FIX_FLAG_BITS))
 #define FIX_EPSILON_NEG ((fixed) ~((1 << FIX_FLAG_BITS)-1))
-#define FIX_ZERO    0ull
+#define FIX_ZERO    ((fixed) 0)
 
-#define FIX_MAX     0x7ffffffffffffffcull
-#define FIX_MIN     0x8000000000000000ull
+#define FIX_MAX     FIX_DATA_BITS((fixed) (((fixed) 1) << (FIX_BITS-1)) -1)
+#define FIX_MIN     FIX_DATA_BITS((fixed) ((fixed) 1) << (FIX_BITS-1))
 
 fixed fix_neg(fixed op1);
 fixed fix_abs(fixed op1);
