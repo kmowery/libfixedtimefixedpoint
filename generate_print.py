@@ -35,7 +35,7 @@ import math
 # computation, and adding back in a " "  if necessary.
 
 #TODO: read these from base.h
-int_bits  = 8
+int_bits  = 31
 frac_bits = 31
 flag_bits = 2
 
