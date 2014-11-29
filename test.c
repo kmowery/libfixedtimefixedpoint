@@ -156,28 +156,28 @@ FIXNUM_TESTS
 
 #define CONVERT_DBL(name, d, bits) \
 TEST_HELPER(convert_dbl_##name, { \
-  fixed f = bits; \
+  fixed expected = bits; \
   double locald = d; \
-  fixed g = fix_convert_from_double(locald); \
-  CHECK_EQ_NAN(#name, f, g); \
-  double d2 = fix_convert_to_double(g); \
+  fixed result = fix_convert_from_double(locald); \
+  CHECK_EQ_NAN(#name " convert_from_double failed", result, expected); \
+  double d2 = fix_convert_to_double(result); \
   if( !((abs(d - d2) < 0.000001) || (isnan(d) && isnan(d2))) ) { \
     char b1[100]; \
-    fix_print(b1, g); \
-    fail_msg( #name " convert_to_double failed : %g (%s "FIX_PRINTF_HEX") != %g", d2, b1, g, locald); \
+    fix_print(b1, result); \
+    fail_msg( #name " convert_to_double failed : %g (%s "FIX_PRINTF_HEX") != %g", d2, b1, result, locald); \
   } \
 };)
 
 #define CONVERT_DBL_TESTS \
-CONVERT_DBL(zero     , 0         , 0x00000) \
-CONVERT_DBL(one      , 1         , 0x20000) \
-CONVERT_DBL(one_neg  , -1        , 0xfffe0000) \
-CONVERT_DBL(two      , 2         , 0x40000) \
-CONVERT_DBL(two_neg  , -2        , 0xfffc0000) \
-CONVERT_DBL(many     , 1000.4    , 0x7d0cccc) \
-CONVERT_DBL(many_neg , -1000.4   , 0xf82f3334) \
-CONVERT_DBL(frac     , 0.5342    , 0x11180) \
-CONVERT_DBL(frac_neg , -0.5342   , 0xfffeee80) \
+CONVERT_DBL(zero     , 0         , FIX_ZERO) \
+CONVERT_DBL(one      , 1         , FIXNUM(1,0)) \
+CONVERT_DBL(one_neg  , -1        , FIXNUM(-1,0)) \
+CONVERT_DBL(two      , 2         , FIXNUM(2,0)) \
+CONVERT_DBL(two_neg  , -2        , FIXNUM(-2,0)) \
+CONVERT_DBL(many     , 1000.4    , FIXNUM(1000,4)) \
+CONVERT_DBL(many_neg , -1000.4   , FIXNUM(-1000,4)) \
+CONVERT_DBL(frac     , 0.5342    , FIXNUM(0,5342)) \
+CONVERT_DBL(frac_neg , -0.5342   , FIXNUM(-0,5342)) \
 CONVERT_DBL(inf_pos  , INFINITY  , FIX_INF_POS) \
 CONVERT_DBL(inf_neg  , -INFINITY , FIX_INF_NEG) \
 CONVERT_DBL(nan      , nan("0")  , FIX_NAN)

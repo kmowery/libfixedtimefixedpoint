@@ -240,7 +240,8 @@ uint64_t fixfrac(char* frac);
 ///////////////////////////////////////
 
 uint32_t fix_circle_frac(fixed op1);
-uint32_t uint32_log2(uint32_t o);
+uint8_t uint32_log2(uint32_t o);
+uint8_t uint64_log2(uint64_t o);
 
 void cordic(uint32_t* Z, uint32_t* C, uint32_t* S);
 
