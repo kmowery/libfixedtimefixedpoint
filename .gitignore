@@ -2,6 +2,7 @@
 test
 *.pre
 autogen.c
+base.h
 
 *.asm
 *.so

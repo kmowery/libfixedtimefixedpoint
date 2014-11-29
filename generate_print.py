@@ -34,10 +34,7 @@ import math
 # which multiplies by 0 if an exceptional state, zeroing out the normal
 # computation, and adding back in a " "  if necessary.
 
-#TODO: read these from base.h
-int_bits  = 31
-frac_bits = 31
-flag_bits = 2
+from generate_base import *
 
 number_bits = int_bits + frac_bits
 
