@@ -1,7 +1,7 @@
 #include "ftfp.h"
 #include "internal.h"
 
-inline uint32_t uint32_log2(uint32_t o) {
+inline uint8_t uint32_log2(uint32_t o) {
   uint32_t scratch = o;
   uint32_t log2;
   uint32_t shift;
@@ -10,6 +10,20 @@ inline uint32_t uint32_log2(uint32_t o) {
   shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
   shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
   shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
+  log2 |= (scratch >> 1);
+  return log2;
+}
+
+inline uint8_t uint64_log2(uint64_t o) {
+  uint64_t scratch = o;
+  uint64_t log2;
+  uint64_t shift;
+
+  log2 =  (scratch > 0xFFFFFFFF) << 5; scratch >>= log2;
+  shift = (scratch > 0xFFFF)     << 4; scratch >>= shift; log2 |= shift;
+  shift = (scratch >   0xFF)     << 3; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0xF)     << 2; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0x3)     << 1; scratch >>= shift; log2 |= shift;
   log2 |= (scratch >> 1);
   return log2;
 }

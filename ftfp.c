@@ -334,9 +334,10 @@ fixed fix_convert_from_double(double d) {
    * away with the exponent later */
   uint64_t mantissa = mantissa_base | MASK_UNLESS_64(!d_is_zero, (1ull << 52));
 
+  /* TODO: handle the case where we need to shift left */
   uint32_t shift = 52 - (FIX_FRAC_BITS) - exponent;
 
-  fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << FIX_FLAG_BITS) & 0xffffffff;
+  fixed result = ((ROUND_TO_EVEN(mantissa,shift)) << FIX_FLAG_BITS) & FIX_ALL_BIT_MASK;
 
   /* use IEEE 754 definition of INF */
   uint8_t isinf = (exponent_base == 0x7ff) && (mantissa_base == 0);
@@ -366,8 +367,9 @@ double fix_convert_to_double(fixed op1) {
   uint64_t sign = FIX_IS_NEG(op1);
   op1 = fix_abs(op1);
 
-  uint32_t log2op1 = uint32_log2(op1);
+  uint32_t log2op1 = uint64_log2(op1);
 
+  /* TODO: handle the case where we need to shift op1 right */
   uint64_t mantissa = (((uint64_t) op1) << (53 - 1 - log2op1)) & ((1ull << 52) -1);
   uint64_t exponent = log2op1 - FIX_POINT_BITS + 1023;
 
