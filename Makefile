@@ -20,14 +20,14 @@ perf_ftfp_src     := perf_test.c
 perf_ftfp_obj     := $(perf_ftfp_src:.c=.o)
 perf_ftfp_pre     := $(perf_ftfp_src:.c=.pre)
 
-.PHONY: all clean depend
+.PHONY: all clean depend alltest
 all: $(libs) $(progs)
 
 base.h : generate_base.py
-	python generate_base.py > base.h
+	python generate_base.py --file base.h
 
 autogen.c : generate_print.py
-	python generate_print.py > autogen.c
+	python generate_print.py --file autogen.c
 
 %.o: %.c ${ftfp_inc} Makefile
 	$(CC) -c -o $@ $(CFLAGS) $<
@@ -48,3 +48,9 @@ pre: $(test_ftfp_pre) $(ftfp_pre) $(perf_ftfp_pre)
 
 clean:
 	$(RM) -r $(progs) $(libs) $(ftfp_obj) $(test_ftfp_obj) $(test_ftfp_pre) ${perf_ftfp_obj} ${perf_ftfp_pre} ${autogens}
+
+alltest:
+	number=2 ; while [[ $$number -le 61 ]] ; do \
+		echo "Testing" $$number "int bits..." && python generate_base.py --intbits $$number && make test && echo ./test || exit 1; \
+		((number = number + 1)) ; \
+	done
