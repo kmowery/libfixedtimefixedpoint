@@ -55,7 +55,7 @@ void run_test_s(char* name, fixed (*function) (fixed), fixed a){
 }
 
 void run_test_p(char* name, void (*function) (char*,fixed), fixed a){
-  char buf[40];
+  char buf[100];
   TEST_INTERNALS( (*function)(buf, a); )
 }
 
