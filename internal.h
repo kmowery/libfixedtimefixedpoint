@@ -93,6 +93,10 @@ typedef int64_t fixed_signed;
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
+#define ROUND_TO_EVEN_ONE_BIT(value) \
+    ((((fixed) value) >> 1) + \
+     ((value & 3) == 3))
+
 #define ROUND_TO_EVEN_64(value, n_shift_bits) \
   ((((fixed) value) >> (n_shift_bits)) + \
    !!( \

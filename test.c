@@ -16,6 +16,13 @@ static void null_test_success(void **state) {
   //(void) state;
 }
 
+#define CHECK_CONDITION(error_msg, condition, var1, var2) \
+  if( !(condition) ) { \
+    char b1[100], b2[100]; \
+    fix_print(b1, var1); fix_print(b2, var2); \
+    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
+  }
+
 #define CHECK_EQ(error_msg, var1, var2) \
   if( !fix_eq(var1, var2) ) { \
     char b1[100], b2[100]; \
@@ -154,14 +161,29 @@ FIXNUM_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
 
+/* Doubles only have 53 bits of precision, but we have 64 (minux the flag bits).
+ * If we end up shifting it left, there will be zero bits on the low end. This
+ * shouldn't be a test failure, so fix it up.
+ * */
+
 #define CONVERT_DBL(name, d, bits) \
 TEST_HELPER(convert_dbl_##name, { \
   fixed expected = bits; \
   double locald = d; \
-  fixed result = fix_convert_from_double(locald); \
-  CHECK_EQ_NAN(#name " convert_from_double failed", result, expected); \
+  uint32_t expected_log = uint64_log2(fix_abs(expected)); \
+  fixed result; \
+  if(expected_log <= 52) { \
+    result = fix_convert_from_double(locald); \
+    CHECK_EQ_NAN(#name " convert_from_double failed (no mask needed)", result, expected); \
+  } else { \
+    uint64_t rounding_bit = (1ull) << (expected_log - 52 - FIX_FLAG_BITS); \
+    expected = ROUND_TO_EVEN(expected, (expected_log - 52 - FIX_FLAG_BITS)) << (expected_log - 52 - FIX_FLAG_BITS); \
+    result = fix_convert_from_double(locald); \
+    CHECK_CONDITION(#name " convert_from_double failed (mask needed)", \
+        (result - expected) <= rounding_bit || (expected - result) <= rounding_bit, result, expected); \
+  } \
   double d2 = fix_convert_to_double(result); \
-  if( !((abs(d - d2) < 0.000001) || (isnan(d) && isnan(d2))) ) { \
+  if( !((fabs(d - d2) < 0.000001) || (isinf(d) && isinf(d2)) || (isnan(d) && isnan(d2))) ) { \
     char b1[100]; \
     fix_print(b1, result); \
     fail_msg( #name " convert_to_double failed : %g (%s "FIX_PRINTF_HEX") != %g", d2, b1, result, locald); \
