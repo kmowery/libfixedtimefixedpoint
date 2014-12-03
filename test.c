@@ -177,22 +177,30 @@ FIXNUM_TESTS
 TEST_HELPER(convert_dbl_##name, { \
   fixed expected = bits; \
   double locald = d; \
+  double log2d = log2(fabs(d)); \
+  uint32_t ilog2d = (int) ceil(log2d); \
+  int32_t bottom_zero_bits = ilog2d + 2 - 52 + FIX_FRAC_BITS; \
   uint32_t expected_log = uint64_log2(fix_abs(expected)); \
   fixed result; \
-  if(expected_log <= 52) { \
+  printf("expected_log %d\n", expected_log); \
+  printf("checking... %d\n", bottom_zero_bits); \
+  if(bottom_zero_bits < 0 ) { \
     result = fix_convert_from_double(locald); \
     CHECK_EQ_NAN(#name " convert_from_double failed (no mask needed)", result, expected); \
   } else { \
         \
-    double log2d = log2(fabs(d)); \
-    uint8_t d_is_int = (0. == fmod(log2d,1)); \
-    uint8_t zero_bits = (52 - FIX_POINT_BITS) - ((int) ceil(log2d)) + d_is_int; \
-    uint64_t rounding_bit = (1ull) << zero_bits; \
-    expected = ROUND_TO_EVEN(expected, zero_bits) << zero_bits; \
+    uint64_t rounding_bit = (1ull) << (bottom_zero_bits + FIX_FLAG_BITS); \
+    printf("rounding bit : %016llx\n", rounding_bit); \
+    expected = ROUND_TO_EVEN(expected, bottom_zero_bits) << bottom_zero_bits; \
+    expected |= bits & FIX_FLAGS_MASK; /* ensure we still have flags */\
     result = fix_convert_from_double(locald); \
+    p(result); \
     CHECK_CONDITION(#name " convert_from_double failed (mask needed)", \
-        (result - expected) <= rounding_bit || (expected - result) <= rounding_bit, result, expected); \
+        (!(FIX_IS_INF_POS(bits) | FIX_IS_INF_NEG(bits) | FIX_IS_NAN(bits) ) \
+           && (((result - expected) <= rounding_bit) || ((expected - result) <= rounding_bit))) || \
+        fix_eq_nan(result, expected), result, expected); \
   } \
+  p(result); \
   double d2 = fix_convert_to_double(result); \
   double dexp = fmod(d, (double) FIX_MAX_INT); \
   if( !((fabs(dexp - d2) < 0.000001) || (isinf(d) && isinf(d2)) || (isnan(d) && isnan(d2))) ) { \
