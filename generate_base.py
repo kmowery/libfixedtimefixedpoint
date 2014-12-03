@@ -51,6 +51,10 @@ if __name__ == "__main__":
     if (flag_bits + int_bits + frac_bits) < 64:
         print "Not enough bits! (%d (flag) + %d (int) + %d (frac) < 64)"%(flag_bits, int_bits, frac_bits)
         sys.exit(1)
+    if int_bits < 1:
+        print "There must be at least one integer bit (for two's complement...)"
+        print "You asked for %d (flag), %d (int), and %d (frac)"%(flag_bits, int_bits, frac_bits)
+        sys.exit(1)
 
     if args["pyfile"] is not None:
         with args["pyfile"] as f:
