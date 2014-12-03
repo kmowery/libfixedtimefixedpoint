@@ -191,7 +191,7 @@ fixed fix_floor(fixed op1) {
   uint8_t isinfneg = FIX_IS_INF_NEG(op1);
   uint8_t isnan = FIX_IS_NAN(op1);
 
-  fixed tempresult = op1 & ~((1LL << (FIX_FRAC_BITS + FIX_FLAG_BITS))-1);
+  fixed tempresult = op1 & ~((1ull << (FIX_FRAC_BITS + FIX_FLAG_BITS))-1);
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |

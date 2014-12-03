@@ -309,10 +309,10 @@ fixed fix_sqrt(fixed op1) {
   log2 |= (scratch >> 1);
   //log2 is now log2(op1), considered as a uint32_t
 
-  // Make a guess! Use log2(op1) if op1 > 2, otherwise just uhhhh mul op1 by 2.
-  int64_t x = MASK_UNLESS(op1 >= (((fixed) 1)<<(FIX_FRAC_BITS + FIX_FLAG_BITS+1)),
+  // Make a guess! Use log2(op1) if op1 > 1, otherwise just uhhhh mul op1 by 2.
+  int64_t x = MASK_UNLESS(op1 >= (((fixed) 1)<<(FIX_FRAC_BITS + FIX_FLAG_BITS)),
                            FIXINT(log2 - (FIX_FLAG_BITS + FIX_FRAC_BITS))) |
-               MASK_UNLESS(op1 < (((fixed) 1)<<(FIX_FRAC_BITS + FIX_FLAG_BITS+1)),
+               MASK_UNLESS(op1 < (((fixed) 1)<<(FIX_FRAC_BITS + FIX_FLAG_BITS)),
                            op1 << 1);
 
 

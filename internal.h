@@ -8,7 +8,7 @@
 
 typedef int64_t fixed_signed;
 
-#define FIX_MAX_INT (1 << (FIX_INT_BITS-1))
+#define FIX_MAX_INT (((fixed) 1) << (FIX_INT_BITS-1))
 
 ///////////////////////////////////////
 //  Useful Defines
@@ -33,7 +33,7 @@ typedef int64_t fixed_signed;
 #define MASK_UNLESS(expression, value) (SIGN_EXTEND(!!(expression), 1) & (value))
 
 #define MASK_UNLESS_64(expression, value) (SIGN_EXTEND_64(!!(expression), 1) & (value))
-#define SIGN_EXTEND_64(value, n_top_bit) ({uint64_t SE_m__ = (1LL << ((n_top_bit)-1)); (((uint64_t) (value)) ^ SE_m__) - SE_m__;})
+#define SIGN_EXTEND_64(value, n_top_bit) ({uint64_t SE_m__ = (1ull << ((n_top_bit)-1)); (((uint64_t) (value)) ^ SE_m__) - SE_m__;})
 
 #define FIX_DATA_BIT_MASK (0xFFFFFFFFFFFFFFFCLL)
 #define FIX_DATA_BITS(f) ((f) & FIX_DATA_BIT_MASK)
@@ -214,29 +214,53 @@ uint64_t fixfrac(char* frac);
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
 
 // Convert a 2.28 bit value into a fixed
-#if FIX_POINT_BITS > 30
-// TODO why is this 30, i don't understand, probably 28+2 and I forgot to
-// break out the flag bits separately
+#if FIX_POINT_BITS >= 62
 #define convert_228_to_fixed(v228) \
-  FIX_DATA_BITS(SIGN_EXTEND_64( v228 << (FIX_POINT_BITS - 30), \
-                                (32+(FIX_POINT_BITS - 30) )))
+  FIX_DATA_BITS( ((fixed) v228) << (FIX_POINT_BITS - 28))
 
 #define convert_228_to_fixed_signed(v228) \
-    FIX_DATA_BITS( v228 << ((FIX_POINT_BITS) - 28));
-#else
-#define convert_228_to_fixed(v228) \
-  FIX_DATA_BITS(SIGN_EXTEND( v228 >> (30 - FIX_POINT_BITS), \
-                             (32 - (30 - FIX_POINT_BITS ) /* 19 */ )))
-#error nope
-#endif
+    FIX_DATA_BITS( ((fixed) v228) << ((FIX_POINT_BITS) - 28));
 
-#if FIX_POINT_BITS > 28
+#elif FIX_POINT_BITS > 28
+/* TODO This might be wrong. check this when we fix a test which uses it... */
+#define convert_228_to_fixed(v228) \
+  FIX_DATA_BITS(SIGN_EXTEND_64( ((fixed) v228) << (FIX_POINT_BITS - 28), \
+                                (FIX_POINT_BITS + 2) ))
+
 #define convert_228_to_fixed_signed(v228) \
-    FIX_DATA_BITS( v228 << ((FIX_POINT_BITS) - 28));
-#else
+    FIX_DATA_BITS( ((fixed) v228) << ((FIX_POINT_BITS) - 28));
+
+#elif FIX_POINT_BITS == 28
+
+#define convert_228_to_fixed(v228) \
+  FIX_DATA_BITS(SIGN_EXTEND( ((fixed) v228) >> (28 - FIX_POINT_BITS), \
+                             (30 - (28 - FIX_POINT_BITS ) )))
+
 #define convert_228_to_fixed_signed(v228) \
-    FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED(S, (28 - (FIX_POINT_BITS))));
-#error nope
+    FIX_DATA_BITS(((fixed) v228));
+
+#elif FIX_POINT_BITS == 27
+
+#define convert_228_to_fixed(v228) \
+  FIX_DATA_BITS(SIGN_EXTEND( ((fixed) v228) >> (28 - FIX_POINT_BITS), \
+                             (30 - (28 - FIX_POINT_BITS ) )))
+
+#define convert_228_to_fixed_signed(v228) \
+    FIX_DATA_BITS(ROUND_TO_EVEN_ONE_BIT( ((fixed) v228)));
+
+#elif FIX_POINT_BITS <= 27
+
+#define convert_228_to_fixed(v228) \
+  FIX_DATA_BITS(SIGN_EXTEND( ((fixed) v228) >> (28 - FIX_POINT_BITS), \
+                             (30 - (28 - FIX_POINT_BITS ) )))
+
+#define convert_228_to_fixed_signed(v228) \
+    FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED( ((fixed) v228), (28 - (FIX_POINT_BITS))));
+
+#elif
+
+#elif
+#error Problem with convert_228_to_fixed
 #endif
 
 ///////////////////////////////////////
