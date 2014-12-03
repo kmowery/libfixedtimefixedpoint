@@ -164,7 +164,13 @@ FIXNUM_TESTS
 
 /* Doubles only have 53 bits of precision, but we have 64 (minux the flag bits).
  * If we end up shifting it left, there will be zero bits on the low end. This
- * shouldn't be a test failure, so fix it up.
+ * shouldn't be a test failure, so fix it up. We might also shift some of the
+ * precision bits off the left of the number.
+ *
+ * So, let's compure how many precision bits we should have... Or, more
+ * usefully, how many 0 bits we have on the lower end of the number. Note that
+ * we need to check if d is exactly a power of two, and add that in.
+ *
  * */
 
 #define CONVERT_DBL(name, d, bits) \
@@ -177,14 +183,19 @@ TEST_HELPER(convert_dbl_##name, { \
     result = fix_convert_from_double(locald); \
     CHECK_EQ_NAN(#name " convert_from_double failed (no mask needed)", result, expected); \
   } else { \
-    uint64_t rounding_bit = (1ull) << (expected_log - 52 - FIX_FLAG_BITS); \
-    expected = ROUND_TO_EVEN(expected, (expected_log - 52 - FIX_FLAG_BITS)) << (expected_log - 52 - FIX_FLAG_BITS); \
+        \
+    double log2d = log2(fabs(d)); \
+    uint8_t d_is_int = (0. == fmod(log2d,1)); \
+    uint8_t zero_bits = (52 - FIX_POINT_BITS) - ((int) ceil(log2d)) + d_is_int; \
+    uint64_t rounding_bit = (1ull) << zero_bits; \
+    expected = ROUND_TO_EVEN(expected, zero_bits) << zero_bits; \
     result = fix_convert_from_double(locald); \
     CHECK_CONDITION(#name " convert_from_double failed (mask needed)", \
         (result - expected) <= rounding_bit || (expected - result) <= rounding_bit, result, expected); \
   } \
   double d2 = fix_convert_to_double(result); \
-  if( !((fabs(d - d2) < 0.000001) || (isinf(d) && isinf(d2)) || (isnan(d) && isnan(d2))) ) { \
+  double dexp = fmod(d, (double) FIX_MAX_INT); \
+  if( !((fabs(dexp - d2) < 0.000001) || (isinf(d) && isinf(d2)) || (isnan(d) && isnan(d2))) ) { \
     char b1[100]; \
     fix_print(b1, result); \
     fail_msg( #name " convert_to_double failed : %g (%s "FIX_PRINTF_HEX") != %g", d2, b1, result, locald); \

@@ -341,6 +341,19 @@ fixed fix_convert_from_double(double d) {
       MASK_UNLESS(shift == 1, (ROUND_TO_EVEN_ONE_BIT(mantissa) << FIX_FLAG_BITS)) |
       MASK_UNLESS(shift <= 0, (mantissa << (-shift + 2))));
 
+  /* If we shifted the double left, we might have run out of integer bits.
+   * In that case, we need to do a modulo FIX_MAX_INT.
+   *
+   * We might have shifted off N higher order bits when we did the
+   * conversion, but that's okay. If I is the integer portion of the double,
+   * then:
+   *
+   *   I % FIX_MAX_INT    ===    (I % 2^n) % FIX_MAX_INT
+   *
+   * since FIX_MAX_INT is also a power of 2 itself, and 2^N > FIX_MAX_INT. */
+  result = (FIX_FRAC_MASK & result) |
+      ((((result & FIX_INT_MASK) >> FIX_POINT_BITS) % FIX_MAX_INT) << FIX_POINT_BITS);
+
   /* use IEEE 754 definition of INF */
   uint8_t isinf = (exponent_base == 0x7ff) && (mantissa_base == 0);
   isinf |= (((mantissa >> shift) & ~((1ull << (FIX_FRAC_BITS + FIX_INT_BITS)) -1)) != 0);
@@ -371,13 +384,12 @@ double fix_convert_to_double(fixed op1) {
 
   uint32_t log2op1 = uint64_log2(op1);
 
-  /* TODO: handle the case where we need to shift op1 right */
   int32_t shift = 53 - 1 - log2op1;
 
   uint64_t mantissa = ((1ull << 52) - 1) & (
       MASK_UNLESS(shift >= 0, ((uint64_t) op1) << shift) |
       MASK_UNLESS(shift < 0, ((uint64_t) op1) >> (-shift)));
-  uint64_t exponent = log2op1 - FIX_POINT_BITS + 1023;
+  uint64_t exponent = MASK_UNLESS_64(op1 != (fixed) 0, log2op1 - FIX_POINT_BITS + 1023);
 
   // We would include
   //  MASK_UNLESS( isinfpos | isinfneg , 0 ),
