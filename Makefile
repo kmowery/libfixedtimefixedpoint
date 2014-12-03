@@ -50,7 +50,7 @@ clean:
 	$(RM) -r $(progs) $(libs) $(ftfp_obj) $(test_ftfp_obj) $(test_ftfp_pre) ${perf_ftfp_obj} ${perf_ftfp_pre} ${autogens}
 
 alltest:
-	number=2 ; while [[ $$number -le 61 ]] ; do \
-		echo "Testing" $$number "int bits..." && python generate_base.py --intbits $$number && make test && echo ./test || exit 1; \
+	number=2 ; while [[ $$number -le 61  ]] ; do \
+		echo "Testing" $$number "int bits..." && make clean && python generate_base.py --intbits $$number && make test && echo ./test || exit 1; \
 		((number = number + 1)) ; \
 	done
