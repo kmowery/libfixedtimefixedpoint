@@ -1,8 +1,10 @@
 *.o
 test
 *.pre
+*.pyc
 autogen.c
 base.h
+base.py
 
 *.asm
 *.so

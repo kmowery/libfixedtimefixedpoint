@@ -25,8 +25,10 @@ all: $(libs) $(progs)
 
 base.h : generate_base.py
 	python generate_base.py --file base.h
+base.py : generate_base.py
+	python generate_base.py --file base.h
 
-autogen.c : generate_print.py
+autogen.c : generate_print.py base.py
 	python generate_print.py --file autogen.c
 
 %.o: %.c ${ftfp_inc} Makefile
@@ -50,6 +52,7 @@ clean:
 	$(RM) -r $(progs) $(libs) $(ftfp_obj) $(test_ftfp_obj) $(test_ftfp_pre) ${perf_ftfp_obj} ${perf_ftfp_pre} ${autogens}
 
 alltests:
+	set -x ; \
 	number=1 ; while [[ $$number -le 61  ]] ; do \
 		echo "Testing" $$number "int bits..." && make clean && python generate_base.py --intbits $$number && make test && ./test || exit 1; \
 		((number = number + 1)) ; \
