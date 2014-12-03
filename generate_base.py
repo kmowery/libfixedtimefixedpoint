@@ -17,6 +17,8 @@ if __name__ == "__main__":
                      help='The number of fraction bits', default = None)
     parser.add_argument('--file', metavar='filename', nargs='?', type=argparse.FileType(mode="w"),
                      help='The filename to write to', default = "base.h")
+    parser.add_argument('--pyfile', metavar='filename', nargs='?', type=argparse.FileType(mode="w"),
+                     help='The filename to write the python base to', default = "base.py")
     args = vars(parser.parse_args())
 
     if args["flagbits"] is not None:
@@ -44,6 +46,11 @@ if __name__ == "__main__":
     if (flag_bits + int_bits + frac_bits) < 64:
         print "Not enough bits! (%d (flag) + %d (int) + %d (frac) < 64)"%(flag_bits, int_bits, frac_bits)
         sys.exit(1)
+
+    with args["pyfile"] as f:
+        f.write("flag_bits = %d\n" %( flag_bits ))
+        f.write("int_bits = %d\n" %( int_bits ))
+        f.write("frac_bits = %d\n" %( frac_bits ))
 
     with args["file"] as f:
         f.write(

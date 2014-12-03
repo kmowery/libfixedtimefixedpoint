@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import math
 import argparse
+import sys
 
 # This file generates C code to print a fixed point number.
 #
@@ -35,7 +36,11 @@ import argparse
 # which multiplies by 0 if an exceptional state, zeroing out the normal
 # computation, and adding back in a " "  if necessary.
 
-from generate_base import *
+try:
+  from base import *
+except:
+    print "You must run generate_base.py before running generate_print.py."
+    sys.exit(1)
 
 parser = argparse.ArgumentParser(description="Generate libftfp's print function")
 parser.add_argument('--file', metavar='filename', nargs='?', type=argparse.FileType(mode="w"),
