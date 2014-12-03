@@ -129,7 +129,7 @@ ROUND_TO_EVEN_TESTS
 #define TEST_FIXNUM(name, inputint, inputfrac, outputsign, outputint, outputfrac) \
 TEST_HELPER(fixnum_##name, { \
   fixed g = FIXNUM(inputint, inputfrac); \
-  fixed expected = (((int64_t) outputint % FIX_MAX_INT) << FIX_POINT_BITS) + \
+  fixed expected = (((fixed) outputint % FIX_MAX_INT) << FIX_POINT_BITS) + \
                    (ROUND_TO_EVEN_64(((fixed) outputfrac), \
                                      (FIX_BITS - FIX_FRAC_BITS)) << FIX_FLAG_BITS); \
   if(outputsign == 1) { \
@@ -156,6 +156,7 @@ TEST_FIXNUM(regress12 , 100   , 0026550292968        , 0 , 100  , 0x00adffffffea
 TEST_FIXNUM(regress2  , 1     , 4142150878906        , 0 , 1    , 0x6a09fffffff8f68f) \
 TEST_FIXNUM(regress3  , 1     , 6487121582031        , 0 , 1    , 0xa611fffffff8f68f) \
 TEST_FIXNUM(regress4  , 1     , 99999999999999999999 , 0 , 2    , 0x0) \
+TEST_FIXNUM(regress45 , 0     , 99999999999999999999 , 0 , 1    , 0x0) \
 TEST_FIXNUM(regress5  , -1    , 3862915039           , 1 , 1    , 0x62e3fffff920c809)
 FIXNUM_TESTS
 
