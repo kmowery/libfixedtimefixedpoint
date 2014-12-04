@@ -29,17 +29,21 @@ int8_t fix_is_inf_neg(fixed op1);
 // Create a fixnum constant. Use:
 //   fixed x = FIX(-3,14159);
 //
-// This nonsense about the integer part of the fraction is to solve the case
-// where the fraction and integer overflow into the sign bit
+//We must also check that we didn't accidentally roll over from POS_INF to FIX_MIN...
 #define FIXNUM(i,frac) ({ \
+        uint8_t neg = (((fixed_signed) (i)) < 0) | (#i[0] == '-'); \
+        uint8_t inf = (((fixed) (i)) >= FIX_MAX_INT) & \
+                      (((fixed) (i)) < (-((fixed_signed) FIX_MAX_INT))); \
         fixed fnfrac = FIXFRAC(frac); \
-        fixed fnint = (llabs((fixed_signed) i) + (fnfrac >> FIX_POINT_BITS)); \
-        fnint = MASK_UNLESS(fnint == FIX_MAX_INT, fnint) | \
-                MASK_UNLESS(fnint != FIX_MAX_INT, fnint % FIX_MAX_INT); \
-        fixed f = (fnint << FIX_POINT_BITS) + \
-                  (fnfrac & FIX_FRAC_MASK); \
-    ( MASK_UNLESS((#i[0] == '-') | (i < 0), fix_neg(f)) | \
-      MASK_UNLESS((#i[0] != '-') | (i > 0), f) ); })
+        fnfrac = MASK_UNLESS_64( neg , (~fnfrac) + 1 ) | \
+                 MASK_UNLESS_64(!neg , fnfrac ); \
+        /* if you do this on one line, the compiler complains about shifting
+         * some bits off the edge of the world... */ \
+        fixed_signed fnint = ((fixed_signed) (i)); \
+        fixed f =  (fnint << FIX_POINT_BITS) + (fnfrac); \
+    ( MASK_UNLESS_64( (inf & !neg) | (!!FIX_TOP_BIT(f) & !neg), FIX_INF_POS ) | \
+      MASK_UNLESS_64( (inf &  neg)                          , FIX_INF_NEG ) | \
+      MASK_UNLESS_64(!inf , f )); })
 
 /* Returns true if the numbers are equal (NaNs are always unequal.) */
 int8_t fix_eq(fixed op1, fixed op2);
