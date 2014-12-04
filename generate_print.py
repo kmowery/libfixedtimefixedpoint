@@ -52,7 +52,12 @@ args = vars(parser.parse_args())
 number_bits = int_bits + frac_bits
 
 # characters in the integer is given by the base 10 log of the maximum number
-int_chars = int(math.ceil(math.log(2**int_bits,10)))
+# but since we're two's complement, we subtract 1 power of two
+int_chars = int(math.ceil(math.log(2**(int_bits-1),10)))
+
+#Ensure we have at least one character...
+if int_chars == 0:
+    int_chars = 1
 
 #characters in the base-10 significand is exactly the number of bits
 #  0.5, 0.25, 0.125, etc.
