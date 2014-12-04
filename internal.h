@@ -150,7 +150,9 @@ typedef int64_t fixed_signed;
 
 uint64_t fixfrac(char* frac);
 
-#define FIXINT(z) (((fixed_signed) z %FIX_MAX_INT)<<(FIX_FLAG_BITS+FIX_FRAC_BITS))
+#define FIXINT(z) ((fixed_signed) (MASK_UNLESS_64((fixed_signed) z != -FIX_MAX_INT, ((fixed_signed) (z) % FIX_MAX_INT)) | \
+                                   MASK_UNLESS_64((fixed_signed) z == -FIX_MAX_INT, ((fixed_signed) (z) ))) \
+            <<(FIX_POINT_BITS))
 
 #define FIX_ROUND_BASE(op1, round_exp) ({ \
     uint8_t isinfpos = FIX_IS_INF_POS(op1); \
