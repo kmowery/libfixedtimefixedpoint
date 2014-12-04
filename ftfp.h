@@ -33,7 +33,7 @@ int8_t fix_is_inf_neg(fixed op1);
 // where the fraction and integer overflow into the sign bit
 #define FIXNUM(i,frac) ({ \
         fixed fnfrac = FIXFRAC(frac); \
-        fixed f = (((abs((fixed_signed) i) + (fnfrac >> FIX_POINT_BITS)) % FIX_MAX_INT) << FIX_POINT_BITS) + \
+        fixed f = (((llabs((fixed_signed) i) + (fnfrac >> FIX_POINT_BITS)) % FIX_MAX_INT) << FIX_POINT_BITS) + \
                   (fnfrac & FIX_FRAC_MASK); \
     ( MASK_UNLESS((#i[0] == '-') | (i < 0), fix_neg(f)) | \
       MASK_UNLESS((#i[0] != '-') | (i > 0), f) ); })
