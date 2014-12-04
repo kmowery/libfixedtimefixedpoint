@@ -186,7 +186,7 @@ FIXNUM_TESTS
 #define CONVERT_DBL(name, d, bits) \
 TEST_HELPER(convert_dbl_##name, { \
   fixed expected = bits; \
-  double locald = d; \
+  double locald = (d); \
   double log2d = log2(fabs(d)); \
   uint32_t ilog2d = (int) ceil(log2d); \
   int32_t bottom_zero_bits = ilog2d + 2 - 52 + FIX_FRAC_BITS; \
@@ -206,28 +206,36 @@ TEST_HELPER(convert_dbl_##name, { \
         fix_eq_nan(result, expected), result, expected); \
   } \
   double d2 = fix_convert_to_double(result); \
-  double dexp = fmod(d, (double) FIX_MAX_INT); \
   double limit = (pow(.5, (double)FIX_FRAC_BITS)); \
-  if( !((fabs(dexp - d2) < limit) || (isinf(d) && isinf(d2)) || (isnan(d) && isnan(d2))) ) { \
+  if( !((fabs(locald - d2) < limit) || \
+        (isinf(d2) && (isinf(d) || (locald) >= FIX_MAX_INT || locald < -FIX_MAX_INT )) || \
+        (isnan(d) && isnan(d2))) ) { \
     char b1[100]; \
     fix_print(b1, result); \
     fail_msg( #name " convert_to_double failed : %g (%s "FIX_PRINTF_HEX") != %g", d2, b1, result, locald); \
   } \
+    char buf[100]; \
+    char bitsbuf[100]; \
+    fix_print(buf, result); \
+    fix_print(bitsbuf, bits); \
+    printf("Test passed: %g == %g == %s == %s\n", locald, d2, buf, bitsbuf); \
 };)
 
-#define CONVERT_DBL_TESTS \
-CONVERT_DBL(zero     , 0         , FIX_ZERO) \
-CONVERT_DBL(one      , 1         , FIXNUM(1,0)) \
-CONVERT_DBL(one_neg  , -1        , FIXNUM(-1,0)) \
-CONVERT_DBL(two      , 2         , FIXNUM(2,0)) \
-CONVERT_DBL(two_neg  , -2        , FIXNUM(-2,0)) \
-CONVERT_DBL(many     , 1000.4    , FIXNUM(1000,4)) \
-CONVERT_DBL(many_neg , -1000.4   , FIXNUM(-1000,4)) \
-CONVERT_DBL(frac     , 0.5342    , FIXNUM(0,5342)) \
-CONVERT_DBL(frac_neg , -0.5342   , FIXNUM(-0,5342)) \
-CONVERT_DBL(inf_pos  , INFINITY  , FIX_INF_POS) \
-CONVERT_DBL(inf_neg  , -INFINITY , FIX_INF_NEG) \
-CONVERT_DBL(nan      , nan("0")  , FIX_NAN)
+#define CONVERT_DBL_TESTS                                                \
+CONVERT_DBL(zero     , 0                       , FIX_ZERO)               \
+CONVERT_DBL(one      , 1                       , FIXNUM(1    , 0))       \
+CONVERT_DBL(one_neg  , -1                      , FIXNUM(-1   , 0))       \
+CONVERT_DBL(two      , 2                       , FIXNUM(2    , 0))       \
+CONVERT_DBL(two_neg  , -2                      , FIXNUM(-2   , 0))       \
+CONVERT_DBL(many     , 1000.4                  , FIXNUM(1000 , 4))       \
+CONVERT_DBL(many_neg , -1000.4                 , FIXNUM(-1000, 4))       \
+CONVERT_DBL(frac     , 0.5342                  , FIXNUM(0    , 5342))    \
+CONVERT_DBL(frac_neg , -0.5342                 , FIXNUM(-0   , 5342))    \
+CONVERT_DBL(max      , (double) FIX_MAX_INT    , FIX_INF_POS)            \
+CONVERT_DBL(max_neg  , -((double) FIX_MAX_INT) , FIXNUM(-FIX_MAX_INT,0)) \
+CONVERT_DBL(inf_pos  , INFINITY                , FIX_INF_POS)            \
+CONVERT_DBL(inf_neg  , -INFINITY               , FIX_INF_NEG)            \
+CONVERT_DBL(nan      , nan("0")                , FIX_NAN)
 CONVERT_DBL_TESTS
 
 //////////////////////////////////////////////////////////////////////////////

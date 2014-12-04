@@ -341,22 +341,21 @@ fixed fix_convert_from_double(double d) {
       MASK_UNLESS(shift == 1, (ROUND_TO_EVEN_ONE_BIT(mantissa) << FIX_FLAG_BITS)) |
       MASK_UNLESS(shift <= 0, (mantissa << (-shift + 2))));
 
-  /* If we shifted the double left, we might have run out of integer bits.
-   * In that case, we need to do a modulo FIX_MAX_INT.
-   *
-   * We might have shifted off N higher order bits when we did the
-   * conversion, but that's okay. If I is the integer portion of the double,
-   * then:
-   *
-   *   I % FIX_MAX_INT    ===    (I % 2^n) % FIX_MAX_INT
-   *
-   * since FIX_MAX_INT is also a power of 2 itself, and 2^N > FIX_MAX_INT. */
-  result = (FIX_FRAC_MASK & result) |
-      ((((result & FIX_INT_MASK) >> FIX_POINT_BITS) % FIX_MAX_INT) << FIX_POINT_BITS);
+  /* If there are any integer bits that we shifted off into oblivion, the double
+   * is outside our range. Generate INF... */
+  uint8_t lostbits = MASK_UNLESS(shift <= 0, mantissa != (result >> (-shift+2)));
 
   /* use IEEE 754 definition of INF */
-  uint8_t isinf = (exponent_base == 0x7ff) && (mantissa_base == 0);
-  isinf |= (((mantissa >> shift) & ~((1ull << (FIX_FRAC_BITS + FIX_INT_BITS)) -1)) != 0);
+  uint8_t isinf = (exponent_base == 0x7ff) & (mantissa_base == 0);
+
+  /* If we lost any bits by shifting, kill it. */
+  isinf |= lostbits;
+
+  /* Since doubles have a sign bit and we're two's complement, the other
+   * INFINITY case is if the double is >= FIX_MAX_INT and positive, or >
+   * FIX_MAX_INT and negative. */
+  isinf |= ((result >= FIX_TOP_BIT_MASK) & !sign);
+  isinf |= ((result >  FIX_TOP_BIT_MASK) &  sign);
 
   uint8_t isinfpos = (sign == 0) & isinf;
   uint8_t isinfneg = (sign != 0) & isinf;
@@ -366,8 +365,8 @@ fixed fix_convert_from_double(double d) {
 
   return
     FIX_IF_NAN(isnan) |
-    FIX_IF_INF_POS(isinfpos) |
-    FIX_IF_INF_NEG(isinfneg) |
+    FIX_IF_INF_POS(isinfpos & !isnan) |
+    FIX_IF_INF_NEG(isinfneg & !isnan) |
     MASK_UNLESS(!sign, FIX_DATA_BITS(result)) |
     MASK_UNLESS(sign, FIX_DATA_BITS(result_neg));
 }
