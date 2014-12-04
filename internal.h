@@ -35,6 +35,9 @@ typedef int64_t fixed_signed;
 #define MASK_UNLESS_64(expression, value) (SIGN_EXTEND_64(!!(expression), 1) & (value))
 #define SIGN_EXTEND_64(value, n_top_bit) ({uint64_t SE_m__ = (1ull << ((n_top_bit)-1)); (((uint64_t) (value)) ^ SE_m__) - SE_m__;})
 
+#define SIGN_EX_SHIFT_RIGHT_64(value, shift) SIGN_EXTEND_64( (value) >> (shift), 64 - (shift) )
+
+
 #define FIX_DATA_BIT_MASK (0xFFFFFFFFFFFFFFFCLL)
 #define FIX_DATA_BITS(f) ((f) & FIX_DATA_BIT_MASK)
 
@@ -111,6 +114,13 @@ typedef int64_t fixed_signed;
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
+#define ROUND_TO_EVEN_SIGNED_64(value, n_shift_bits) \
+  (SIGN_EX_SHIFT_RIGHT_64(value, n_shift_bits) + \
+   !!( \
+     (!!((value) & (1LL << ((n_shift_bits)-1))) & !!((value) & ((1LL << ((n_shift_bits)-1))-1))) | \
+     ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
+   ))
+
 
 /*
  * General idea:
@@ -142,38 +152,30 @@ uint64_t fixfrac(char* frac);
 
 #define FIXINT(z) (((fixed_signed) z %FIX_MAX_INT)<<(FIX_FLAG_BITS+FIX_FRAC_BITS))
 
-/* We do this stupid nosign thing to prevent FIX_MAX from rolling over into the
- * negative. It 'rounds' to FIX_MAX + 1 == FIX_MIN, which causes trouble.
- * There's gotta be a better way... */
-
 #define FIX_ROUND_BASE(op1, round_exp) ({ \
     uint8_t isinfpos = FIX_IS_INF_POS(op1); \
     uint8_t isinfneg = FIX_IS_INF_NEG(op1); \
     uint8_t isnan = FIX_IS_NAN(op1); \
-    uint8_t isneg = FIX_IS_NEG(op1); \
     uint8_t ex = isinfpos | isinfneg | isnan; \
     fixed result_nosign = round_exp; \
-    fixed_signed result = SIGN_EXTEND(result_nosign, FIX_INT_BITS); \
     (MASK_UNLESS_64(isinfpos, INT_MAX) | \
      MASK_UNLESS_64(isinfneg, INT_MIN) | \
-     MASK_UNLESS_64( isneg & !ex, result) | \
-     MASK_UNLESS_64(!isneg & !ex, result_nosign)); \
+     MASK_UNLESS_64( !ex, result_nosign)); \
     })
 
 /* Uses round to even semantics */
 #define FIX_ROUND_INT(op1) \
-    FIX_ROUND_BASE(op1, ROUND_TO_EVEN(op1, FIX_POINT_BITS))
+  FIX_ROUND_BASE(op1, ROUND_TO_EVEN_SIGNED_64(op1, FIX_POINT_BITS))
 
 /* 0.5 rounds up always */
 #define FIX_ROUND_UP_INT(op1) \
-  FIX_ROUND_BASE(op1, (((op1) >> (FIX_POINT_BITS)) + (op1 >> (FIX_POINT_BITS-1) & 0x1)))
+  FIX_ROUND_BASE(op1, SIGN_EX_SHIFT_RIGHT_64(op1, FIX_POINT_BITS) + ((op1 >> (FIX_POINT_BITS-1)) & 0x1))
 
 #define FIX_CEIL(op1) \
-  FIX_ROUND_BASE(op1, ((op1) >> (FIX_POINT_BITS))  + !!(op1 & FIX_FRAC_MASK))
+  FIX_ROUND_BASE(op1, SIGN_EX_SHIFT_RIGHT_64(op1, FIX_POINT_BITS) + !!(op1 & FIX_FRAC_MASK))
 
 #define FIX_FLOOR(op1) \
-  FIX_ROUND_BASE(op1, ((op1) >> (FIX_POINT_BITS)))
-
+  FIX_ROUND_BASE(op1, SIGN_EX_SHIFT_RIGHT_64(op1, FIX_POINT_BITS))
 
 
 ///////////////////////////////////////
