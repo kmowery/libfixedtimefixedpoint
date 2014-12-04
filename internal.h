@@ -152,27 +152,27 @@ uint64_t fixfrac(char* frac);
     uint8_t isnan = FIX_IS_NAN(op1); \
     uint8_t isneg = FIX_IS_NEG(op1); \
     uint8_t ex = isinfpos | isinfneg | isnan; \
-    uint32_t result_nosign = round_exp; \
-    uint32_t result = SIGN_EXTEND(result_nosign, FIX_INT_BITS); \
-    (MASK_UNLESS(isinfpos, INT_MAX) | \
-     MASK_UNLESS(isinfneg, INT_MIN) | \
-     MASK_UNLESS(isneg  & !ex, result) | \
-     MASK_UNLESS(!isneg & !ex, result_nosign)); \
+    fixed result_nosign = round_exp; \
+    fixed_signed result = SIGN_EXTEND(result_nosign, FIX_INT_BITS); \
+    (MASK_UNLESS_64(isinfpos, INT_MAX) | \
+     MASK_UNLESS_64(isinfneg, INT_MIN) | \
+     MASK_UNLESS_64( isneg & !ex, result) | \
+     MASK_UNLESS_64(!isneg & !ex, result_nosign)); \
     })
 
 /* Uses round to even semantics */
 #define FIX_ROUND_INT(op1) \
-    FIX_ROUND_BASE(op1, ROUND_TO_EVEN(op1, FIX_FLAG_BITS + FIX_FRAC_BITS))
+    FIX_ROUND_BASE(op1, ROUND_TO_EVEN(op1, FIX_POINT_BITS))
 
 /* 0.5 rounds up always */
 #define FIX_ROUND_UP_INT(op1) \
-  FIX_ROUND_BASE(op1, (((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)) + (op1 >> (FIX_FLAG_BITS + FIX_FRAC_BITS-1) & 0x1)))
+  FIX_ROUND_BASE(op1, (((op1) >> (FIX_POINT_BITS)) + (op1 >> (FIX_POINT_BITS-1) & 0x1)))
 
 #define FIX_CEIL(op1) \
-  FIX_ROUND_BASE(op1, ((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)) + !!(op1 & FIX_FRAC_MASK))
+  FIX_ROUND_BASE(op1, ((op1) >> (FIX_POINT_BITS))  + !!(op1 & FIX_FRAC_MASK))
 
 #define FIX_FLOOR(op1) \
-  FIX_ROUND_BASE(op1, ((op1) >> (FIX_FLAG_BITS + FIX_FRAC_BITS)))
+  FIX_ROUND_BASE(op1, ((op1) >> (FIX_POINT_BITS)))
 
 
 
