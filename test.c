@@ -246,14 +246,25 @@ TEST_HELPER(equal_##name, { \
   fixed o2 = op2; \
   CHECK_EQ_VALUE("values not right", o1, o2, value ); \
   CHECK_EQ_NAN_VALUE("NaN values not right", o1, o2, valuenan ); \
+  CHECK_EQ_VALUE("values not right", o2, o1, value ); \
+  CHECK_EQ_NAN_VALUE("NaN values not right", o2, o1, valuenan ); \
 };)
 
 #define EQ_TESTS                                     \
-TEST_EQ(zero    , 0           , 0           , 1 , 1) \
-TEST_EQ(frac    , 0x11180     , 0x11184     , 0 , 0) \
-TEST_EQ(nan     , FIX_NAN     , FIX_NAN     , 0 , 1) \
-TEST_EQ(inf     , FIX_INF_POS , FIX_INF_POS , 1 , 1) \
-TEST_EQ(inf_neg , FIX_INF_NEG , FIX_INF_NEG , 1 , 1)
+TEST_EQ(zero        , 0                , 0                , 1 , 1) \
+TEST_EQ(one         , FIXNUM(1,0)      , FIXNUM(1,0)      , 1 , 1) \
+TEST_EQ(one_neg     , FIXNUM(1,0)      , FIXNUM(-1,0)     , 0 , 0) \
+TEST_EQ(frac        , FIXNUM(0,314159) , FIXNUM(0,314159) , 1 , 1) \
+TEST_EQ(frac_ne     , FIXNUM(0,314159) , FIXNUM(3,314159) , 0 , 0) \
+TEST_EQ(nan         , FIX_NAN          , FIX_NAN          , 0 , 1) \
+TEST_EQ(nan_inf     , FIX_NAN          , FIX_INF_POS      , 0 , 0) \
+TEST_EQ(nan_inf_neg , FIX_NAN          , FIX_INF_NEG      , 0 , 0) \
+TEST_EQ(nan_num     , FIX_NAN          , FIXNUM(0,0)      , 0 , 0) \
+TEST_EQ(inf         , FIX_INF_POS      , FIX_INF_POS      , 1 , 1) \
+TEST_EQ(inf_inf_neg , FIX_INF_POS      , FIX_INF_NEG      , 0 , 0) \
+TEST_EQ(inf_num     , FIX_INF_POS      , FIXNUM(0,0)      , 0 , 0) \
+TEST_EQ(inf_neg     , FIX_INF_NEG      , FIX_INF_NEG      , 1 , 1) \
+TEST_EQ(inf_neg_num , FIX_INF_NEG      , FIXNUM(0,0)      , 0 , 0)
 EQ_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
