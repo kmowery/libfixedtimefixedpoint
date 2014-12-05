@@ -467,25 +467,32 @@ TEST_HELPER(add_##name, { \
   fixed added = fix_add(o1,o2); \
   fixed expected = result; \
   CHECK_EQ_NAN("add", added, expected); \
+  added = fix_add(o2,o1); \
+  CHECK_EQ_NAN("add (reversed)", added, expected); \
 };)
 
-#define ADD_TESTS \
-ADD(one_zero          , FIXNUM(1 ,0)      , FIXNUM(0,0  )          , FIXNUM(1,0)) \
-ADD(one_one           , FIXNUM(1 ,0)      , FIXNUM(1,0  )          , FIXNUM(2,0))  \
-ADD(fifteen_one       , FIXNUM(15,0)      , FIXNUM(1,0  )          , FIXNUM(16,0))  \
-ADD(pos_neg           , FIXNUM(15,0)      , FIXNUM(-1,5 )          , FIXNUM(13,5))  \
-ADD(pos_neg_cross_zero, FIXNUM(15,0)      , FIXNUM(-18,0)          , FIXNUM(-3,0))  \
-ADD(overflow          , FIXNUM(8192,0)    , FIXNUM(8192,0)         , FIX_INF_POS)  \
-ADD(overflow_neg      , FIXNUM(-8192,0)   , FIXNUM(-8193,0)        , FIX_INF_NEG)  \
-ADD(inf_number        , FIX_INF_POS       , FIXNUM(1 ,0)           , FIX_INF_POS)  \
-ADD(inf_neg           , FIX_INF_POS       , FIXNUM(-1,0)           , FIX_INF_POS)  \
-ADD(nan               , FIX_NAN           , FIX_ZERO               , FIX_NAN)  \
-ADD(nan_inf           , FIX_NAN           , FIX_INF_POS            , FIX_NAN)  \
-ADD(inf_nan           , FIX_INF_POS       , FIX_NAN                , FIX_NAN)  \
-ADD(nan_inf_neg       , FIX_NAN           , FIX_INF_NEG            , FIX_NAN)  \
-ADD(inf_inf_neg       , FIX_INF_POS       , FIX_INF_NEG            , FIX_INF_POS)
+#define ADD_TESTS                                                                         \
+ADD(zero_zero         , FIXNUM(0 ,0)           , FIXNUM(0,0  )           , FIXNUM(0,0))   \
+ADD(frac_zero         , FIXNUM(0 ,5)           , FIXNUM(0,0  )           , FIXNUM(0,5))   \
+ADD(frac_frac         , FIXNUM(0 ,5)           , FIXNUM(0,6  )           , FIXNUM(1,1))   \
+ADD(one_zero          , FIXNUM(1 ,0)           , FIXNUM(0,0  )           , FIXNUM(1,0))   \
+ADD(one_one           , FIXNUM(1 ,0)           , FIXNUM(1,0  )           , FIXNUM(2,0))   \
+ADD(fifteen_one       , FIXNUM(15,0)           , FIXNUM(1,0  )           , FIXNUM(16,0))  \
+ADD(pos_neg           , FIXNUM(15,0)           , FIXNUM(-1,5 )           , FIXNUM(13,5))  \
+ADD(pos_neg_cross_zero, FIXNUM(0,5)            , FIXNUM(-18,0)           , FIXNUM(-17,5)) \
+ADD(overflow          , FIXNUM(FIX_INT_MAX-1,5), FIXNUM(FIX_INT_MAX-1,5) , FIX_INF_POS)   \
+ADD(overflow_neg      , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(-FIX_INT_MAX+1,5), FIX_INF_NEG)   \
+ADD(inf_number        , FIX_INF_POS            , FIXNUM(0 ,5)            , FIX_INF_POS)   \
+ADD(inf_number_neg    , FIX_INF_POS            , FIXNUM(-1,0)            , FIX_INF_POS)   \
+ADD(inf_neg_number    , FIX_INF_NEG            , FIXNUM(0 ,5)            , FIX_INF_NEG)   \
+ADD(inf_neg_numberlneg, FIX_INF_NEG            , FIXNUM(-1,0)            , FIX_INF_NEG)   \
+ADD(nan               , FIX_NAN                , FIX_ZERO                , FIX_NAN)       \
+ADD(nan_inf           , FIX_NAN                , FIX_INF_POS             , FIX_NAN)       \
+ADD(nan_frac          , FIX_NAN                , FIXNUM(0,5)             , FIX_NAN)       \
+ADD(inf_nan           , FIX_INF_POS            , FIX_NAN                 , FIX_NAN)       \
+ADD(nan_inf_neg       , FIX_NAN                , FIX_INF_NEG             , FIX_NAN)       \
+ADD(inf_inf_neg       , FIX_INF_POS            , FIX_INF_NEG             , FIX_INF_POS)
 ADD_TESTS
-// TODO: negative overflow , NaNs     , fractions
 
 //////////////////////////////////////////////////////////////////////////////
 
