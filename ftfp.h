@@ -32,9 +32,10 @@ int8_t fix_is_inf_neg(fixed op1);
 //We must also check that we didn't accidentally roll over from POS_INF to FIX_MIN...
 #define FIXNUM(i,frac) ({ \
         uint8_t neg = (((fixed_signed) (i)) < 0) | (#i[0] == '-'); \
-        uint8_t inf = (((fixed) (i)) >= FIX_MAX_INT) & \
-                      (((fixed) (i)) < (-((fixed_signed) FIX_MAX_INT))); \
         fixed fnfrac = FIXFRAC(frac); \
+        uint8_t inf = (((fixed) (i)) >= FIX_MAX_INT) & \
+                        ((((fixed) (i)) < (-((fixed_signed) FIX_MAX_INT))) | \
+                        ((((fixed) (i)) == (-((fixed_signed) FIX_MAX_INT))) & (fnfrac != 0x0))); \
         fnfrac = MASK_UNLESS_64( neg , (~fnfrac) + 1 ) | \
                  MASK_UNLESS_64(!neg , fnfrac ); \
         /* if you do this on one line, the compiler complains about shifting

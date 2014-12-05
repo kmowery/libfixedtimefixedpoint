@@ -140,34 +140,35 @@ TEST_HELPER(fixnum_##name, { \
   if(inf == FIX_INF_POS || (outputsign == 0 && outputint >= FIX_MAX_INT)) { \
     expected = FIX_INF_POS; \
   } \
-  if(inf == FIX_INF_NEG || (outputsign == 1 && outputint > FIX_MAX_INT)) { \
+  if(inf == FIX_INF_NEG || (outputsign == 1 && ((outputint > FIX_MAX_INT) || (outputint == FIX_MAX_INT && outputfrac != 0)))) { \
     expected = FIX_INF_NEG; \
   } \
   CHECK_EQ("fixnum", g, expected); \
 };)
 
-#define FIXNUM_TESTS                                                                                                   \
-TEST_FIXNUM(zero           , 0              , 0                    , 0           , 0 , 0             , 0)                  \
-TEST_FIXNUM(one            , 1              , 0                    , 0           , 0 , 1             , 0)                  \
-TEST_FIXNUM(one_neg        , -1             , 0                    , 0           , 1 , 1             , 0)                  \
-TEST_FIXNUM(two            , 2              , 0                    , 0           , 0 , 2             , 0)                  \
-TEST_FIXNUM(two_neg        , -2             , 0                    , 0           , 1 , 2             , 0)                  \
-TEST_FIXNUM(many           , 1000           , 4                    , 0           , 0 , 1000          , 0x6666666666666666) \
-TEST_FIXNUM(many_neg       , -1000          , 4                    , 0           , 1 , 1000          , 0x6666666666666666) \
-TEST_FIXNUM(max_int_l1     , FIX_MAX_INT-1  , 0                    , 0           , 0 , FIX_MAX_INT-1 , 0   )               \
-TEST_FIXNUM(max_int        , FIX_MAX_INT    , 0                    , FIX_INF_POS , 0 , 0             , 0   )               \
-TEST_FIXNUM(max_int_neg    , -FIX_MAX_INT   , 0                    , 0           , 1 , FIX_MAX_INT   , 0   )               \
-TEST_FIXNUM(max_int_neg_m1 , -FIX_MAX_INT-1 , 0                    , FIX_INF_NEG , 1 , 0             , 0   )               \
-TEST_FIXNUM(frac           , 0              , 5342                 , 0           , 0 , 0             , 0x88c154c985f06f69) \
-TEST_FIXNUM(frac_neg       , -0             , 5342                 , 0           , 1 , 0             , 0x88c154c985f06f69) \
-TEST_FIXNUM(regress0       , 0              , 00932                , 0           , 0 , 0             , 0x0262cba732df505d) \
-TEST_FIXNUM(regress1       , 100            , 002655               , 0           , 0 , 100           , 0x00adff822bbecaac) \
-TEST_FIXNUM(regress12      , 100            , 0026550292968        , 0           , 0 , 100           , 0x00adffffffeae3ae) \
-TEST_FIXNUM(regress2       , 1              , 4142150878906        , 0           , 0 , 1             , 0x6a09fffffff8f68f) \
-TEST_FIXNUM(regress3       , 1              , 6487121582031        , 0           , 0 , 1             , 0xa611fffffff8f68f) \
-TEST_FIXNUM(regress4       , 1              , 99999999999999999999 , 0           , 0 , 2             , 0x0)                \
-TEST_FIXNUM(regress45      , 0              , 99999999999999999999 , 0           , 0 , 1             , 0x0)                \
-TEST_FIXNUM(regress5       , -1             , 3862915039           , 0           , 1 , 1             , 0x62e3fffff920c809)
+#define FIXNUM_TESTS                                                                                                        \
+TEST_FIXNUM(zero            , 0              , 0                    , 0           , 0 , 0             , 0)                  \
+TEST_FIXNUM(one             , 1              , 0                    , 0           , 0 , 1             , 0)                  \
+TEST_FIXNUM(one_neg         , -1             , 0                    , 0           , 1 , 1             , 0)                  \
+TEST_FIXNUM(two             , 2              , 0                    , 0           , 0 , 2             , 0)                  \
+TEST_FIXNUM(two_neg         , -2             , 0                    , 0           , 1 , 2             , 0)                  \
+TEST_FIXNUM(many            , 1000           , 4                    , 0           , 0 , 1000          , 0x6666666666666666) \
+TEST_FIXNUM(many_neg        , -1000          , 4                    , 0           , 1 , 1000          , 0x6666666666666666) \
+TEST_FIXNUM(max_int_l1      , FIX_MAX_INT-1  , 0                    , 0           , 0 , FIX_MAX_INT-1 , 0   )               \
+TEST_FIXNUM(max_int         , FIX_MAX_INT    , 0                    , FIX_INF_POS , 0 , 0             , 0   )               \
+TEST_FIXNUM(max_int_neg     , -FIX_MAX_INT   , 0                    , 0           , 1 , FIX_MAX_INT   , 0   )               \
+TEST_FIXNUM(max_int_neg_plus, -FIX_MAX_INT   , 5                    , FIX_INF_NEG , 1 , 0             , 0   )               \
+TEST_FIXNUM(max_int_neg_m1  , -FIX_MAX_INT-1 , 0                    , FIX_INF_NEG , 1 , 0             , 0   )               \
+TEST_FIXNUM(frac            , 0              , 5342                 , 0           , 0 , 0             , 0x88c154c985f06f69) \
+TEST_FIXNUM(frac_neg        , -0             , 5342                 , 0           , 1 , 0             , 0x88c154c985f06f69) \
+TEST_FIXNUM(regress0        , 0              , 00932                , 0           , 0 , 0             , 0x0262cba732df505d) \
+TEST_FIXNUM(regress1        , 100            , 002655               , 0           , 0 , 100           , 0x00adff822bbecaac) \
+TEST_FIXNUM(regress12       , 100            , 0026550292968        , 0           , 0 , 100           , 0x00adffffffeae3ae) \
+TEST_FIXNUM(regress2        , 1              , 4142150878906        , 0           , 0 , 1             , 0x6a09fffffff8f68f) \
+TEST_FIXNUM(regress3        , 1              , 6487121582031        , 0           , 0 , 1             , 0xa611fffffff8f68f) \
+TEST_FIXNUM(regress4        , 1              , 99999999999999999999 , 0           , 0 , 2             , 0x0)                \
+TEST_FIXNUM(regress45       , 0              , 99999999999999999999 , 0           , 0 , 1             , 0x0)                \
+TEST_FIXNUM(regress5        , -1             , 3862915039           , 0           , 1 , 1             , 0x62e3fffff920c809)
 FIXNUM_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
@@ -273,17 +274,19 @@ EQ_TESTS
 #define TEST_ROUNDING(name, value, res_even, res_up, res_ceil, res_floor) \
 TEST_HELPER(rounding_##name, { \
   fixed input = value; \
+  /* Trust that FIXNUM is doing its job correctly. Therefore, if input is \
+   * infinity, we can fix up the expected values below... */ \
   int64_t round_even  = FIX_ROUND_INT(input); \
-  int64_t exp_even    = res_even; \
+  int64_t exp_even    = FIX_IS_INF_POS(input) ? INT_MAX : FIX_IS_INF_NEG(input) ? INT_MIN : (res_even); \
   CHECK_INT_EQUAL("round to even" , round_even  , exp_even); \
   int64_t round_up    = FIX_ROUND_UP_INT(input); \
-  int64_t exp_up      = res_up; \
+  int64_t exp_up      = FIX_IS_INF_POS(input) ? INT_MAX : FIX_IS_INF_NEG(input) ? INT_MIN : (res_up); \
   CHECK_INT_EQUAL("round up"      , round_up    , exp_up); \
   int64_t round_ceil  = FIX_CEIL(input); \
-  int64_t exp_ceil    = res_ceil; \
+  int64_t exp_ceil    = FIX_IS_INF_POS(input) ? INT_MAX : FIX_IS_INF_NEG(input) ? INT_MIN : (res_ceil); \
   CHECK_INT_EQUAL("ceiling"       , round_ceil  , exp_ceil); \
   int64_t round_floor = FIX_FLOOR(input); \
-  int64_t exp_floor   = res_floor; \
+  int64_t exp_floor   = FIX_IS_INF_POS(input) ? INT_MAX : FIX_IS_INF_NEG(input) ? INT_MIN : (res_floor); \
   CHECK_INT_EQUAL("floor"         , round_floor , exp_floor); \
 };)
 
