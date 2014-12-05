@@ -137,10 +137,10 @@ TEST_HELPER(fixnum_##name, { \
   } else { \
         expected = FIX_DATA_BITS((fixed) expected); \
   }\
-  if(inf == FIX_INF_POS || (outputsign == 0 && outputint >= FIX_MAX_INT)) { \
+  if(inf == FIX_INF_POS || (outputsign == 0 && outputint >= FIX_INT_MAX)) { \
     expected = FIX_INF_POS; \
   } \
-  if(inf == FIX_INF_NEG || (outputsign == 1 && ((outputint > FIX_MAX_INT) || (outputint == FIX_MAX_INT && outputfrac != 0)))) { \
+  if(inf == FIX_INF_NEG || (outputsign == 1 && ((outputint > FIX_INT_MAX) || (outputint == FIX_INT_MAX && outputfrac != 0)))) { \
     expected = FIX_INF_NEG; \
   } \
   CHECK_EQ("fixnum", g, expected); \
@@ -154,11 +154,11 @@ TEST_FIXNUM(two             , 2              , 0                    , 0         
 TEST_FIXNUM(two_neg         , -2             , 0                    , 0           , 1 , 2             , 0)                  \
 TEST_FIXNUM(many            , 1000           , 4                    , 0           , 0 , 1000          , 0x6666666666666666) \
 TEST_FIXNUM(many_neg        , -1000          , 4                    , 0           , 1 , 1000          , 0x6666666666666666) \
-TEST_FIXNUM(max_int_l1      , FIX_MAX_INT-1  , 0                    , 0           , 0 , FIX_MAX_INT-1 , 0   )               \
-TEST_FIXNUM(max_int         , FIX_MAX_INT    , 0                    , FIX_INF_POS , 0 , 0             , 0   )               \
-TEST_FIXNUM(max_int_neg     , -FIX_MAX_INT   , 0                    , 0           , 1 , FIX_MAX_INT   , 0   )               \
-TEST_FIXNUM(max_int_neg_plus, -FIX_MAX_INT   , 5                    , FIX_INF_NEG , 1 , 0             , 0   )               \
-TEST_FIXNUM(max_int_neg_m1  , -FIX_MAX_INT-1 , 0                    , FIX_INF_NEG , 1 , 0             , 0   )               \
+TEST_FIXNUM(max_int_l1      , FIX_INT_MAX-1  , 0                    , 0           , 0 , FIX_INT_MAX-1 , 0   )               \
+TEST_FIXNUM(max_int         , FIX_INT_MAX    , 0                    , FIX_INF_POS , 0 , 0             , 0   )               \
+TEST_FIXNUM(max_int_neg     , -FIX_INT_MAX   , 0                    , 0           , 1 , FIX_INT_MAX   , 0   )               \
+TEST_FIXNUM(max_int_neg_plus, -FIX_INT_MAX   , 5                    , FIX_INF_NEG , 1 , 0             , 0   )               \
+TEST_FIXNUM(max_int_neg_m1  , -FIX_INT_MAX-1 , 0                    , FIX_INF_NEG , 1 , 0             , 0   )               \
 TEST_FIXNUM(frac            , 0              , 5342                 , 0           , 0 , 0             , 0x88c154c985f06f69) \
 TEST_FIXNUM(frac_neg        , -0             , 5342                 , 0           , 1 , 0             , 0x88c154c985f06f69) \
 TEST_FIXNUM(regress0        , 0              , 00932                , 0           , 0 , 0             , 0x0262cba732df505d) \
@@ -209,7 +209,7 @@ TEST_HELPER(convert_dbl_##name, { \
   double d2 = fix_convert_to_double(result); \
   double limit = (pow(.5, (double)FIX_FRAC_BITS)); \
   if( !((fabs(locald - d2) < limit) || \
-        (isinf(d2) && (isinf(d) || (locald) >= FIX_MAX_INT || locald < -FIX_MAX_INT )) || \
+        (isinf(d2) && (isinf(d) || (locald) >= FIX_INT_MAX || locald < -FIX_INT_MAX )) || \
         (isnan(d) && isnan(d2))) ) { \
     char b1[100]; \
     fix_print(b1, result); \
@@ -232,8 +232,8 @@ CONVERT_DBL(many     , 1000.4                  , FIXNUM(1000 , 4))       \
 CONVERT_DBL(many_neg , -1000.4                 , FIXNUM(-1000, 4))       \
 CONVERT_DBL(frac     , 0.5342                  , FIXNUM(0    , 5342))    \
 CONVERT_DBL(frac_neg , -0.5342                 , FIXNUM(-0   , 5342))    \
-CONVERT_DBL(max      , (double) FIX_MAX_INT    , FIX_INF_POS)            \
-CONVERT_DBL(max_neg  , -((double) FIX_MAX_INT) , FIXNUM(-FIX_MAX_INT,0)) \
+CONVERT_DBL(max      , (double) FIX_INT_MAX    , FIX_INF_POS)            \
+CONVERT_DBL(max_neg  , -((double) FIX_INT_MAX) , FIXNUM(-FIX_INT_MAX,0)) \
 CONVERT_DBL(inf_pos  , INFINITY                , FIX_INF_POS)            \
 CONVERT_DBL(inf_neg  , -INFINITY               , FIX_INF_NEG)            \
 CONVERT_DBL(nan      , nan("0")                , FIX_NAN)
@@ -299,7 +299,7 @@ TEST_HELPER(rounding_##name, { \
 #define SFA 0
 #endif
 
-/* Modding by FIX_MAX_INT allows us to correct for situations where FIX_MAX_INT
+/* Modding by FIX_INT_MAX allows us to correct for situations where FIX_INT_MAX
  * is 1 -- that is, when there is one integer bit. In these situations,
  * the fixnum being tested is always +/- 0.5, and rounds to zero. */
 
@@ -336,8 +336,8 @@ TEST_ROUNDING(two3_neg  , FIXNUM(-2 , 3) , -(2)-0     , -(2)-0     , -(2 )-0 , -
 TEST_ROUNDING(two5_neg  , FIXNUM(-2 , 5) , -(2)-0     , -(2)-0     , -(2 )-0 , -(2)-1)             \
 TEST_ROUNDING(two7_neg  , FIXNUM(-2 , 7) , -(2)-1+SFA , -(2)-1+SFA , -(2 )-0 , -(2)-1)             \
                                                                                                    \
-TEST_ROUNDING(max     , FIX_MAX     , FIX_MAX_INT  , FIX_MAX_INT  , FIX_MAX_INT  , FIX_MAX_INT-1)  \
-TEST_ROUNDING(min     , FIX_MIN     , -FIX_MAX_INT , -FIX_MAX_INT , -FIX_MAX_INT , -FIX_MAX_INT)   \
+TEST_ROUNDING(max     , FIX_MAX     , FIX_INT_MAX  , FIX_INT_MAX  , FIX_INT_MAX  , FIX_INT_MAX-1)  \
+TEST_ROUNDING(min     , FIX_MIN     , -FIX_INT_MAX , -FIX_INT_MAX , -FIX_INT_MAX , -FIX_INT_MAX)   \
 TEST_ROUNDING(nan     , FIX_NAN     , 0            , 0            , 0            , 0)              \
 TEST_ROUNDING(inf     , FIX_INF_POS , INT_MAX      , INT_MAX      , INT_MAX      , INT_MAX)        \
 TEST_ROUNDING(inf_neg , FIX_INF_NEG , INT_MIN      , INT_MIN      , INT_MIN      , INT_MIN)
@@ -372,12 +372,12 @@ FLOOR_CEIL(one_neg  , FIXNUM(-1 , 0)               , FIXNUM(-1 , 0)          , F
 FLOOR_CEIL(pi       , FIX_PI                       , FIXNUM(3  , 0)          ,                            \
                                                      FIX_INT_BITS > 3 ? FIXNUM(4 -SFA , 0) : FIX_INF_POS) \
 FLOOR_CEIL(pi_neg   , fix_neg(FIX_PI)              , FIXNUM(-4 +SFA , 0)     , FIXNUM(-3 , 0))            \
-FLOOR_CEIL(max      , FIX_MAX                      , FIXNUM(FIX_MAX_INT-1, 0), FIX_INF_POS)               \
-FLOOR_CEIL(max_almost,fix_sub(FIX_MAX, FIXNUM(1,0)), FIXNUM(FIX_MAX_INT-2, 0), FIXNUM(FIX_MAX_INT-1,0))   \
+FLOOR_CEIL(max      , FIX_MAX                      , FIXNUM(FIX_INT_MAX-1, 0), FIX_INF_POS)               \
+FLOOR_CEIL(max_almost,fix_sub(FIX_MAX, FIXNUM(1,0)), FIXNUM(FIX_INT_MAX-2, 0), FIXNUM(FIX_INT_MAX-1,0))   \
 FLOOR_CEIL(min      , FIX_MIN                      , FIX_SMALLEST_INT, FIX_SMALLEST_INT)                  \
 FLOOR_CEIL(min_almost,fix_add(fix_neg(FIX_MAX), FIXNUM(1,0)),                                             \
-                                                     FIXNUM(-FIX_MAX_INT+1,0),                            \
-                                                     FIXNUM(-FIX_MAX_INT+2,0))                            \
+                                                     FIXNUM(-FIX_INT_MAX+1,0),                            \
+                                                     FIXNUM(-FIX_INT_MAX+2,0))                            \
 FLOOR_CEIL(inf_pos  , FIX_INF_POS                  , FIX_INF_POS             , FIX_INF_POS)               \
 FLOOR_CEIL(inf_neg  , FIX_INF_NEG                  , FIX_INF_NEG             , FIX_INF_NEG)               \
 FLOOR_CEIL(nan      , FIX_NAN                      , FIX_NAN                 , FIX_NAN)
@@ -394,7 +394,7 @@ static void constants(void **state) {
   CHECK_EQ("tau", FIX_TAU, ltau);
   CHECK_EQ("e", FIX_E, le);
 
-  if(FIX_MAX_INT > 7) {
+  if(FIX_INT_MAX > 7) {
     // Do some basic functional tests
     fixed temp = fix_abs(fix_sub(fix_sub(FIX_TAU, FIX_PI), FIX_PI));
     fixed limit = FIX_ZERO;

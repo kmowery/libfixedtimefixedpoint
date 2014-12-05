@@ -352,8 +352,8 @@ fixed fix_convert_from_double(double d) {
   isinf |= lostbits;
 
   /* Since doubles have a sign bit and we're two's complement, the other
-   * INFINITY case is if the double is >= FIX_MAX_INT and positive, or >
-   * FIX_MAX_INT and negative. */
+   * INFINITY case is if the double is >= FIX_INT_MAX and positive, or >
+   * FIX_INT_MAX and negative. */
   isinf |= ((result >= FIX_TOP_BIT_MASK) & !sign);
   isinf |= ((result >  FIX_TOP_BIT_MASK) &  sign);
 
