@@ -60,12 +60,12 @@ int8_t fix_eq_nan(fixed op1, fixed op2);
 int8_t fix_cmp(fixed op1, fixed op2);
 
 // Useful constants
-#define FIX_PI      FIXNUM(3,14159265359)
-#define FIX_TAU     FIXNUM(6,28318530718)
-#define FIX_E       FIXNUM(2,71828182846)
-#define FIX_EPSILON ((fixed) (1 << FIX_FLAG_BITS))
+#define FIX_PI          FIXNUM(3,1415926535897932385)
+#define FIX_TAU         FIXNUM(6,2831853071795864769)
+#define FIX_E           FIXNUM(2,7182818284590452354)
+#define FIX_EPSILON     ((fixed) (1 << FIX_FLAG_BITS))
 #define FIX_EPSILON_NEG ((fixed) ~((1 << FIX_FLAG_BITS)-1))
-#define FIX_ZERO    ((fixed) 0)
+#define FIX_ZERO        ((fixed) 0)
 
 #define FIX_MAX     FIX_DATA_BITS((fixed) (((fixed) 1) << (FIX_BITS-1)) -1)
 #define FIX_MIN     FIX_DATA_BITS((fixed) ((fixed) 1) << (FIX_BITS-1))

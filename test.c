@@ -386,9 +386,32 @@ FLOOR_CEIL_TESTS
 //////////////////////////////////////////////////////////////////////////////
 
 static void constants(void **state) {
-  assert_true(FIX_PI  == 0x00064880);
-  assert_true(FIX_TAU == 0x000c90fc);
-  assert_true(FIX_E   == 0x00056fc4);
+  fixed lpi         = FIXNUM(3,1415926535897932385);
+  fixed ltau        = FIXNUM(6,2831853071795864769);
+  fixed le          = FIXNUM(2,7182818284590452354);
+
+  CHECK_EQ("pi", FIX_PI, lpi);
+  CHECK_EQ("tau", FIX_TAU, ltau);
+  CHECK_EQ("e", FIX_E, le);
+
+  if(FIX_MAX_INT > 7) {
+    // Do some basic functional tests
+    fixed temp = fix_abs(fix_sub(fix_sub(FIX_TAU, FIX_PI), FIX_PI));
+    fixed limit = FIX_ZERO;
+    for(int i = 0; i < 10; i++ ) {
+      limit = fix_add(limit, FIX_EPSILON);
+    }
+    char b1[100], b2[100];
+    fix_print(b1, temp);
+    fix_print(b2, FIX_PI);
+
+    if(fix_cmp(temp, limit) >= 0) {
+      fail_msg( "Tau - Pi - Pi is %s ("FIX_PRINTF_HEX
+              "), not near zero. Pi is %s ("FIX_PRINTF_HEX")",
+              b1, temp, b2, FIX_PI);
+    }
+    printf( "Tau - Pi - Pi is %s ("FIX_PRINTF_HEX")\n", b1, temp);
+  }
 }
 #define CONSTANT_TESTS unit_test(constants),
 
