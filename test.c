@@ -350,31 +350,36 @@ ROUNDING_TESTS
 TEST_HELPER(floor_ceil_##name, { \
   fixed input = value; \
   fixed floor = fix_floor(input); \
-  fixed floor_expected = floor_result; \
+  fixed floor_expected = FIX_IS_INF_POS(input) ? FIX_INF_POS : \
+                         FIX_IS_INF_NEG(input) ? FIX_INF_NEG : \
+                          (floor_result); \
   CHECK_EQ_NAN("floor "#name, floor, floor_expected); \
   fixed ceil = fix_ceil(input); \
-  fixed ceil_expected = ceil_result; \
+  fixed ceil_expected = FIX_IS_INF_POS(input) ? FIX_INF_POS : \
+                        FIX_IS_INF_NEG(input) ? FIX_INF_NEG : \
+                          (ceil_result); \
   CHECK_EQ_NAN("ceil "#name, ceil, ceil_expected); \
 };)
 
 #define FIX_SMALLEST_INT (1ull << 63)
 
-#define FLOOR_CEIL_TESTS                                                                                \
-FLOOR_CEIL(zero     , FIXNUM(0  , 0)               , FIXNUM(0  , 0)          , FIXNUM(0  , 0))          \
-FLOOR_CEIL(half     , FIXNUM(0  , 5)               , FIXNUM(0  , 0)          , FIXNUM(1  , 0))          \
-FLOOR_CEIL(half_neg , FIXNUM(-0 , 5)               , FIXNUM(-1 , 0)          , FIXNUM(0  , 0))          \
-FLOOR_CEIL(one      , FIXNUM(1  , 0)               , FIXNUM(1  , 0)          , FIXNUM(1  , 0))          \
-FLOOR_CEIL(one_neg  , FIXNUM(-1 , 0)               , FIXNUM(-1 , 0)          , FIXNUM(-1 , 0))          \
-FLOOR_CEIL(pi       , FIX_PI                       , FIXNUM(3  , 0)          , FIXNUM(4 -SFA , 0))      \
-FLOOR_CEIL(pi_neg   , fix_neg(FIX_PI)              , FIXNUM(-4 +SFA , 0)     , FIXNUM(-3 , 0))          \
-FLOOR_CEIL(max      , FIX_MAX                      , FIXNUM(FIX_MAX_INT-1, 0), FIX_INF_POS)             \
-FLOOR_CEIL(max_almost,fix_sub(FIX_MAX, FIXNUM(1,0)), FIXNUM(FIX_MAX_INT-2, 0), FIXNUM(FIX_MAX_INT-1,0)) \
-FLOOR_CEIL(min      , FIX_MIN                      , FIX_SMALLEST_INT, FIX_SMALLEST_INT)                \
-FLOOR_CEIL(min_almost,fix_add(fix_neg(FIX_MAX), FIXNUM(1,0)),                                           \
-                                                     fix_neg(FIXNUM(FIX_MAX_INT-1,0)),                  \
-                                                     fix_add(FIX_SMALLEST_INT, FIXNUM(2,0)))            \
-FLOOR_CEIL(inf_pos  , FIX_INF_POS                  , FIX_INF_POS             , FIX_INF_POS)             \
-FLOOR_CEIL(inf_neg  , FIX_INF_NEG                  , FIX_INF_NEG             , FIX_INF_NEG)             \
+#define FLOOR_CEIL_TESTS                                                                                  \
+FLOOR_CEIL(zero     , FIXNUM(0  , 0)               , FIXNUM(0  , 0)          , FIXNUM(0  , 0))            \
+FLOOR_CEIL(half     , FIXNUM(0  , 5)               , FIXNUM(0  , 0)          , FIXNUM(1  , 0))            \
+FLOOR_CEIL(half_neg , FIXNUM(-0 , 5)               , FIXNUM(-1 , 0)          , FIXNUM(0  , 0))            \
+FLOOR_CEIL(one      , FIXNUM(1  , 0)               , FIXNUM(1  , 0)          , FIXNUM(1  , 0))            \
+FLOOR_CEIL(one_neg  , FIXNUM(-1 , 0)               , FIXNUM(-1 , 0)          , FIXNUM(-1 , 0))            \
+FLOOR_CEIL(pi       , FIX_PI                       , FIXNUM(3  , 0)          ,                            \
+                                                     FIX_INT_BITS > 3 ? FIXNUM(4 -SFA , 0) : FIX_INF_POS) \
+FLOOR_CEIL(pi_neg   , fix_neg(FIX_PI)              , FIXNUM(-4 +SFA , 0)     , FIXNUM(-3 , 0))            \
+FLOOR_CEIL(max      , FIX_MAX                      , FIXNUM(FIX_MAX_INT-1, 0), FIX_INF_POS)               \
+FLOOR_CEIL(max_almost,fix_sub(FIX_MAX, FIXNUM(1,0)), FIXNUM(FIX_MAX_INT-2, 0), FIXNUM(FIX_MAX_INT-1,0))   \
+FLOOR_CEIL(min      , FIX_MIN                      , FIX_SMALLEST_INT, FIX_SMALLEST_INT)                  \
+FLOOR_CEIL(min_almost,fix_add(fix_neg(FIX_MAX), FIXNUM(1,0)),                                             \
+                                                     FIXNUM(-FIX_MAX_INT+1,0),                            \
+                                                     FIXNUM(-FIX_MAX_INT+2,0))                            \
+FLOOR_CEIL(inf_pos  , FIX_INF_POS                  , FIX_INF_POS             , FIX_INF_POS)               \
+FLOOR_CEIL(inf_neg  , FIX_INF_NEG                  , FIX_INF_NEG             , FIX_INF_NEG)               \
 FLOOR_CEIL(nan      , FIX_NAN                      , FIX_NAN                 , FIX_NAN)
 FLOOR_CEIL_TESTS
 
