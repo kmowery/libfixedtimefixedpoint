@@ -8,7 +8,7 @@
 
 typedef int64_t fixed_signed;
 
-#define FIX_MAX_INT (((fixed) 1) << (FIX_INT_BITS-1))
+#define FIX_INT_MAX (((fixed) 1) << (FIX_INT_BITS-1))
 
 ///////////////////////////////////////
 //  Useful Defines
@@ -151,7 +151,7 @@ typedef int64_t fixed_signed;
 uint64_t fixfrac(char* frac);
 
 /* NOTE: does not protect against numbers that are too large */
-#define FIXINT(z) (((fixed_signed) z %FIX_MAX_INT)<<(FIX_POINT_BITS))
+#define FIXINT(z) (((fixed_signed) z %FIX_INT_MAX)<<(FIX_POINT_BITS))
 
 #define FIX_ROUND_BASE(op1, round_exp) ({ \
     uint8_t isinfpos = FIX_IS_INF_POS(op1); \
