@@ -304,42 +304,42 @@ TEST_HELPER(rounding_##name, { \
  * the fixnum being tested is always +/- 0.5, and rounds to zero. */
 
 /*            Name       Value              Even                       Up                         Ceil                    Floor */
-#define ROUNDING_TESTS                                                                                                                                  \
-                                                                                                                                                        \
-TEST_ROUNDING(zero      , FIXNUM(0  , 0) , (0 % FIX_MAX_INT)+0              , (0 % FIX_MAX_INT)+0      , (0 % FIX_MAX_INT )+0  , (0 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(zero3     , FIXNUM(0  , 3) , (0 % FIX_MAX_INT)+0              , (0 % FIX_MAX_INT)+0 +SFA , (0 % FIX_MAX_INT )+1  , (0 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(zero5     , FIXNUM(0  , 5) , (0 % FIX_MAX_INT)+0              , (0 % FIX_MAX_INT)+1      , (0 % FIX_MAX_INT )+1  , (0 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(zero7     , FIXNUM(0  , 7) , (0 % FIX_MAX_INT)+1 -SFA         , (0 % FIX_MAX_INT)+1      , (0 % FIX_MAX_INT )+1  , (0 % FIX_MAX_INT)+0)   \
-                                                                                                                                                        \
-TEST_ROUNDING(one       , FIXNUM(1  , 0) , (1 % FIX_MAX_INT)+0              , (1 % FIX_MAX_INT)+0      , (1 % FIX_MAX_INT )+0  , (1 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(one3      , FIXNUM(1  , 3) , (1 % FIX_MAX_INT)+0 +SFA         , (1 % FIX_MAX_INT)+0 +SFA , (1 % FIX_MAX_INT )+1  , (1 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(one5      , FIXNUM(1  , 5) , (1 % FIX_MAX_INT)+1%FIX_MAX_INT  , (1 % FIX_MAX_INT)+1      , (1 % FIX_MAX_INT )+1  , (1 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(one7      , FIXNUM(1  , 7) , (1 % FIX_MAX_INT)+1              , (1 % FIX_MAX_INT)+1      , (1 % FIX_MAX_INT )+1  , (1 % FIX_MAX_INT)+0)   \
-                                                                                                                                                        \
-TEST_ROUNDING(two       , FIXNUM(2  , 0) , (2 % FIX_MAX_INT)+0              , (2 % FIX_MAX_INT)+0      , (2 % FIX_MAX_INT )+0  , (2 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(two3      , FIXNUM(2  , 3) , (2 % FIX_MAX_INT)+0              , (2 % FIX_MAX_INT)+0 +SFA , (2 % FIX_MAX_INT )+1  , (2 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(two5      , FIXNUM(2  , 5) , (2 % FIX_MAX_INT)+0              , (2 % FIX_MAX_INT)+1      , (2 % FIX_MAX_INT )+1  , (2 % FIX_MAX_INT)+0)   \
-TEST_ROUNDING(two7      , FIXNUM(2  , 7) , (2 % FIX_MAX_INT)+1 -SFA         , (2 % FIX_MAX_INT)+1      , (2 % FIX_MAX_INT )+1  , (2 % FIX_MAX_INT)+0)   \
-                                                                                                                                                        \
-TEST_ROUNDING(zero_neg  , FIXNUM(-0 , 0) , (0 % FIX_MAX_INT)-0              , (0 % FIX_MAX_INT)-0      , (0 % FIX_MAX_INT )-0  , (0 % FIX_MAX_INT)-0)   \
-TEST_ROUNDING(zero3_neg , FIXNUM(-0 , 3) , (0 % FIX_MAX_INT)-0              , (0 % FIX_MAX_INT)-0      , (0 % FIX_MAX_INT )-0  , (0 % FIX_MAX_INT)-1)   \
-TEST_ROUNDING(zero5_neg , FIXNUM(-0 , 5) , (0 % FIX_MAX_INT)-0              , (0 % FIX_MAX_INT)-0      , (0 % FIX_MAX_INT )-0  , (0 % FIX_MAX_INT)-1)   \
-TEST_ROUNDING(zero7_neg , FIXNUM(-0 , 7) , (0 % FIX_MAX_INT)-1 +SFA         , (0 % FIX_MAX_INT)-1+SFA  , (0 % FIX_MAX_INT )-0  , (0 % FIX_MAX_INT)-1)   \
-                                                                                                                                                        \
-TEST_ROUNDING(one_neg   , FIXNUM(-1 , 0) , -(1 % FIX_MAX_INT)-0             , -(1 % FIX_MAX_INT)-0     , -(1 % FIX_MAX_INT )-0 , -(1 % FIX_MAX_INT)-0)  \
-TEST_ROUNDING(one3_neg  , FIXNUM(-1 , 3) , -(1 % FIX_MAX_INT)-0-SFA         , -(1 % FIX_MAX_INT)-0     , -(1 % FIX_MAX_INT )-0 , -(1 % FIX_MAX_INT)-1)  \
-TEST_ROUNDING(one5_neg  , FIXNUM(-1 , 5) , -(1 % FIX_MAX_INT)-1%FIX_MAX_INT , -(1 % FIX_MAX_INT)-0     , -(1 % FIX_MAX_INT )-0 , -(1 % FIX_MAX_INT)-1)  \
-TEST_ROUNDING(one7_neg  , FIXNUM(-1 , 7) , -(1 % FIX_MAX_INT)-1             , -(1 % FIX_MAX_INT)-1+SFA , -(1 % FIX_MAX_INT )-0 , -(1 % FIX_MAX_INT)-1)  \
-                                                                                                                                                        \
-TEST_ROUNDING(two_neg   , FIXNUM(-2 , 0) , -(2 % FIX_MAX_INT)-0             , -(2 % FIX_MAX_INT)-0     , -(2 % FIX_MAX_INT )-0 , -(2 % FIX_MAX_INT)-0)  \
-TEST_ROUNDING(two3_neg  , FIXNUM(-2 , 3) , -(2 % FIX_MAX_INT)-0             , -(2 % FIX_MAX_INT)-0     , -(2 % FIX_MAX_INT )-0 , -(2 % FIX_MAX_INT)-1)  \
-TEST_ROUNDING(two5_neg  , FIXNUM(-2 , 5) , -(2 % FIX_MAX_INT)-0             , -(2 % FIX_MAX_INT)-0     , -(2 % FIX_MAX_INT )-0 , -(2 % FIX_MAX_INT)-1)  \
-TEST_ROUNDING(two7_neg  , FIXNUM(-2 , 7) , -(2 % FIX_MAX_INT)-1+SFA         , -(2 % FIX_MAX_INT)-1+SFA , -(2 % FIX_MAX_INT )-0 , -(2 % FIX_MAX_INT)-1)  \
-                                                                                                                                                        \
-TEST_ROUNDING(max     , FIX_MAX     , FIX_MAX_INT  , FIX_MAX_INT  , FIX_MAX_INT  , FIX_MAX_INT-1)                                                       \
-TEST_ROUNDING(min     , FIX_MIN     , -FIX_MAX_INT , -FIX_MAX_INT , -FIX_MAX_INT , -FIX_MAX_INT)                                                        \
-TEST_ROUNDING(nan     , FIX_NAN     , 0            , 0            , 0            , 0)                                                                   \
-TEST_ROUNDING(inf     , FIX_INF_POS , INT_MAX      , INT_MAX      , INT_MAX      , INT_MAX)                                                             \
+#define ROUNDING_TESTS                                                                             \
+                                                                                                   \
+TEST_ROUNDING(zero      , FIXNUM(0  , 0) , (0)+0      , (0)+0      , (0 )+0  , (0)+0)              \
+TEST_ROUNDING(zero3     , FIXNUM(0  , 3) , (0)+0      , (0)+0 +SFA , (0 )+1  , (0)+0)              \
+TEST_ROUNDING(zero5     , FIXNUM(0  , 5) , (0)+0      , (0)+1      , (0 )+1  , (0)+0)              \
+TEST_ROUNDING(zero7     , FIXNUM(0  , 7) , (0)+1 -SFA , (0)+1      , (0 )+1  , (0)+0)              \
+\
+TEST_ROUNDING(one       , FIXNUM(1  , 0) , (1)+0      , (1)+0      , (1 )+0  , (1)+0)              \
+TEST_ROUNDING(one3      , FIXNUM(1  , 3) , (1)+0 +SFA , (1)+0 +SFA , (1 )+1  , (1)+0)              \
+TEST_ROUNDING(one5      , FIXNUM(1  , 5) , (1)+1      , (1)+1      , (1 )+1  , (1)+0)              \
+TEST_ROUNDING(one7      , FIXNUM(1  , 7) , (1)+1      , (1)+1      , (1 )+1  , (1)+0)              \
+\
+TEST_ROUNDING(two       , FIXNUM(2  , 0) , (2)+0      , (2)+0      , (2 )+0  , (2)+0)              \
+TEST_ROUNDING(two3      , FIXNUM(2  , 3) , (2)+0      , (2)+0 +SFA , (2 )+1  , (2)+0)              \
+TEST_ROUNDING(two5      , FIXNUM(2  , 5) , (2)+0      , (2)+1      , (2 )+1  , (2)+0)              \
+TEST_ROUNDING(two7      , FIXNUM(2  , 7) , (2)+1 -SFA , (2)+1      , (2 )+1  , (2)+0)              \
+\
+TEST_ROUNDING(zero_neg  , FIXNUM(-0 , 0) , (0)-0      , (0)-0      , (0 )-0  , (0)-0)              \
+TEST_ROUNDING(zero3_neg , FIXNUM(-0 , 3) , (0)-0      , (0)-0      , (0 )-0  , (0)-1)              \
+TEST_ROUNDING(zero5_neg , FIXNUM(-0 , 5) , (0)-0      , (0)-0      , (0 )-0  , (0)-1)              \
+TEST_ROUNDING(zero7_neg , FIXNUM(-0 , 7) , (0)-1 +SFA , (0)-1+SFA  , (0 )-0  , (0)-1)              \
+\
+TEST_ROUNDING(one_neg   , FIXNUM(-1 , 0) , -(1)-0     , -(1)-0     , -(1 )-0 , -(1)-0)             \
+TEST_ROUNDING(one3_neg  , FIXNUM(-1 , 3) , -(1)-0-SFA , -(1)-0     , -(1 )-0 , -(1)-1)             \
+TEST_ROUNDING(one5_neg  , FIXNUM(-1 , 5) , -(1)-1     , -(1)-0     , -(1 )-0 , -(1)-1)             \
+TEST_ROUNDING(one7_neg  , FIXNUM(-1 , 7) , -(1)-1     , -(1)-1+SFA , -(1 )-0 , -(1)-1)             \
+\
+TEST_ROUNDING(two_neg   , FIXNUM(-2 , 0) , -(2)-0     , -(2)-0     , -(2 )-0 , -(2)-0)             \
+TEST_ROUNDING(two3_neg  , FIXNUM(-2 , 3) , -(2)-0     , -(2)-0     , -(2 )-0 , -(2)-1)             \
+TEST_ROUNDING(two5_neg  , FIXNUM(-2 , 5) , -(2)-0     , -(2)-0     , -(2 )-0 , -(2)-1)             \
+TEST_ROUNDING(two7_neg  , FIXNUM(-2 , 7) , -(2)-1+SFA , -(2)-1+SFA , -(2 )-0 , -(2)-1)             \
+                                                                                                   \
+TEST_ROUNDING(max     , FIX_MAX     , FIX_MAX_INT  , FIX_MAX_INT  , FIX_MAX_INT  , FIX_MAX_INT-1)  \
+TEST_ROUNDING(min     , FIX_MIN     , -FIX_MAX_INT , -FIX_MAX_INT , -FIX_MAX_INT , -FIX_MAX_INT)   \
+TEST_ROUNDING(nan     , FIX_NAN     , 0            , 0            , 0            , 0)              \
+TEST_ROUNDING(inf     , FIX_INF_POS , INT_MAX      , INT_MAX      , INT_MAX      , INT_MAX)        \
 TEST_ROUNDING(inf_neg , FIX_INF_NEG , INT_MIN      , INT_MIN      , INT_MIN      , INT_MIN)
 ROUNDING_TESTS
 
