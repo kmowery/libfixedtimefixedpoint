@@ -213,6 +213,40 @@ uint64_t fixfrac(char* frac);
     tmp; \
    })
 
+
+/* Implement a simple unsigned 64x64 multiplication, and correct for negative
+ * numbers. There might be a way to do it arithmetically, but haven't found
+ * in...  */
+#define FIX_UNSAFE_MUL_64(op1, op2, resultlow, resulthigh)                                          \
+({                                                                                                  \
+  uint64_t absx = MASK_UNLESS_64( (op1>>63), (~op1) + 1 ) |                                         \
+                  MASK_UNLESS_64(!(op1>>63), op1);                                                  \
+  uint64_t absy = MASK_UNLESS_64( (op2>>63), (~op2) + 1 ) |                                         \
+                  MASK_UNLESS_64(!(op2>>63), op2);                                                  \
+                                                                                                    \
+  uint64_t xhigh = absx >> 32;                                                                      \
+  uint64_t xlow = absx & 0xffffffff;                                                                \
+  uint64_t yhigh = absy >> 32;                                                                      \
+  uint64_t ylow = absy & 0xffffffff;                                                                \
+                                                                                                    \
+  uint64_t z0 = xlow * ylow;                                                                        \
+  uint64_t z1 = xlow * yhigh;                                                                       \
+  uint64_t z2 = xhigh * ylow;                                                                       \
+  uint64_t z3 = xhigh * yhigh;                                                                      \
+                                                                                                    \
+  resultlow = (z0) + ((z1 & 0xffffffff) << 32) + ((z2 & 0xffffffff) << 32);                         \
+  uint64_t carry = !!(((z0 >> 32) + (z1 & 0xffffffff) + (z2 & 0xffffffff)) & 0xffffffff00000000);   \
+                                                                                                    \
+  resulthigh = carry + z3 + ((z1 & 0xffffffff00000000) >> 32) + ((z2 & 0xffffffff00000000) >> 32);  \
+                                                                                                    \
+  uint8_t negresult = ( (x >> 63) ^ (y >> 63) );                                                    \
+  resultlow = MASK_UNLESS( negresult, (~resultlow) + 1 ) |                                          \
+              MASK_UNLESS(!negresult, ( resultlow)     );                                           \
+  resulthigh= MASK_UNLESS( negresult, (~resulthigh) + (resultlow==0) ) |                            \
+              MASK_UNLESS(!negresult, ( resulthigh)     );                                          \
+  0;                                                                                                \
+})
+
 // Multiply two 2.28 bit fixed point numbers
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
 
