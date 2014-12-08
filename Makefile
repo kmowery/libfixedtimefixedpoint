@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 CC := gcc
 OPTFLAGS := -O -fforce-addr
 CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fPIC

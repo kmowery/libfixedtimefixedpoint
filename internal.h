@@ -260,7 +260,7 @@ uint64_t fixfrac(char* frac);
     FIX_UNSAFE_MUL_64(op1, op2, tmplow, tmphigh); \
     uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, FIX_POINT_BITS); \
     uint64_t tmp = tmplow2 | \
-                  ((tmphigh+(tmplow != 0 & tmplow2==0x0)) << (64 - FIX_POINT_BITS)); \
+                 ((tmphigh+((tmplow != 0) & (tmplow2==0x0))) << (64 - FIX_POINT_BITS)); \
     /* inf only if overflow, and not a sign thing */ \
     overflow = \
       !(((tmphigh & MUL_CONST) == MUL_CONST) \
@@ -315,9 +315,7 @@ uint64_t fixfrac(char* frac);
 #define convert_228_to_fixed_signed(v228) \
     FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED( ((fixed) v228), (28 - (FIX_POINT_BITS))));
 
-#elif
-
-#elif
+#else
 #error Problem with convert_228_to_fixed
 #endif
 
