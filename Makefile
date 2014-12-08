@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 CC := gcc
-OPTFLAGS := -O -fforce-addr
+OPTFLAGS := -O
 CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fPIC
 LDFLAGS := -lcmocka -lm
 
