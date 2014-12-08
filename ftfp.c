@@ -135,9 +135,9 @@ fixed fix_mul(fixed op1, fixed op2) {
 
   uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
   uint8_t isinf = 0;
-  uint64_t tmp;
+  fixed tmp;
 
-  tmp = FIX_MUL_32(op1, op2, isinf);
+  tmp = FIX_MUL_64(op1, op2, isinf);
 
   isinf = (isinfop1 | isinfop2 | isinf) & (!isnan);
 
