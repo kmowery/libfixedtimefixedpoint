@@ -51,14 +51,14 @@ static void null_test_success(void **state) {
 
 #define CHECK_INT_EQUAL(error_msg, var1, var2) \
   if( !(var1 == var2) ) { \
-    fail_msg( error_msg ": %lld (0x%llx) != %lld (0x%llx)", (fixed) var1, (fixed) var1, (fixed) var2, (fixed) var2); \
+    fail_msg( error_msg ": "FIX_PRINTF_DEC" (0x"FIX_PRINTF_HEX") != "FIX_PRINTF_DEC" (0x"FIX_PRINTF_HEX")", (fixed) var1, (fixed) var1, (fixed) var2, (fixed) var2); \
   }
 
 #define CHECK_VALUE(error_msg, value, expected, fixed1, fixed2) \
   if( !(value == expected) ) { \
     char b1[100], b2[100]; \
     fix_print(b1, fixed1); fix_print(b2, fixed2); \
-    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX") (value was %llx)", b1, fixed1, b2, fixed2, (int64_t) value); \
+    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX") (value was "FIX_PRINTF_HEX")", b1, fixed1, b2, fixed2, (int64_t) value); \
   }
 
 #define NaN nan("0")

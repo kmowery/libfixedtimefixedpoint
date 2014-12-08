@@ -32,8 +32,8 @@ int8_t fix_cmp(fixed op1, fixed op2) {
   uint32_t lt = ((!FIX_IS_INF_POS(op1)) &   FIX_IS_INF_POS(op2)) |
                   (FIX_IS_INF_NEG(op1)  & (!FIX_IS_INF_NEG(op2)));
 
-  gt |= !lt & (pos1 & (!pos2));
-  lt |= !gt & ((!pos1) & pos2);
+  gt |= (!lt) & (pos1 & (!pos2));
+  lt |= (!gt) & ((!pos1) & pos2);
 
   uint32_t cmp_gt = ((fixed) (op1) > (fixed) (op2));
   uint32_t cmp_lt = ((fixed) (op1) < (fixed) (op2));
