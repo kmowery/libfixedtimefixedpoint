@@ -505,33 +505,38 @@ TEST_HELPER(mul_##name, { \
   CHECK_EQ_NAN("multiply", muld, expected); \
 };)
 
-#define MUL_TESTS                                                                          \
-MUL(one_zero             , FIXNUM(1,0)         , FIXNUM(0,0)         , FIXNUM(0,0))   \
-MUL(one_one              , FIXNUM(1,0)         , FIXNUM(1,0)         , FIXNUM(1,0))   \
-MUL(fifteen_one          , FIXNUM(15,0)        , FIXNUM(1,0)         , FIXNUM(15,0))  \
-MUL(fifteen_two          , FIXNUM(15,0)        , FIXNUM(2,0)         , FIXNUM(30,0))  \
-MUL(nthree_15            , FIXNUM(-3,0)        , FIXNUM(15,0)        , FIXNUM(-45,0)) \
-MUL(nthree_n15           , FIXNUM(-3,0)        , FIXNUM(-15,0)       , FIXNUM(45,0))  \
-MUL(three_n15            , FIXNUM(3,0)         , FIXNUM(-15,0)       , FIXNUM(-45,0)) \
-MUL(frac5_15             , FIXNUM(0,5)         , FIXNUM(15,0)        , FIXNUM(7,5))   \
-MUL(overflow             , FIXNUM(1024,0)      , FIXNUM(1024,0)      , FIX_INF_POS)   \
-MUL(inf_ten              , FIX_INF_POS,  FIXNUM(10,0)        , FIX_INF_POS)           \
-MUL(inf_neg              , FIX_INF_POS,  FIXNUM(-10,0)       , FIX_INF_NEG)           \
-MUL(ninf_neg             , FIX_INF_NEG , FIXNUM(-10,0)       , FIX_INF_POS)           \
-MUL(neg_inf              , FIXNUM(-10,0)       , FIX_INF_POS , FIX_INF_NEG)           \
-MUL(neg_ninf             , FIXNUM(-10,0)       , FIX_INF_NEG , FIX_INF_POS)           \
-MUL(pos_nan              , FIXNUM(10,0)        , FIX_NAN     , FIX_NAN)               \
-MUL(neg_nan              , FIXNUM(-10,0)       , FIX_NAN     , FIX_NAN)               \
-MUL(inf_nan              , FIX_INF_POS    , FIX_NAN     , FIX_NAN)                       \
-MUL(ninf_nan             , FIX_INF_NEG , FIX_NAN     , FIX_NAN)                       \
-MUL(nan_pos              , FIX_NAN     , FIXNUM(10,0)        , FIX_NAN)               \
-MUL(nan_neg              , FIX_NAN     , FIXNUM(-10,0)       , FIX_NAN)               \
-MUL(nan_inf              , FIX_NAN     , FIX_INF_POS , FIX_NAN)                       \
-MUL(nan_ninf             , FIX_NAN     , FIX_INF_NEG , FIX_NAN)                       \
-MUL(tinyoverflow         , FIXNUM(148,5)       , FIXNUM(148,5)       , FIX_INF_POS)   \
-MUL(tinyoverflow_neg     , FIXNUM(148,5)       , FIXNUM(-148,5)      , FIX_INF_NEG)   \
-MUL(tinyoverflow_neg_neg , FIXNUM(-148,5)      , FIXNUM(-148,5)      , FIX_INF_POS)   \
-MUL(regression           , FIXNUM(-0,693145751953), FIXNUM(2,0)      , FIXNUM(-1,3862915039))
+#define MUL_TESTS                                                                         \
+MUL(half_zero            , FIXNUM(0,5)             , FIXNUM(0,0)         , FIXNUM(0,0))   \
+MUL(one_one              , FIXNUM(1,0)             , FIXNUM(1,0)         , FIXNUM(1,0))   \
+MUL(fifteen_one          , FIXNUM(15,0)            , FIXNUM(1,0)         , FIXNUM(15,0))  \
+MUL(fifteen_two          , FIXNUM(15,0)            , FIXNUM(2,0)         , FIXNUM(30,0))  \
+MUL(nthree_15            , FIXNUM(-3,0)            , FIXNUM(15,0)        , FIXNUM(-45,0)) \
+MUL(nthree_n15           , FIXNUM(-3,0)            , FIXNUM(-15,0)       , FIXNUM(45,0))  \
+MUL(three_n15            , FIXNUM(3,0)             , FIXNUM(-15,0)       , FIXNUM(-45,0)) \
+MUL(nfrac5_15            , FIXNUM(-0,5)             , FIXNUM(-16,0)      , FIXNUM(8,0))   \
+MUL(inf_ten              , FIX_INF_POS             , FIXNUM(10,0)        , FIX_INF_POS)   \
+MUL(inf_neg              , FIX_INF_POS             , FIXNUM(-10,0)       , FIX_INF_NEG)   \
+MUL(ninf_neg             , FIX_INF_NEG             , FIXNUM(-10,0)       , FIX_INF_POS)   \
+MUL(neg_inf              , FIXNUM(-10,0)           , FIX_INF_POS         , FIX_INF_NEG)   \
+MUL(neg_ninf             , FIXNUM(-10,0)           , FIX_INF_NEG         , FIX_INF_POS)   \
+MUL(pos_nan              , FIXNUM(10,0)            , FIX_NAN             , FIX_NAN)       \
+MUL(neg_nan              , FIXNUM(-10,0)           , FIX_NAN             , FIX_NAN)       \
+MUL(inf_nan              , FIX_INF_POS             , FIX_NAN             , FIX_NAN)       \
+MUL(ninf_nan             , FIX_INF_NEG             , FIX_NAN             , FIX_NAN)       \
+MUL(nan_pos              , FIX_NAN                 , FIXNUM(10,0)        , FIX_NAN)       \
+MUL(nan_neg              , FIX_NAN                 , FIXNUM(-10,0)       , FIX_NAN)       \
+MUL(nan_inf              , FIX_NAN                 , FIX_INF_POS         , FIX_NAN)       \
+MUL(nan_ninf             , FIX_NAN                 , FIX_INF_NEG         , FIX_NAN)       \
+MUL(overflow             , FIXNUM(FIX_INT_MAX-1,0) , FIXNUM(2,0)         , FIX_INF_POS)   \
+MUL(tinyoverflow         , FIXNUM((sqrtl(FIX_INT_MAX)+10),5)                              \
+                                                   , FIXNUM((sqrtl(FIX_INT_MAX)+10),5)    \
+                                                                         , FIX_INF_POS)   \
+MUL(tinyoverflow_neg     , FIXNUM((sqrtl(FIX_INT_MAX)+10),5)                              \
+                                                   , FIXNUM(-(sqrtl(FIX_INT_MAX)+10),5)   \
+                                                                         , FIX_INF_NEG)   \
+MUL(tinyoverflow_neg_neg , FIXNUM(-(sqrtl(FIX_INT_MAX)+10),5)                             \
+                                                   , FIXNUM(-(sqrtl(FIX_INT_MAX)+10),5)   \
+                                                                         , FIX_INF_POS)
 MUL_TESTS
 
 //////////////////////////////////////////////////////////////////////////////

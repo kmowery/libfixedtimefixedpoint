@@ -217,35 +217,56 @@ uint64_t fixfrac(char* frac);
 /* Implement a simple unsigned 64x64 multiplication, and correct for negative
  * numbers. There might be a way to do it arithmetically, but haven't found
  * in...  */
-#define FIX_UNSAFE_MUL_64(op1, op2, resultlow, resulthigh)                                          \
-({                                                                                                  \
-  uint64_t absx = MASK_UNLESS_64( (op1>>63), (~op1) + 1 ) |                                         \
-                  MASK_UNLESS_64(!(op1>>63), op1);                                                  \
-  uint64_t absy = MASK_UNLESS_64( (op2>>63), (~op2) + 1 ) |                                         \
-                  MASK_UNLESS_64(!(op2>>63), op2);                                                  \
-                                                                                                    \
-  uint64_t xhigh = absx >> 32;                                                                      \
-  uint64_t xlow = absx & 0xffffffff;                                                                \
-  uint64_t yhigh = absy >> 32;                                                                      \
-  uint64_t ylow = absy & 0xffffffff;                                                                \
-                                                                                                    \
-  uint64_t z0 = xlow * ylow;                                                                        \
-  uint64_t z1 = xlow * yhigh;                                                                       \
-  uint64_t z2 = xhigh * ylow;                                                                       \
-  uint64_t z3 = xhigh * yhigh;                                                                      \
-                                                                                                    \
-  resultlow = (z0) + ((z1 & 0xffffffff) << 32) + ((z2 & 0xffffffff) << 32);                         \
-  uint64_t carry = !!(((z0 >> 32) + (z1 & 0xffffffff) + (z2 & 0xffffffff)) & 0xffffffff00000000);   \
-                                                                                                    \
-  resulthigh = carry + z3 + ((z1 & 0xffffffff00000000) >> 32) + ((z2 & 0xffffffff00000000) >> 32);  \
-                                                                                                    \
-  uint8_t negresult = ( (x >> 63) ^ (y >> 63) );                                                    \
-  resultlow = MASK_UNLESS( negresult, (~resultlow) + 1 ) |                                          \
-              MASK_UNLESS(!negresult, ( resultlow)     );                                           \
-  resulthigh= MASK_UNLESS( negresult, (~resulthigh) + (resultlow==0) ) |                            \
-              MASK_UNLESS(!negresult, ( resulthigh)     );                                          \
-  0;                                                                                                \
+#define FIX_UNSAFE_MUL_64(op1, op2, resultlow, resulthigh)                                           \
+({                                                                                                   \
+  uint64_t absx = MASK_UNLESS_64( (op1>>63), (~op1) + 1 ) |                                          \
+                  MASK_UNLESS_64(!(op1>>63), op1);                                                   \
+  uint64_t absy = MASK_UNLESS_64( (op2>>63), (~op2) + 1 ) |                                          \
+                  MASK_UNLESS_64(!(op2>>63), op2);                                                   \
+                                                                                                     \
+  uint64_t xhigh = absx >> 32;                                                                       \
+  uint64_t xlow = absx & 0xffffffff;                                                                 \
+  uint64_t yhigh = absy >> 32;                                                                       \
+  uint64_t ylow = absy & 0xffffffff;                                                                 \
+                                                                                                     \
+  uint64_t z0 = xlow * ylow;                                                                         \
+  uint64_t z1 = xlow * yhigh;                                                                        \
+  uint64_t z2 = xhigh * ylow;                                                                        \
+  uint64_t z3 = xhigh * yhigh;                                                                       \
+                                                                                                     \
+  resultlow = (z0) + ((z1 & 0xffffffff) << 32) + ((z2 & 0xffffffff) << 32);                          \
+  uint64_t carry = (((z0 >> 32) + (z1 & 0xffffffff) + (z2 & 0xffffffff)) & 0xffffffff00000000) >> 32;\
+                                                                                                     \
+  resulthigh = carry + z3 + ((z1 & 0xffffffff00000000) >> 32) + ((z2 & 0xffffffff00000000) >> 32);   \
+                                                                                                     \
+  uint8_t negresult = ( (op1 >> 63) ^ (op2 >> 63) );                                                 \
+  resultlow = MASK_UNLESS( negresult, (~resultlow) + 1 ) |                                           \
+              MASK_UNLESS(!negresult, ( resultlow)     );                                            \
+  resulthigh= MASK_UNLESS( negresult, (~resulthigh) + (resultlow==0) ) |                             \
+              MASK_UNLESS(!negresult, ( resulthigh)     );                                           \
+  0;                                                                                                 \
 })
+
+
+/* We end up with FIX_INT_BITS of extra sign bit on the top of the multiplied
+ * number, along with the sign bit that's already there. If they aren't all 0 or
+ * 1, overflow has occured. Make a mask... */
+#define MUL_CONST ((( 1ull << (FIX_INT_BITS+1) ) -1) << (FIX_POINT_BITS-1))
+
+#define FIX_MUL_64(op1, op2, overflow) \
+  ({ \
+    uint64_t tmphigh; \
+    uint64_t tmplow; \
+    FIX_UNSAFE_MUL_64(op1, op2, tmplow, tmphigh); \
+    uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, FIX_POINT_BITS); \
+    uint64_t tmp = tmplow2 | \
+                  ((tmphigh+(tmplow != 0 & tmplow2==0x0)) << (64 - FIX_POINT_BITS)); \
+    /* inf only if overflow, and not a sign thing */ \
+    overflow = \
+      !(((tmphigh & MUL_CONST) == MUL_CONST) \
+       | ((tmphigh & MUL_CONST) == 0)); \
+    tmp; \
+   })
 
 // Multiply two 2.28 bit fixed point numbers
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
