@@ -143,3 +143,70 @@ uint64_t fixfrac(char* frac) {
 
     return result;
 }
+
+uint64_t fix_div_64(uint64_t x, uint64_t y) {
+  uint8_t xpos =  x > 0;
+  uint8_t ypos =  y > 0;
+
+  uint64_t absx = MASK_UNLESS_64( xpos, x ) |
+                  MASK_UNLESS_64(!xpos, (~x)+1 );
+  uint64_t absy = MASK_UNLESS_64( ypos, y ) |
+                  MASK_UNLESS_64(!ypos, (~y)+1 );
+
+  uint8_t logx = uint64_log2(absx);
+  uint8_t logy = uint64_log2(absy);
+
+  /* We change the result by shifting these numbers up. Record the shift... */
+  //int8_t shift = -movx + movy;
+  int8_t shift = -(- logx) + (- logy + 1);
+
+  uint64_t acc = absx << (62 - logx);
+  uint64_t base = absy << (63 - logy);
+
+  uint64_t result = 0;
+
+  printf("logx:  %d\n", logx);
+  printf("logy:  %d\n", logy);
+  printf("shift: %d\n", shift);
+
+  // Now, perform long division: x / y
+  for(int i = 63; i >= 0; i--) {
+
+    printf("\n");
+    printf("result : %016llx     (round %d)\n", result, i);
+    printf("acc    : %016llx\n", acc);
+    printf("base   : %016llx\n", base);
+
+    if((acc >= base) & (base != 0)) {
+        acc -= base;
+        result |= 1;
+    }
+
+    result = result << 1;
+    base = base >> 1;
+  }
+
+  printf("\n");
+  printf("result : %016llx     (final)\n", result);
+  printf("acc    : %016llx\n", acc);
+  printf("base   : %016llx\n", base);
+
+  // result now has 64 bits of division result; we need to shift it into place
+  // "Place" is a combination of FIX_POINT_BITS and 'shift', as computed above
+  // Since we moved y to be slightly above x, result contains a number in Q64.
+  uint64_t shiftamount = ((64 - FIX_POINT_BITS) - shift);
+  uint64_t roundbits = (result) & ((1ull << shiftamount) -1);
+  printf("result : %016llx     (before shift)\n", result);
+  printf("shifta : %lld     (before round)\n", shiftamount);
+  result = result >> shiftamount;
+
+  result |= !!roundbits;
+  printf("result : %016llx     (before round)\n", result);
+  printf("roundb : %016llx     (before round)\n", roundbits);
+
+  result = ROUND_TO_EVEN(result, FIX_FLAG_BITS) << FIX_FLAG_BITS;
+
+  printf("result : %016llx     (real)\n", result);
+
+  return FIX_DATA_BITS(result);
+}

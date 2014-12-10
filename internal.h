@@ -329,4 +329,6 @@ uint8_t uint64_log2(uint64_t o);
 
 void cordic(uint32_t* Z, uint32_t* C, uint32_t* S);
 
+uint64_t fix_div_64(uint64_t x, uint64_t y);
+
 #endif
