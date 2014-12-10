@@ -569,9 +569,9 @@ DIV(nan_pos          , FIX_NAN               , FIXNUM(10,0)           ,FIX_NAN) 
 DIV(nan_neg          , FIX_NAN               , FIXNUM(-10,0)          ,FIX_NAN)                  \
 DIV(nan_inf          , FIX_NAN               , FIX_INF_POS            ,FIX_NAN)                  \
 DIV(nan_ninf         , FIX_NAN               , FIX_INF_NEG            ,FIX_NAN)                  \
-DIV(regression1      , 0xf0000000            , 0x000022e8             ,FIX_INF_NEG)              \
-DIV(regression2      , 0xf0000000            , fix_neg(0x000022e8)    ,FIX_INF_POS)              \
-DIV(regression3      , 0xf0000000            , 0x00004470             ,FIXNUM(-15321,658447265))
+DIV(regression1      , FIXNUM(-FIX_INT_MAX,0), FIXNUM(0,5)            ,FIX_INF_NEG)              \
+DIV(regression2      , FIXNUM(-FIX_INT_MAX,0), FIXNUM(-0,5)           ,FIX_INF_POS)              \
+DIV(regression3      , FIXNUM(-FIX_INT_MAX,0), FIXNUM(1,0)            ,FIXNUM(-FIX_INT_MAX,0))
 DIV_TESTS
 
 //////////////////////////////////////////////////////////////////////////////

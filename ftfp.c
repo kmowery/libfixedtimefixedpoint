@@ -105,7 +105,7 @@ fixed fix_div(fixed op1, fixed op2) {
   isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2) | (op2 == 0);
 
   // Take advantage of the extra bits we get out from doing this in uint64_t
-  tempresult = FIX_DIV_32(op1, op2, isinf);
+  tempresult = fix_div_64(op1, op2, &isinf);
 
   isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
   isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
