@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
 typedef uint64_t fixed;
 
-#define FIX_PRINTF_HEX "%%"PRIx64
+#define FIX_PRINTF_HEX "%%016"PRIx64
 #define FIX_PRINTF_DEC "%%"PRId64
 
 #define FIX_FLAG_BITS %d
