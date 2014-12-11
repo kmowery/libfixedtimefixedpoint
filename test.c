@@ -528,10 +528,13 @@ MUL(nan_pos              , FIX_NAN                 , FIXNUM(10,0)        , FIX_N
 MUL(nan_neg              , FIX_NAN                 , FIXNUM(-10,0)       , FIX_NAN)          \
 MUL(nan_inf              , FIX_NAN                 , FIX_INF_POS         , FIX_NAN)          \
 MUL(nan_ninf             , FIX_NAN                 , FIX_INF_NEG         , FIX_NAN)          \
-MUL(overflow             , FIXNUM(FIX_INT_MAX-1,0) , FIXNUM(2,0)         , FIX_INF_POS)      \
+MUL(overflow             , FIXNUM(FIX_INT_MAX-1,5) , FIXNUM(2,0)         , FIX_INF_POS)      \
 MUL(tinyoverflow         , FIXNUM((SQRT_MAX+10),5) , FIXNUM((SQRT_MAX+10),5) , FIX_INF_POS)  \
 MUL(tinyoverflow_neg     , FIXNUM((SQRT_MAX+10),5) , FIXNUM(-(SQRT_MAX+10),5) , FIX_INF_NEG) \
-MUL(tinyoverflow_neg_neg , FIXNUM(-(SQRT_MAX+10),5), FIXNUM(-(SQRT_MAX+10),5) , FIX_INF_POS)
+MUL(tinyoverflow_neg_neg , FIXNUM(-(SQRT_MAX+10),5), FIXNUM(-(SQRT_MAX+10),5) , FIX_INF_POS) \
+MUL(zero_inf             , FIXNUM(0,0)             , FIX_INF_POS         , FIXNUM(0,0))      \
+MUL(zero_ninf            , FIXNUM(0,0)             , FIX_INF_NEG         , FIXNUM(0,0))      \
+MUL(zero_nan             , FIXNUM(0,0)             , FIX_NAN             , FIX_NAN)
 MUL_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
@@ -554,8 +557,14 @@ DIV(nfifteen_nthree  , FIXNUM(-15,0)          , FIXNUM(-3,0)           ,(FIX_INT
 DIV(nfifteen_three   , FIXNUM(-15,0)          , FIXNUM(3,0)            ,(FIX_INT_BITS > 4) ? FIXNUM(-5,0) : FIX_INF_NEG) \
 DIV(fifteen_frac5    , FIXNUM(15,0)           , FIXNUM(0,5)            ,FIXNUM(30,0)) \
 DIV(overflow         , FIXNUM(FIX_INT_MAX-1,5), FIXNUM(0,5)            ,FIX_INF_POS)  \
-DIV(one_zero         , FIXNUM(1,0)            , FIXNUM(0,0)            ,FIX_NAN)      \
-DIV(inf_zero         , FIX_INF_POS            , FIXNUM(0,0)            ,FIX_NAN)      \
+\
+DIV(zero_zero        , FIXNUM(0,0)            , FIXNUM(0,0)            ,FIX_NAN)      \
+DIV(one_zero         , FIXNUM(1,0)            , FIXNUM(0,0)            ,FIX_INF_POS)  \
+DIV(none_zero        , FIXNUM(-1,0)           , FIXNUM(0,0)            ,FIX_INF_NEG)  \
+DIV(inf_zero         , FIX_INF_POS            , FIXNUM(0,0)            ,FIX_INF_POS)  \
+DIV(ninf_zero        , FIX_INF_NEG            , FIXNUM(0,0)            ,FIX_INF_NEG)  \
+DIV(nan_zero         , FIX_NAN                , FIXNUM(0,0)            ,FIX_NAN)  \
+\
 DIV(zero_inf         , FIXNUM(0,0)            , FIX_INF_POS            ,FIXNUM(0,0))  \
 DIV(inf_neg          , FIX_INF_POS            , FIXNUM(-1,0)           ,FIX_INF_NEG)  \
 DIV(ninf_neg         , FIX_INF_NEG            , FIXNUM(-1,0)           ,FIX_INF_POS)  \
