@@ -89,9 +89,32 @@ fixed fix_sub(fixed op1, fixed op2) {
   return fix_add(op1,fix_neg(op2));
 }
 
+/* Here's what we want here (N is nonzero normal)
+ *  op1    op2     result
+ * -----------------------
+ *   N      N        N
+ *   0      N        0
+ *
+ *   N      0       Inf
+ *  -N      0      -Inf
+ *  Inf     0       Inf
+ * -Inf     0      -Inf
+ *  NaN     0       NaN
+ *
+ *   0  +/-Inf       0
+ *   0      N        0
+ *   0     NaN      NaN
+ *
+ *  Inf    Inf      Inf
+ *   N     Inf       0
+ *   0     Inf       0
+ *  Nan    Inf      NaN
+ */
 fixed fix_div(fixed op1, fixed op2) {
   uint8_t isinf;
   fixed tempresult = fix_div_64(op1, op2, &isinf);
+
+  uint8_t divbyzero = op2 == FIX_ZERO;
 
   uint8_t isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
   uint8_t isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
@@ -99,17 +122,17 @@ fixed fix_div(fixed op1, fixed op2) {
   uint8_t isnegop1 = FIX_IS_INF_NEG(op1) | (FIX_IS_NEG(op1) & !isinfop1);
   uint8_t isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
 
-  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2) | (op2 == 0);
+  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2) | ((op1 == FIX_ZERO) & (op2 == FIX_ZERO));
 
   isinf = (isinf | isinfop1) & (!isnan);
-  uint8_t isinfpos = isinf & !(isnegop1 ^ isnegop2);
-  uint8_t isinfneg = isinf & (isnegop1 ^ isnegop2);
+  uint8_t isinfpos = (isinf & !(isnegop1 ^ isnegop2)) | (divbyzero & !isnegop1);
+  uint8_t isinfneg = (isinf & (isnegop1 ^ isnegop2)) | (divbyzero & isnegop1);
 
   uint8_t iszero = (!(isinfop1)) & isinfop2;
 
   return FIX_IF_NAN(isnan) |
-    FIX_IF_INF_POS(isinfpos & (!isnan) & !(iszero)) |
-    FIX_IF_INF_NEG(isinfneg & (!isnan) & !(iszero)) |
+    FIX_IF_INF_POS(isinfpos & (!isnan) & (!iszero)) |
+    FIX_IF_INF_NEG(isinfneg & (!isnan) & (!iszero)) |
     MASK_UNLESS(!iszero, FIX_DATA_BITS(tempresult));
 }
 
@@ -123,11 +146,12 @@ fixed fix_mul(fixed op1, fixed op2) {
 
   uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2);
   uint8_t isinf = 0;
-  fixed tmp;
 
-  tmp = FIX_MUL_64(op1, op2, isinf);
+  uint8_t iszero = (op1 == FIX_ZERO) | (op2 == FIX_ZERO);
 
-  isinf = (isinfop1 | isinfop2 | isinf) & (!isnan);
+  fixed tmp = FIX_MUL_64(op1, op2, isinf);
+
+  isinf = (!iszero) & (isinfop1 | isinfop2 | isinf) & (!isnan);
 
   uint8_t isinfpos = isinf & !(isnegop1 ^ isnegop2);
   uint8_t isinfneg = isinf & (isnegop1 ^ isnegop2);
