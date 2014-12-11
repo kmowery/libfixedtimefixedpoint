@@ -172,10 +172,16 @@ uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
   // Now, perform long division: x / y
   for(int i = 63; i >= 0; i--) {
 
-    if((acc >= base) & (base != 0)) {
-        acc -= base;
-        result |= 1;
-    }
+    // Pesudocode:
+    //if((acc >= base) & (base != 0)) {
+    //    acc -= base;
+    //    result |= 1;
+    //}
+
+    uint8_t expression = (acc >= base) & (base != 0);
+    acc = MASK_UNLESS( expression, acc - base) |
+          MASK_UNLESS(!expression, acc);
+    result = result | MASK_UNLESS( expression, 1);
 
     result = result << 1;
     base = base >> 1;
