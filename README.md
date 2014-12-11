@@ -28,6 +28,29 @@ libftfp currently uses a 15-15 format for numbers. That is, 15 bits are reserved
 
 This representation is expected to change.
 
+## Behavioral Notes
+ * Inf is infinity
+ * (-) indicated - or + versions of the value
+ * N is any number (including infinity, not including NaN)
+
+NaN in any operation will always result in NaN.
+
+### Add
+ * Inf + (-)Inf = +Inf
+
+### Sub
+ * Inf - Inf = +Inf
+
+### Mul
+ * (-)Inf * 0 = 0
+ * Inf * -N = -Inf
+
+### Div
+ * (-)Inf / (-)Inf = (-)Inf
+ * 0 / (-)Inf = 0
+ * (-)N / 0 = (-)Inf
+ * 0 / 0 = NaN
+
 ## Static Build
 We manually verify an x86_64 build for each major version.
 
