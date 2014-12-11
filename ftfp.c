@@ -105,7 +105,7 @@ fixed fix_div(fixed op1, fixed op2) {
   uint8_t isinfpos = isinf & !(isnegop1 ^ isnegop2);
   uint8_t isinfneg = isinf & (isnegop1 ^ isnegop2);
 
-  uint8_t iszero = !(isinfop1) & isinfop2;
+  uint8_t iszero = (!(isinfop1)) & isinfop2;
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan) & !(iszero)) |
