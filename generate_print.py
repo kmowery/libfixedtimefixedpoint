@@ -125,28 +125,31 @@ void fix_print(char* buffer, fixed f) {
 
   f.write("\n".join(["  uint8_t bit%d = (((f) >> (%d))&1);"%(i,i) for i in range(2,2+number_bits)]))
 
-  # start at the end and move forward...
-  for position in reversed(range(frac_chars)):
-      poly = frac_poly(position)
-      f.write("  scratch = %s + carry;"%(poly))
-      f.write("  buffer[%d] = ((%d + (scratch %% 10)) * (1-excep) + (excep * %d));\n"%(frac_loc+position, ord('0'), ord(' ')))
-      f.write("carry = scratch / 10;\n")
-
-  f.write("\n");
-  f.write("  buffer[%d] = excep*%d + (1-excep)*%d;"%(point_loc, ord(' '), ord('.')))
-  f.write("\n");
-
   extra_polynomials = {
           1: " + (isnan * %d) + (isinfpos | isinfneg) * %d"%(ord('N'), ord('I')),
           2: " + (isnan * %d) + (isinfpos | isinfneg) * %d"%(ord('a'), ord('n')),
           3: " + (isnan * %d) + (isinfpos | isinfneg) * %d"%(ord('N'), ord('f')),
           }
+  def get_extra_poly(n):
+      return extra_polynomials.get(n, "+ (excep * %d)"%(ord(' ')))
+
+  # start at the end and move forward...
+  for position in reversed(range(frac_chars)):
+      poly = frac_poly(position)
+      f.write("  scratch = %s + carry;"%(poly))
+      f.write("  buffer[%d] = ((%d + (scratch %% 10)) * (1-excep) %s);\n"%(
+          frac_loc+position, ord('0'), get_extra_poly(frac_loc+position)))
+      f.write("carry = scratch / 10;\n")
+
+  f.write("\n");
+  f.write("  buffer[%d] = %s + (1-excep)*%d;"%(point_loc, get_extra_poly(point_loc), ord('.')))
+  f.write("\n");
 
   for position in reversed(range(int_chars)):
       poly = int_poly(position)
       f.write("  scratch = %s + carry;\n"%(poly))
       f.write("  buffer[%d] = ((%d + (scratch %% 10)) * (1-excep)) %s;\n"%(int_loc + position, ord('0'),
-          extra_polynomials.get(int_loc+position, "+ (excep * %d)"%(ord(' ')))))
+          get_extra_poly(int_loc+position)))
       f.write("carry = scratch / 10;\n")
 
   f.write("""
