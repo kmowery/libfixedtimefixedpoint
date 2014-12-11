@@ -90,39 +90,27 @@ fixed fix_sub(fixed op1, fixed op2) {
 }
 
 fixed fix_div(fixed op1, fixed op2) {
-  uint8_t isnan;
   uint8_t isinf;
-  uint8_t isinfpos;
-  uint8_t isinfneg;
+  fixed tempresult = fix_div_64(op1, op2, &isinf);
 
-  uint8_t isinfop1;
-  uint8_t isinfop2;
-  uint8_t isnegop1;
-  uint8_t isnegop2;
+  uint8_t isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
+  uint8_t isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
 
-  fixed tempresult;
+  uint8_t isnegop1 = FIX_IS_INF_NEG(op1) | (FIX_IS_NEG(op1) & !isinfop1);
+  uint8_t isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
 
-  isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2) | (op2 == 0);
+  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NAN(op2) | (op2 == 0);
 
-  // Take advantage of the extra bits we get out from doing this in uint64_t
-  tempresult = fix_div_64(op1, op2, &isinf);
+  isinf = (isinf | isinfop1) & (!isnan);
+  uint8_t isinfpos = isinf & !(isnegop1 ^ isnegop2);
+  uint8_t isinfneg = isinf & (isnegop1 ^ isnegop2);
 
-  isinfop1 = (FIX_IS_INF_NEG(op1) | FIX_IS_INF_POS(op1));
-  isinfop2 = (FIX_IS_INF_NEG(op2) | FIX_IS_INF_POS(op2));
-  isnegop1 = FIX_IS_INF_NEG(op1) | (FIX_IS_NEG(op1) & !isinfop1);
-  isnegop2 = FIX_IS_INF_NEG(op2) | (FIX_IS_NEG(op2) & !isinfop2);
-
-  //Update isinf
-  isinf = (isinf | isinfop1 | isinfop2) & (!isnan);
-
-  isinfpos = isinf & !(isnegop1 ^ isnegop2);
-
-  isinfneg = isinf & (isnegop1 ^ isnegop2);
+  uint8_t iszero = !(isinfop1) & isinfop2;
 
   return FIX_IF_NAN(isnan) |
-    FIX_IF_INF_POS(isinfpos & (!isnan)) |
-    FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    FIX_DATA_BITS(tempresult);
+    FIX_IF_INF_POS(isinfpos & (!isnan) & !(iszero)) |
+    FIX_IF_INF_NEG(isinfneg & (!isnan) & !(iszero)) |
+    MASK_UNLESS(!iszero, FIX_DATA_BITS(tempresult));
 }
 
 
