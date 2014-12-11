@@ -907,7 +907,7 @@ TRIG_TESTS
 #define PRINT(name, op1, result) \
 TEST_HELPER(print_##name, { \
   fixed o1 = op1; \
-  char buf[23]; \
+  char buf[100]; \
   fix_print(buf, o1); \
   char* expected = result; \
   if(strcmp(buf, expected))  { \
@@ -918,22 +918,33 @@ TEST_HELPER(print_##name, { \
   assert_memory_equal(buf, expected, 23); \
 };)
 
-#define PRINT_TESTS \
-PRINT(zero    , 0x0               , " 00000.000000000000000")  \
-PRINT(half    , FIXNUM(0,5)       , " 00000.500000000000000")  \
-PRINT(half_neg, FIXNUM(-0,5)      , "-00000.500000000000000")  \
-PRINT(one     , FIXNUM(1,0)       , " 00001.000000000000000")  \
-PRINT(one_neg , FIXNUM(-1,0)      , "-00001.000000000000000")  \
-PRINT(two     , FIXNUM(2,0)       , " 00002.000000000000000")  \
-PRINT(e       , FIX_E             , " 00002.718292236328125")  \
-PRINT(e_neg   , fix_neg(FIX_E)    , "-00002.718292236328125")  \
-PRINT(ten     , FIXNUM(10,0)      , " 00010.000000000000000")  \
-PRINT(big     , FIXNUM(10000,5345), " 10000.534484863281250")  \
-PRINT(max     , FIX_MAX           , " 16383.999969482421875")  \
-PRINT(min     , FIX_MIN           , "-16384.000000000000000")  \
-PRINT(inf     , FIX_INF_POS       , " Inf                  ")  \
-PRINT(inf_neg , FIX_INF_NEG       , "-Inf                  ")  \
-PRINT(nan     , FIX_NAN           , " NaN                  ")
+
+#include "test_print_results.h"
+
+#define PRINT_TESTS                                                     \
+PRINT(zero        , FIX_ZERO                  , PRINT_TEST_zero       ) \
+PRINT(half        , FIXNUM(0,5)               , PRINT_TEST_half       ) \
+PRINT(half_neg    , FIXNUM(-0,5)              , PRINT_TEST_half_neg   ) \
+PRINT(one         , FIXNUM(1,0)               , PRINT_TEST_one        ) \
+PRINT(one_neg     , FIXNUM(-1,0)              , PRINT_TEST_one_neg    ) \
+PRINT(two         , FIXNUM(2,0)               , PRINT_TEST_two        ) \
+PRINT(epsilon     , FIX_EPSILON               , PRINT_TEST_epsilon    ) \
+PRINT(e           , FIX_E                     , PRINT_TEST_e          ) \
+PRINT(e_neg       , fix_neg(FIX_E)            , PRINT_TEST_e_neg      ) \
+PRINT(pi          , FIX_PI                    , PRINT_TEST_pi         ) \
+PRINT(pi_neg      , fix_neg(FIX_PI)           , PRINT_TEST_pi_neg     ) \
+PRINT(tau         , FIX_TAU                   , PRINT_TEST_tau        ) \
+PRINT(tau_neg     , fix_neg(FIX_TAU)          , PRINT_TEST_tau_neg    ) \
+PRINT(ten         , FIXNUM(10,0)              , PRINT_TEST_ten        ) \
+PRINT(ten_neg     , FIXNUM(-10,0)             , PRINT_TEST_ten_neg    ) \
+PRINT(max         , FIX_MAX                   , PRINT_TEST_max        ) \
+PRINT(min         , FIX_MIN                   , PRINT_TEST_min        ) \
+PRINT(int_max     , FIXNUM(FIX_INT_MAX,0)     , PRINT_TEST_int_max    ) \
+PRINT(int_max_neg , FIXNUM(-FIX_INT_MAX,0)    , PRINT_TEST_int_max_neg) \
+PRINT(inf         , FIX_INF_POS               , PRINT_TEST_inf        ) \
+PRINT(inf_neg     , FIX_INF_NEG               , PRINT_TEST_inf_neg    ) \
+PRINT(nan         , FIX_NAN                   , PRINT_TEST_nan        )
+
 PRINT_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
