@@ -157,13 +157,17 @@ uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
   uint8_t logy = uint64_log2(absy);
 
   /* We change the result by shifting these numbers up. Record the shift... */
-  //int8_t shift = -movx + movy;
-  int8_t shift = -(- logx) + (- logy + 1);
+  int8_t shift = logx - logy + 1;
 
   uint64_t acc = absx << (62 - logx);
   uint64_t base = absy << (63 - logy);
 
   uint64_t result = 0;
+
+  /* if absx is 0x80..0, then x was the largest negative number, and acc is
+   * some nonsense. Fix that up... */
+  acc = MASK_UNLESS_64( absx == 0x8000000000000000, absx >> 1 ) |
+        MASK_UNLESS_64( absx != 0x8000000000000000, acc );
 
   // Now, perform long division: x / y
   for(int i = 63; i >= 0; i--) {
@@ -185,8 +189,9 @@ uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
   result = result >> shiftamount;
 
   // If we're supposed to shift the result to the left (or not at all), there's
-  // overflow.
-  *overflow = (shiftamount <= 0);
+  // overflow. Although, if x was the largest negative number, not shifting the
+  // result is okay.
+  *overflow = (shiftamount < 0) | ((shiftamount == 0) & (absx != 0x8000000000000000));
 
   result |= !!roundbits;
 
