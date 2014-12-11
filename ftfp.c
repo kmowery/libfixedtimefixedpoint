@@ -52,14 +52,14 @@ int8_t fix_cmp(fixed op1, fixed op2) {
 fixed fix_neg(fixed op1){
   // Flip our infs
   // NaN is still NaN
-  uint8_t isinfpos = FIX_IS_INF_NEG(op1);
+  // Because we're two's complement, FIX_MIN has no inverse. Make it positive
+  // infinity...
+  uint8_t isinfpos = FIX_IS_INF_NEG(op1) | (op1 == FIX_MIN);
   uint8_t isinfneg = FIX_IS_INF_POS(op1);
   uint8_t isnan = FIX_IS_NAN(op1);
 
   // 2s comp negate the data bits
   fixed tempresult = FIX_DATA_BITS(((~op1) + 4));
-
-  //TODO: Check overflow? other issues?
 
   // Combine
   return FIX_IF_NAN(isnan) |

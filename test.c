@@ -597,12 +597,13 @@ TEST_HELPER(neg_##name, { \
 };)
 
 #define NEG_TESTS                        \
-NEG(zero,    FIXNUM(0,0),  FIXNUM(0,0))  \
-NEG(one,     FIXNUM(1,0),  FIXNUM(-1,0)) \
-NEG(one_neg, FIXNUM(-1,0), FIXNUM(1,0))  \
-NEG(inf,     FIX_INF_POS,  FIX_INF_NEG)  \
-NEG(inf_neg, FIX_INF_NEG,  FIX_INF_POS)  \
-NEG(nan,     FIX_NAN,      FIX_NAN)
+NEG(zero,    FIXNUM(0,0)           , FIXNUM(0,0))  \
+NEG(half,    FIXNUM(0,5)           , FIXNUM(-0,5)) \
+NEG(half_neg,FIXNUM(-0,5)          , FIXNUM(0,5))  \
+NEG(min,     FIXNUM(-FIX_INT_MAX,0), FIX_INF_POS)  \
+NEG(inf,     FIX_INF_POS           , FIX_INF_NEG)  \
+NEG(inf_neg, FIX_INF_NEG           , FIX_INF_POS)  \
+NEG(nan,     FIX_NAN               , FIX_NAN)
 NEG_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
