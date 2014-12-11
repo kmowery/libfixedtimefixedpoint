@@ -20,7 +20,7 @@
 int fd;
 
 void p(fixed f) {
-  char buf[100];
+  char buf[FIX_PRINT_BUFFER_SIZE];
 
   fix_print(buf, f);
   printf("n: %s ("FIX_PRINTF_HEX")\n", buf, f);
@@ -31,7 +31,7 @@ void p(fixed f) {
 #define PRINT(name, op1) \
 TEST_HELPER(print_##name, { \
   fixed o1 = op1; \
-  char buf[100]; \
+  char buf[FIX_PRINT_BUFFER_SIZE]; \
   fix_print(buf, o1); \
   char fbuf[200]; \
   sprintf((char*) fbuf, "  #define %-30s \"%s\" // 0x"FIX_PRINTF_HEX"\n", "PRINT_TEST_" #name, buf, op1); \

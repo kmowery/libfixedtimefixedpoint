@@ -18,33 +18,33 @@ static void null_test_success(void **state) {
 
 #define CHECK_CONDITION(error_msg, condition, var1, var2) \
   if( !(condition) ) { \
-    char b1[100], b2[100]; \
+    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(b1, var1); fix_print(b2, var2); \
     fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
 
 #define CHECK_EQ(error_msg, var1, var2) \
   if( !fix_eq(var1, var2) ) { \
-    char b1[100], b2[100]; \
+    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(b1, var1); fix_print(b2, var2); \
     fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
 #define CHECK_EQ_NAN(error_msg, var1, var2) \
   if( !fix_eq_nan(var1, var2) ) { \
-    char b1[100], b2[100]; \
+    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(b1, var1); fix_print(b2, var2); \
     fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
 
 #define CHECK_EQ_VALUE(error_msg, var1, var2, value) \
   if( fix_eq(var1, var2) != value ) { \
-    char b1[100], b2[100]; \
+    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(b1, var1); fix_print(b2, var2); \
     fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
 #define CHECK_EQ_NAN_VALUE(error_msg, var1, var2, value) \
   if( fix_eq_nan(var1, var2) != value ) { \
-    char b1[100], b2[100]; \
+    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(b1, var1); fix_print(b2, var2); \
     fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
   }
@@ -56,7 +56,7 @@ static void null_test_success(void **state) {
 
 #define CHECK_VALUE(error_msg, value, expected, fixed1, fixed2) \
   if( !(value == expected) ) { \
-    char b1[100], b2[100]; \
+    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(b1, fixed1); fix_print(b2, fixed2); \
     fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX") (value was "FIX_PRINTF_HEX")", b1, fixed1, b2, fixed2, (int64_t) value); \
   }
@@ -65,22 +65,22 @@ static void null_test_success(void **state) {
 #define SQRT_MAX ((fixed) sqrt((double) FIX_INT_MAX))
 
 void p(fixed f) {
-  char buf[100];
+  char buf[FIX_PRINT_BUFFER_SIZE];
 
   fix_print(buf, f);
   printf("n: %s ("FIX_PRINTF_HEX")\n", buf, f);
 }
 void pl(fixed f) {
-  char buf[100];
+  char buf[FIX_PRINT_BUFFER_SIZE];
 
   fix_print(buf, f);
   printf("%s ("FIX_PRINTF_HEX")", buf, f);
 }
 
 void bounds(fixed f) {
-  char buf_less[100];
-  char buf[100];
-  char buf_more[100];
+  char buf_less[FIX_PRINT_BUFFER_SIZE];
+  char buf[FIX_PRINT_BUFFER_SIZE];
+  char buf_more[FIX_PRINT_BUFFER_SIZE];
 
   fixed less = f - 0x4;
   fixed more = f + 0x4;
@@ -212,12 +212,12 @@ TEST_HELPER(convert_dbl_##name, { \
   if( !((fabs(locald - d2) < limit) || \
         (isinf(d2) && (isinf(d) || (locald) >= FIX_INT_MAX || locald < -FIX_INT_MAX )) || \
         (isnan(d) && isnan(d2))) ) { \
-    char b1[100]; \
+    char b1[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(b1, result); \
     fail_msg( #name " convert_to_double failed : %g (%s "FIX_PRINTF_HEX") != %g", d2, b1, result, locald); \
   } \
-    char buf[100]; \
-    char bitsbuf[100]; \
+    char buf[FIX_PRINT_BUFFER_SIZE]; \
+    char bitsbuf[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(buf, result); \
     fix_print(bitsbuf, bits); \
     printf("Test passed: %g == %g == %s == %s\n", locald, d2, buf, bitsbuf); \
@@ -402,7 +402,7 @@ static void constants(void **state) {
     for(int i = 0; i < 10; i++ ) {
       limit = fix_add(limit, FIX_EPSILON);
     }
-    char b1[100], b2[100];
+    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE];
     fix_print(b1, temp);
     fix_print(b2, FIX_PI);
 
@@ -907,7 +907,7 @@ TRIG_TESTS
 #define PRINT(name, op1, result) \
 TEST_HELPER(print_##name, { \
   fixed o1 = op1; \
-  char buf[100]; \
+  char buf[FIX_PRINT_BUFFER_SIZE]; \
   fix_print(buf, o1); \
   char* expected = result; \
   if(strcmp(buf, expected))  { \

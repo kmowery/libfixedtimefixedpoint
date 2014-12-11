@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import math
 import decimal
 
 # We might overwrite base.py; make sure we don't generate bytecode...
@@ -60,6 +61,14 @@ if __name__ == "__main__":
         print "You asked for %d (flag), %d (int), and %d (frac)"%(flag_bits, int_bits, frac_bits)
         sys.exit(1)
 
+    # Generate the buffer size for printing
+    int_chars = max(1, int(math.ceil(math.log(2**(int_bits-1),10))))
+    frac_chars = frac_bits
+    sign_char = 1
+    point_char = 1
+    null_byte = 1
+    buffer_length = sign_char + int_chars + point_char + frac_chars + null_byte
+
     # Generate constants
     fix_inf_pos = 0x2
     point_bits = frac_bits+flag_bits
@@ -99,6 +108,8 @@ if __name__ == "__main__":
 
 typedef uint64_t fixed;
 
+#define FIX_PRINT_BUFFER_SIZE %d
+
 #define FIX_PRINTF_HEX "%%016"PRIx64
 #define FIX_PRINTF_DEC "%%"PRId64
 
@@ -115,4 +126,4 @@ static const fixed fix_e = 0x%016x;
 #define FIX_PI fix_pi
 #define FIX_TAU fix_tau
 #define FIX_E fix_e
-#endif"""%(flag_bits, frac_bits, int_bits,fix_pi,fix_tau,fix_e))
+#endif"""%(buffer_length, flag_bits, frac_bits, int_bits,fix_pi,fix_tau,fix_e))
