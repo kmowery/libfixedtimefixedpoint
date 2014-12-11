@@ -2,6 +2,8 @@
 import sys
 import decimal
 
+# We might overwrite base.py; make sure we don't generate bytecode...
+sys.dont_write_bytecode = True
 
 # If we've customized things, keep the customizations. Otherwise, revert to
 # something reasonable...

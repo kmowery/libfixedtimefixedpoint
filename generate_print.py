@@ -36,6 +36,9 @@ import sys
 # which multiplies by 0 if an exceptional state, zeroing out the normal
 # computation, and adding back in a " "  if necessary.
 
+# base.py might be overwritten; make sure we don't generate bytecode...
+sys.dont_write_bytecode = True
+
 try:
   from base import *
 except:
