@@ -69,16 +69,15 @@ fixed fix_neg(fixed op1){
 }
 
 fixed fix_abs(fixed op1){
-  uint8_t isinfpos;
-  uint8_t isinfneg;
-  uint8_t isnan;
+  uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isinfneg = FIX_IS_INF_NEG(op1);
+  uint8_t isnan = FIX_IS_NAN(op1);
 
-  isinfpos = FIX_IS_INF_POS(op1);
-  isinfneg = FIX_IS_INF_NEG(op1);
-  isnan = FIX_IS_NAN(op1);
+  fixed tempresult = MASK_UNLESS(FIX_TOP_BIT(~op1),                  op1       ) |
+                     MASK_UNLESS(FIX_TOP_BIT( op1), FIX_DATA_BITS(((~op1) + 4)));
 
-  fixed tempresult = MASK_UNLESS(FIX_TOP_BIT(~op1), op1) |
-    MASK_UNLESS(  FIX_TOP_BIT(op1), FIX_DATA_BITS(((~op1) + 4)));
+  /* check for FIX_MIN */
+  isinfpos |= (!(isinfpos | isinfneg)) & (!!FIX_TOP_BIT(op1)) & (op1 == tempresult);
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS((isinfpos | isinfneg) & (!isnan)) |

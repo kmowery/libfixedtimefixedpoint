@@ -617,13 +617,16 @@ TEST_HELPER(abs_##name, { \
 };)
 
 #define ABS_TESTS                                     \
-ABS(zero         , FIXNUM(0,0)         , FIXNUM(0,0)) \
-ABS(one          , FIXNUM(1,0)         , FIXNUM(1,0)) \
-ABS(one_neg      , FIXNUM(-1,0)        , FIXNUM(1,0)) \
-ABS(two          , FIXNUM(2,0)         , FIXNUM(2,0)) \
-ABS(inf          , FIX_INF_POS         , FIX_INF_POS) \
-ABS(inf_neg      , FIX_INF_NEG         , FIX_INF_POS) \
-ABS(nan          , FIX_NAN             , FIX_NAN)
+ABS(zero         , FIXNUM(0,0)           , FIXNUM(0,0)) \
+ABS(half         , FIXNUM(0,5)           , FIXNUM(0,5)) \
+ABS(half_neg     , FIXNUM(-0,5)          , FIXNUM(0,5)) \
+ABS(one          , FIXNUM(1,0)           , FIXNUM(1,0)) \
+ABS(one_neg      , FIXNUM(-1,0)          , FIXNUM(1,0)) \
+ABS(two          , FIXNUM(2,0)           , FIXNUM(2,0)) \
+ABS(max_neg      , FIXNUM(-FIX_INT_MAX,0), FIX_INF_POS) \
+ABS(inf          , FIX_INF_POS           , FIX_INF_POS) \
+ABS(inf_neg      , FIX_INF_NEG           , FIX_INF_POS) \
+ABS(nan          , FIX_NAN               , FIX_NAN)
 ABS_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
