@@ -563,6 +563,9 @@ DIV(neg_inf          , FIXNUM(-1,0)           , FIX_INF_POS            ,FIXNUM(0
 DIV(neg_ninf         , FIXNUM(-1,0)           , FIX_INF_NEG            ,FIXNUM(0,0))  \
 DIV(pos_nan          , FIXNUM(0,5)            , FIX_NAN                ,FIX_NAN)      \
 DIV(neg_nan          , FIXNUM(-0,5)           , FIX_NAN                ,FIX_NAN)      \
+DIV(inf_inf          , FIX_INF_POS            , FIX_INF_POS            ,FIX_INF_POS)  \
+DIV(ninf_inf         , FIX_INF_NEG            , FIX_INF_POS            ,FIX_INF_NEG)  \
+DIV(inf_ninf         , FIX_INF_POS            , FIX_INF_NEG            ,FIX_INF_NEG)  \
 DIV(inf_nan          , FIX_INF_POS            , FIX_NAN                ,FIX_NAN)      \
 DIV(ninf_nan         , FIX_INF_NEG            , FIX_NAN                ,FIX_NAN)      \
 DIV(nan_pos          , FIX_NAN                , FIXNUM(10,0)           ,FIX_NAN)      \
