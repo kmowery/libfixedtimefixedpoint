@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import sys
+import decimal
+
 
 # If we've customized things, keep the customizations. Otherwise, revert to
 # something reasonable...
@@ -58,25 +60,20 @@ if __name__ == "__main__":
 
     # Generate constants
     fix_inf_pos = 0x2
-    shift_bits = frac_bits+flag_bits
-    pi  = 3.1415926535897932385
-    tau = 6.2831853071795864769
-    e   = 2.7182818284590452354
+    point_bits = frac_bits+flag_bits
+    pi  = decimal.Decimal('3.1415926535897932385')
+    tau = decimal.Decimal('6.2831853071795864769')
+    e   = decimal.Decimal('2.7182818284590452354')
 
-    def round(x,y,z):
-      return 1 if (y != 0 and z != 0) or (y != 0 and x != 0) else 0
+    def decimal_to_fix(d):
+      t = (d * 2**(point_bits-2))
+      t = t.quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN)
+      t = t * 2**2
+      return t
 
-    fix_pi =fix_inf_pos if int_bits < 3 else int(pi*(2**(shift_bits)))&(~0x3)
-    f_pi_e = int(pi*(2**(shift_bits+5)))%256
-    fix_pi += round(fix_pi&0x4,f_pi_e>>7,f_pi_e&0x7f)*0x4
-
-    fix_tau =fix_inf_pos if int_bits < 4 else int(tau*(2**(shift_bits)))&(~0x3)
-    f_tau_e = int(tau*(2**(shift_bits+5)))%265
-    fix_tau += round(fix_tau&0x4,f_tau_e>>7,f_tau_e&0x7f)*0x4
-
-    fix_e =fix_inf_pos if int_bits < 3 else int(e*(2**(shift_bits)))&(~0x3)
-    f_e_e = int(e*(2**(shift_bits+5)))%256
-    fix_e += round(fix_e&0x4,f_e_e>>7,f_e_e&0x7f)*0x4
+    fix_pi =  fix_inf_pos if int_bits < 3 else decimal_to_fix(pi)
+    fix_tau = fix_inf_pos if int_bits < 4 else decimal_to_fix(tau)
+    fix_e =   fix_inf_pos if int_bits < 3 else decimal_to_fix(e)
 
     if args["pyfile"] is not None:
         with args["pyfile"] as f:
@@ -108,7 +105,12 @@ typedef uint64_t fixed;
 #define FIX_INT_BITS  %d
 #define FIX_BITS (8*sizeof(fixed))
 
+
 static const fixed fix_pi = 0x%016x;
 static const fixed fix_tau = 0x%016x;
 static const fixed fix_e = 0x%016x;
+
+#define FIX_PI fix_pi
+#define FIX_TAU fix_tau
+#define FIX_E fix_e
 #endif"""%(flag_bits, frac_bits, int_bits,fix_pi,fix_tau,fix_e))
