@@ -129,7 +129,7 @@ fixed fix_tan(fixed op1) {
 
   cordic(&Z, &C, &S);
 
-  uint8_t isinf;
+  uint8_t isinf = 0;
   uint64_t result = FIX_DIV_32(S, C, isinf);
 
   isinfpos |= !!(isinf | (C==0)) & !FIX_IS_NEG(S);
