@@ -3,6 +3,7 @@ test
 *.pre
 *.pyc
 autogen.c
+lut.c
 base.h
 base.py
 
