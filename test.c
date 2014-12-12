@@ -548,6 +548,7 @@ DIV(nfifteen_nthree  , FIXNUM(-15,0)          , FIXNUM(-3,0)           ,(FIX_INT
 DIV(nfifteen_three   , FIXNUM(-15,0)          , FIXNUM(3,0)            ,(FIX_INT_BITS > 4) ? FIXNUM(-5,0) : FIX_INF_NEG) \
 DIV(fifteen_frac5    , FIXNUM(15,0)           , FIXNUM(0,5)            ,FIXNUM(30,0)) \
 DIV(overflow         , FIXNUM(FIX_INT_MAX-1,5), FIXNUM(0,5)            ,FIX_INF_POS)  \
+DIV(underflow        , FIX_EPSILON            , FIXNUM(10,0)           ,FIXNUM(0,0))  \
 \
 DIV(zero_zero        , FIXNUM(0,0)            , FIXNUM(0,0)            ,FIX_NAN)      \
 DIV(one_zero         , FIXNUM(1,0)            , FIXNUM(0,0)            ,FIX_INF_POS)  \
