@@ -192,7 +192,7 @@ uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
   // Since we moved y to be slightly above x, result contains a number in Q64.
   int64_t shiftamount = ((64 - FIX_POINT_BITS) - shift);
   uint64_t roundbits = (result) & ((1ull << shiftamount) -1);
-  result = result >> shiftamount;
+  result = MASK_UNLESS(shiftamount < 64, (result >> shiftamount));
 
   // If we're supposed to shift the result to the left (or not at all), there's
   // overflow. Although, if x was the largest negative number, not shifting the
