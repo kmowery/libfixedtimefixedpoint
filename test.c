@@ -43,7 +43,7 @@ static void null_test_success(void **state) {
     CHECK_CONDITION(error_msg, value == expected, fixed1, fixed2)
 
 #define CHECK_DIFFERENCE(error_msg, value, expected, bound) \
-    CHECK_CONDITION(error_msg, fix_eq_nan(value, expected) | (fix_abs(fix_sub(value, expected)) <= bound), value, expected)
+    CHECK_CONDITION(error_msg, (fix_eq_nan(value, expected) | (fix_abs(fix_sub(value, expected)) <= bound)), value, expected)
 
 #define CHECK_INT_EQUAL(error_msg, var1, var2) \
   if( !(var1 == var2) ) { \
