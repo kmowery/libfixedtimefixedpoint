@@ -42,6 +42,9 @@ static void null_test_success(void **state) {
 #define CHECK_VALUE(error_msg, value, expected, fixed1, fixed2) \
     CHECK_CONDITION(error_msg, value == expected, fixed1, fixed2)
 
+#define CHECK_DIFFERENCE(error_msg, value, expected, bound) \
+    CHECK_CONDITION(error_msg, fix_eq_nan(value, expected) | (fix_abs(fix_sub(value, expected)) <= bound), value, expected)
+
 #define CHECK_INT_EQUAL(error_msg, var1, var2) \
   if( !(var1 == var2) ) { \
     fail_msg( error_msg ": "FIX_PRINTF_DEC" (0x"FIX_PRINTF_HEX") != "FIX_PRINTF_DEC" (0x"FIX_PRINTF_HEX")", (fixed) var1, (fixed) var1, (fixed) var2, (fixed) var2); \
@@ -703,20 +706,21 @@ TEST_HELPER(exp_##name, { \
   fixed o1 = op1; \
   fixed exp = fix_exp(o1); \
   fixed expected = result; \
-  CHECK_EQ_NAN(#name, exp, expected); \
+  CHECK_DIFFERENCE(#name, exp, expected, expected >> 20); \
 };)
+/* Make sure we get the top 20 bits of expected right */
 
 #define EXP_TESTS \
 EXP(zero   , FIX_ZERO          , FIXNUM(1,0)) \
-EXP(one    , FIXNUM(1,0)       , FIXNUM(2,71826171875))     /* not exactly our E, but close */ \
-EXP(two    , FIXNUM(2,0)       , FIXNUM(7,38897705078))     /* not 7,3890560989 */ \
-EXP(e      , FIX_E             , FIXNUM(15,154296875))     /* not 15,15426224147 */ \
-EXP(ten    , FIXNUM(10,0)      , FIX_INF_POS) \
-EXP(one_neg, FIXNUM(-1,0)      , FIXNUM(0,3678588867)) \
-EXP(two_neg, FIXNUM(-2,0)      , FIXNUM(0,1353149414)) \
-EXP(e_neg  , fix_neg(FIX_E)    , FIXNUM(0,065979003906))     /* not 0.0659880358 */ \
-EXP(ten_neg, FIXNUM(-10,0)     , FIXNUM(0,0000453999)) \
-EXP(neg_many,FIXNUM(-128,0)    , FIX_ZERO) \
+EXP(one    , FIXNUM(1,0)       , FIXNUM(2,718281828459045235360287471352662497757247093699959574966967)) \
+EXP(two    , FIXNUM(2,0)       , FIXNUM(7,389056098930650227230427460575007813180315570551847324087127)) \
+EXP(e      , FIX_E             , FIXNUM(15,15426224147926418976043027262991190552854853685613976914074)) \
+EXP(ten    , FIXNUM(10,0)      , FIXNUM(22026,46579480671651695790064528424436635351261855678107423542)) \
+EXP(one_neg, FIXNUM(-1,0)      , FIXNUM(0,367879441171442321595523770161460867445811131031767834507836)) \
+EXP(two_neg, FIXNUM(-2,0)      , FIXNUM(0,135335283236612691893999494972484403407631545909575881468158)) \
+EXP(e_neg  , fix_neg(FIX_E)    , FIXNUM(0,065988035845312537076790187596846424938577048252796436402473)) \
+EXP(ten_neg, FIXNUM(-10,0)     , FIXNUM(0,000045399929762484851535591515560550610237918088866564969259)) \
+EXP(neg_many,FIXNUM(-128,0)    , FIXNUM(0,000000000000000000000000000000000000000000000000000000000000)) \
 EXP(max    , FIX_MAX           , FIX_INF_POS) \
 EXP(inf    , FIX_INF_POS       , FIX_INF_POS) \
 EXP(inf_neg, FIX_INF_NEG       , FIX_ZERO) \
