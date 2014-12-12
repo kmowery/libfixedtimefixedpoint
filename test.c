@@ -20,48 +20,33 @@ static void null_test_success(void **state) {
   if( !(condition) ) { \
     char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
     fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
+    fixed difference = fix_sub(var1, var2); \
+    char b3[FIX_PRINT_BUFFER_SIZE]; fix_print(b3, difference); \
+    fail_msg( error_msg ": \n%s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX \
+        ")\n difference %s ("FIX_PRINTF_HEX")", \
+        b1, var1, b2, var2, b3, difference); \
   }
 
 #define CHECK_EQ(error_msg, var1, var2) \
-  if( !fix_eq(var1, var2) ) { \
-    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
-    fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
-  }
+    CHECK_CONDITION(error_msg, fix_eq(var1, var2), var1, var2)
+
 #define CHECK_EQ_NAN(error_msg, var1, var2) \
-  if( !fix_eq_nan(var1, var2) ) { \
-    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
-    fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
-  }
+    CHECK_CONDITION(error_msg, fix_eq_nan(var1, var2), var1, var2)
 
 #define CHECK_EQ_VALUE(error_msg, var1, var2, value) \
-  if( fix_eq(var1, var2) != value ) { \
-    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
-    fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
-  }
+    CHECK_CONDITION(error_msg, fix_eq(var1, var2) == value, var1, var2)
+
 #define CHECK_EQ_NAN_VALUE(error_msg, var1, var2, value) \
-  if( fix_eq_nan(var1, var2) != value ) { \
-    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
-    fix_print(b1, var1); fix_print(b2, var2); \
-    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX")", b1, var1, b2, var2); \
-  }
+    CHECK_CONDITION(error_msg, fix_eq_nan(var1, var2) == value, var1, var2)
+
+#define CHECK_VALUE(error_msg, value, expected, fixed1, fixed2) \
+    CHECK_CONDITION(error_msg, value == expected, fixed1, fixed2)
 
 #define CHECK_INT_EQUAL(error_msg, var1, var2) \
   if( !(var1 == var2) ) { \
     fail_msg( error_msg ": "FIX_PRINTF_DEC" (0x"FIX_PRINTF_HEX") != "FIX_PRINTF_DEC" (0x"FIX_PRINTF_HEX")", (fixed) var1, (fixed) var1, (fixed) var2, (fixed) var2); \
   }
 
-#define CHECK_VALUE(error_msg, value, expected, fixed1, fixed2) \
-  if( !(value == expected) ) { \
-    char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
-    fix_print(b1, fixed1); fix_print(b2, fixed2); \
-    fail_msg( error_msg ": %s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX") (value was "FIX_PRINTF_HEX")", b1, fixed1, b2, fixed2, (int64_t) value); \
-  }
-
-#define NaN nan("0")
 #define SQRT_MAX ((fixed) sqrt((double) FIX_INT_MAX))
 
 void p(fixed f) {
