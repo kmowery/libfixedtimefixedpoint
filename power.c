@@ -130,7 +130,12 @@ fixed fix_exp(fixed op1) {
 
   for(int i = 1; i < FIX_EXP_LOOP; i ++) {
     term = FIX_MUL(term, scratch, overflow);
+#if FIX_FRAC_BITS > 10
     term = FIX_MUL(term, LUT_inv_integer[i], overflow);
+#else
+    term= fix_div_64(term, FIXINT(i), &overflow);
+#endif
+
     e_x += term;
   }
 
@@ -160,19 +165,19 @@ fixed fix_exp(fixed op1) {
   //
   // In python:
   //
-  //  pos_squarings = [(n, math.ceil(math.log(math.log(2**n),2))) for n in range(1,93)]
-  //  neg_squarings = [(n, math.ceil(math.log(abs(math.log(2**(-(62-n)))),2))) for n in range(1,61)]
-  //  squarings = [(x[0], max(x[1], y[1]) if y is not None else x[1])
-  //               for x,y in itertools.izip_longest(pos_squarings, neg_squarings)]
-  //  for k, g in itertools.groupby(squarings, operator.itemgetter(1)):
-  //      int_bits = list(g)
-  //      print "#elif FIX_INT_BITS <= %d"%( max([x for x,y in int_bits]) )
-  //      print "#define FIX_SQUARE_LOOP %d"%(k)
+  // pos_squarings = [(n, math.ceil(math.log(math.log(2**n),2))) for n in range(1,93)]
+  // neg_squarings = [(n, math.ceil(math.log(abs(math.log(2**(-(63-n)))),2))) for n in range(1,61)]
+  // squarings = [(x[0], max(x[1], y[1]) if y is not None else x[1])
+  //              for x,y in itertools.izip_longest(pos_squarings, neg_squarings)]
+  // for k, g in itertools.groupby(squarings, operator.itemgetter(1)):
+  //     int_bits = list(g)
+  //     print "#elif FIX_INT_BITS <= %d"%( max([x for x,y in int_bits]) )
+  //     print "#define FIX_SQUARE_LOOP %d"%(k)
   //
 
   // These numbers can be smaller for a 32-bit exp.
 
-#if FIX_INT_BITS <= 15
+#if FIX_INT_BITS <= 16
 #define FIX_SQUARE_LOOP 6
 #elif FIX_INT_BITS <= 46
 #define FIX_SQUARE_LOOP 5
