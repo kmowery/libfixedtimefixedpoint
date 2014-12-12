@@ -14,6 +14,7 @@ fixed fix_exp(fixed op1) {
   uint8_t log2     = fixed_log2(op1);
   uint8_t log2_neg = fixed_log2((~op1) + 4);
 
+  /* Our taylor series works best with small numbers. Move the number to [0,2). */
   fixed scratch =
     MASK_UNLESS(!isneg,
       MASK_UNLESS(log2 <= FIX_POINT_BITS, op1) |
@@ -24,6 +25,7 @@ fixed fix_exp(fixed op1) {
       MASK_UNLESS(log2_neg >  FIX_POINT_BITS, SIGN_EX_SHIFT_RIGHT(op1, (log2_neg - FIX_POINT_BITS)))
       );
 
+  /* Since we squished the number, we'll need to square the result later. */
   uint8_t squarings =
     MASK_UNLESS(!isneg,
       MASK_UNLESS(log2 <= FIX_POINT_BITS, 0) |
@@ -34,11 +36,99 @@ fixed fix_exp(fixed op1) {
       MASK_UNLESS(log2_neg >  FIX_POINT_BITS, (log2_neg - FIX_POINT_BITS))
     );
 
+  /*
+   * Use the Taylor series:
+   *
+   *              n=inf
+   *               ---
+   *               \      x^n
+   *     e^x   =    >    -----
+   *               /      n !
+   *               ---
+   *               n=1
+   *
+   * As an optimization, you can generate the next term from the previous term:
+   *
+   *   T(n) = T(n-1) * x / n
+   *
+   * We keep around a LUT of values of 1/n, and can simply multiply instead of divide:
+   *
+   *   T(n) = T(n-1) * x * INV_LUT(n)
+   *
+   * Choosing the number of terms is tricky: since we have a variable number of
+   * fractional bits, we compute when the terms will become zero. That is:
+   *
+   *   Find n s.t.:
+   *
+   *      2^n
+   *     -----   <   2 ^ (-FIX_FRAC_BITS)
+   *      n !
+   *
+   * By summing the log_2( x/n ), you can generate the following table:
+   */
+
+#if FIX_FRAC_BITS < 2
+  #define FIX_EXP_LOOP 6
+#elif FIX_FRAC_BITS < 4
+  #define FIX_EXP_LOOP 7
+#elif FIX_FRAC_BITS < 6
+  #define FIX_EXP_LOOP 8
+#elif FIX_FRAC_BITS < 8
+  #define FIX_EXP_LOOP 9
+#elif FIX_FRAC_BITS < 10
+  #define FIX_EXP_LOOP 10
+#elif FIX_FRAC_BITS < 13
+  #define FIX_EXP_LOOP 11
+#elif FIX_FRAC_BITS < 15
+  #define FIX_EXP_LOOP 12
+#elif FIX_FRAC_BITS < 18
+  #define FIX_EXP_LOOP 13
+#elif FIX_FRAC_BITS < 21
+  #define FIX_EXP_LOOP 14
+#elif FIX_FRAC_BITS < 24
+  #define FIX_EXP_LOOP 15
+#elif FIX_FRAC_BITS < 27
+  #define FIX_EXP_LOOP 16
+#elif FIX_FRAC_BITS < 30
+  #define FIX_EXP_LOOP 17
+#elif FIX_FRAC_BITS < 33
+  #define FIX_EXP_LOOP 18
+#elif FIX_FRAC_BITS < 36
+  #define FIX_EXP_LOOP 19
+#elif FIX_FRAC_BITS < 40
+  #define FIX_EXP_LOOP 20
+#elif FIX_FRAC_BITS < 43
+  #define FIX_EXP_LOOP 21
+#elif FIX_FRAC_BITS < 46
+  #define FIX_EXP_LOOP 22
+#elif FIX_FRAC_BITS < 50
+  #define FIX_EXP_LOOP 23
+#elif FIX_FRAC_BITS < 54
+  #define FIX_EXP_LOOP 24
+#elif FIX_FRAC_BITS < 57
+  #define FIX_EXP_LOOP 25
+#elif FIX_FRAC_BITS < 61
+  #define FIX_EXP_LOOP 26
+#else
+#error Unknown number of FIX_FRAC_BITS in fix_exp
+#endif
+
+  /* To generate the preceding table:
+   *
+   * l = 0.
+   * for i in range(1,40):
+   *   l += math.log(x/i,2)
+   *   print "#elif FIX_FRAC_BITS < %d"%(abs(l)-1)
+   *   print "  #define FIX_EXP_LOOP %d"%(i)
+   *   if l < -61:
+   *       break
+   */
+
   fixed e_x = FIXINT(1);
   fixed term = FIXINT(1);
   uint8_t overflow = 0;
 
-  for(int i = 1; i < 12; i ++) {
+  for(int i = 1; i < FIX_EXP_LOOP; i ++) {
     term = FIX_MUL(term, scratch, overflow);
     term = FIX_MUL(term, LUT_inv_integer[i], overflow);
     e_x += term;
