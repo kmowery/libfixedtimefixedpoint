@@ -140,40 +140,49 @@ fixed fix_exp(fixed op1) {
 
   // x is approximately in the range [-2^FIX_INT_BITS, 2^FIX_INT_BITS], and we
   // maped it to [-2, 2]. We need one squaring for each halving, which means
-  // that squarings can be at most log2(2^FIX_INT_BITS)-2.
+  // that squarings can be at most log2(2^FIX_INT_BITS)-2 or
+  // log2(2^FIX_FRAC_BITS)-2.
   //
-  // But that's overzealous: e^x must fit in 2^FIX_INT_BITS. If we reduced the
-  // number before the approximation (as opposed to leaving it alone), then x
-  // was greater than or equal to 2, and the reduction r will be >= 1. In this
-  // case, the approximation of e^r will produce at least e^1, or ~2.718. This
-  // requires only ceil(log2(ln(2**FIX_INT_BITS))+1) successive doublings before
-  // it will overflow the fixed.
+  // (We need to worry about frac bits because negative numbers will to <= -1,
+  // which produces 0.367, which might then need to multiply itself out of
+  // existence.)
   //
-  // squarings = [(n, math.ceil(math.log(math.log(2**n),2)+1)) for n in range(1,93)]
-  // for k, g in itertools.groupby(squarings, operator.itemgetter(1)):
-  //  int_bits = list(g)
-  //  print "#elif FIX_INT_BITS <= %d"%( max([x for x,y in int_bits]) )
-  //  print "#define FIX_SQUARE_LOOP %d"%(k)
+  // But that's overzealous: If x is positive, e^x must fit in 2^FIX_INT_BITS.
+  // If we reduced the number before the approximation (as opposed to leaving it
+  // alone), then x was greater than or equal to 2, and the reduction r will be
+  // >= 1. In this case, the approximation of e^r will produce at least e^1, or
+  // ~2.718. This requires only ceil(log2(ln(2**FIX_INT_BITS))+1) successive
+  // doublings before it will overflow the fixed.
+  //
+  // If x is negative, we need s squarings so that 0.367 will square itself
+  // to < 2^FIX_FRAC_BITS. By the same argument, we need
+  // ceil(log2(ln(2**-FIX_FRAC_BITS))) squarings.
+  //
+  // In python:
+  //
+  //  pos_squarings = [(n, math.ceil(math.log(math.log(2**n),2))) for n in range(1,93)]
+  //  neg_squarings = [(n, math.ceil(math.log(abs(math.log(2**(-(62-n)))),2))) for n in range(1,61)]
+  //  squarings = [(x[0], max(x[1], y[1]) if y is not None else x[1])
+  //               for x,y in itertools.izip_longest(pos_squarings, neg_squarings)]
+  //  for k, g in itertools.groupby(squarings, operator.itemgetter(1)):
+  //      int_bits = list(g)
+  //      print "#elif FIX_INT_BITS <= %d"%( max([x for x,y in int_bits]) )
+  //      print "#define FIX_SQUARE_LOOP %d"%(k)
+  //
 
-#if FIX_INT_BITS <= 1
-#define FIX_SQUARE_LOOP 1
-#elif FIX_INT_BITS <= 2
-#define FIX_SQUARE_LOOP 2
-#elif FIX_INT_BITS <= 5
-#define FIX_SQUARE_LOOP 3
-#elif FIX_INT_BITS <= 11
-#define FIX_SQUARE_LOOP 4
-#elif FIX_INT_BITS <= 23
-#define FIX_SQUARE_LOOP 5
-#elif FIX_INT_BITS <= 46
+  // These numbers can be smaller for a 32-bit exp.
+
+#if FIX_INT_BITS <= 15
 #define FIX_SQUARE_LOOP 6
-#elif FIX_INT_BITS <= 61
-#define FIX_SQUARE_LOOP 7
+#elif FIX_INT_BITS <= 46
+#define FIX_SQUARE_LOOP 5
+#elif FIX_INT_BITS <= 92
+#define FIX_SQUARE_LOOP 6
 #else
 #error Unknown number of FIX_INT_BITS in fix_exp
 #endif
 
-  for(int i = 0; i < 4; i++) {
+  for(int i = 0; i < FIX_SQUARE_LOOP; i++) {
     inf = 0;
     fixed r2 = FIX_MUL(result, result, inf);
     result = MASK_UNLESS(squarings > 0, r2) |
