@@ -1,57 +1,46 @@
 #include "ftfp.h"
 #include "internal.h"
+#include "lut.h"
 
 // Contains the logarithmic, exponential, and square root functions for libftfp.
 
 fixed fix_exp(fixed op1) {
-  // [("%x"% ((1./x)* 2**17), x) for x in range(1,12)]
-  // Note that you need to add some padding at the first element
-  fixed inv_i_LUT[12] = {
-       0x40000,
-       0x20000,
-       0x10000,
-       0xaaaa,
-       0x8000,
-       0x6666,
-       0x5555,
-       0x4924,
-       0x4000,
-       0x38e3,
-       0x3333,
-       0x2e8b};
 
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
-  uint8_t isnan = FIX_IS_NAN(op1);
+  uint8_t isnan    = FIX_IS_NAN(op1);
 
-  uint32_t log2 = uint32_log2(op1);
-  uint32_t log2_neg = uint32_log2((~op1) + 4);
+  uint8_t isneg    = FIX_IS_NEG(op1);
+
+  uint8_t log2     = fixed_log2(op1);
+  uint8_t log2_neg = fixed_log2((~op1) + 4);
 
   fixed scratch =
-    MASK_UNLESS(!FIX_IS_NEG(op1),
+    MASK_UNLESS(!isneg,
       MASK_UNLESS(log2 <= FIX_POINT_BITS, op1) |
-      MASK_UNLESS(log2 > FIX_POINT_BITS, op1 >> (log2 - FIX_POINT_BITS))
+      MASK_UNLESS(log2 >  FIX_POINT_BITS, op1 >> (log2 - FIX_POINT_BITS))
     ) |
-    MASK_UNLESS(FIX_IS_NEG(op1),
+    MASK_UNLESS( isneg,
       MASK_UNLESS(log2_neg <= FIX_POINT_BITS, op1) |
-      MASK_UNLESS(log2_neg > FIX_POINT_BITS, SIGN_EX_SHIFT_RIGHT_32(op1, (log2_neg - FIX_POINT_BITS)))
+      MASK_UNLESS(log2_neg >  FIX_POINT_BITS, SIGN_EX_SHIFT_RIGHT(op1, (log2_neg - FIX_POINT_BITS)))
       );
 
   uint8_t squarings =
-    MASK_UNLESS(!FIX_IS_NEG(op1),
+    MASK_UNLESS(!isneg,
       MASK_UNLESS(log2 <= FIX_POINT_BITS, 0) |
-      MASK_UNLESS(log2 > FIX_POINT_BITS, (log2 - FIX_POINT_BITS))
+      MASK_UNLESS(log2 >  FIX_POINT_BITS, (log2 - FIX_POINT_BITS))
     ) |
-    MASK_UNLESS(FIX_IS_NEG(op1),
+    MASK_UNLESS( isneg,
       MASK_UNLESS(log2_neg <= FIX_POINT_BITS, 0) |
-      MASK_UNLESS(log2_neg > FIX_POINT_BITS, (log2_neg - FIX_POINT_BITS))
-      );
+      MASK_UNLESS(log2_neg >  FIX_POINT_BITS, (log2_neg - FIX_POINT_BITS))
+    );
 
   fixed e_x = FIXINT(1);
   fixed term = FIXINT(1);
+  uint8_t overflow = 0;
 
   for(int i = 1; i < 12; i ++) {
-    term = FIX_UNSAFE_MUL_32(term, scratch);
-    term = FIX_UNSAFE_MUL_32(term, inv_i_LUT[i]);
+    term = FIX_MUL(term, scratch, overflow);
+    term = FIX_MUL(term, LUT_inv_integer[i], overflow);
     e_x += term;
   }
 
@@ -69,7 +58,7 @@ fixed fix_exp(fixed op1) {
   // log2(ln(2**16)) successive doublings, or about 3.4. Round up to 4.
   for(int i = 0; i < 4; i++) {
     inf = 0;
-    fixed r2 = FIX_MUL_32(result, result, inf);
+    fixed r2 = FIX_MUL(result, result, inf);
     result = MASK_UNLESS(squarings > 0, r2) | MASK_UNLESS(squarings == 0, result);
     isinfpos |= MASK_UNLESS(squarings > 0, inf);
 
