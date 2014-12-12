@@ -201,7 +201,7 @@ uint64_t fixfrac(char* frac);
     uint64_t fdiv32tmp = FIX_UNSAFE_DIV_32(op1, \
       SIGN_EX_SHIFT_RIGHT_32(op2, 1)); \
     uint64_t masked = fdiv32tmp & 0xFFFFFFFF00000000; \
-    overflow = !((masked == 0xFFFFFFFF00000000) | (masked == 0)); \
+    overflow |= !((masked == 0xFFFFFFFF00000000) | (masked == 0)); \
     (fdiv32tmp >> 1) & 0xffffffff; \
   })
 
@@ -268,7 +268,7 @@ uint64_t fixfrac(char* frac);
     uint64_t tmp = tmplow2 | \
                  ((tmphigh+(((tmplow >> FIX_POINT_BITS) != 0) & (tmplow2==0x0))) << (64 - FIX_POINT_BITS)); \
     /* inf only if overflow, and not a sign thing */ \
-    overflow = \
+    overflow |= \
       !(((tmphigh & MUL_CONST) == MUL_CONST) \
        | ((tmphigh & MUL_CONST) == 0)); \
     tmp; \
