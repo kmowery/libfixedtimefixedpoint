@@ -148,7 +148,7 @@ fixed fix_mul(fixed op1, fixed op2) {
 
   uint8_t iszero = (op1 == FIX_ZERO) | (op2 == FIX_ZERO);
 
-  fixed tmp = FIX_MUL_64(op1, op2, isinf);
+  fixed tmp = ROUND_TO_EVEN(FIX_MUL_64(op1, op2, isinf), FIX_FLAG_BITS) << FIX_FLAG_BITS;
 
   isinf = (!iszero) & (isinfop1 | isinfop2 | isinf) & (!isnan);
 

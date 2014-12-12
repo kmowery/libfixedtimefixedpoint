@@ -520,7 +520,9 @@ MUL(overflow             , FIXNUM(FIX_INT_MAX-1,5) , FIXNUM(2,0)         , FIX_I
 MUL(tinyoverflow         , FIXNUM((SQRT_MAX+10),5) , FIXNUM((SQRT_MAX+10),5) , FIX_INF_POS)  \
 MUL(tinyoverflow_neg     , FIXNUM((SQRT_MAX+10),5) , FIXNUM(-(SQRT_MAX+10),5) , FIX_INF_NEG) \
 MUL(tinyoverflow_neg_neg , FIXNUM(-(SQRT_MAX+10),5), FIXNUM(-(SQRT_MAX+10),5) , FIX_INF_POS) \
-MUL(underflow            , FIX_EPSILON             , FIX_EPSILON         , FIX_ZERO) \
+MUL(underflow            , FIX_EPSILON             , FIX_EPSILON         , FIX_ZERO)         \
+MUL(underflow_neg        , fix_neg(FIX_EPSILON)    , FIXNUM(0,0555)      , FIX_ZERO)         \
+MUL(underflow_neg_rte    , fix_neg(FIX_EPSILON)    , FIXNUM(0,4555)      , FIX_ZERO)         \
 MUL(zero_inf             , FIXNUM(0,0)             , FIX_INF_POS         , FIXNUM(0,0))      \
 MUL(zero_ninf            , FIXNUM(0,0)             , FIX_INF_NEG         , FIXNUM(0,0))      \
 MUL(zero_nan             , FIXNUM(0,0)             , FIX_NAN             , FIX_NAN)
