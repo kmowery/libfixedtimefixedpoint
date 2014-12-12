@@ -138,18 +138,46 @@ fixed fix_exp(fixed op1) {
 
   uint8_t inf;
 
-  // X is approximately in the range [-2^16, 2^16], and we map it down to [-2,
-  // 2]. We need one squaring for each halving, which means that squarings can
-  // be at most log2(2^16)-2, or 14.
+  // x is approximately in the range [-2^FIX_INT_BITS, 2^FIX_INT_BITS], and we
+  // maped it to [-2, 2]. We need one squaring for each halving, which means
+  // that squarings can be at most log2(2^FIX_INT_BITS)-2.
   //
-  // But that's overzealous: e^x must fit in 2^16. If we reduced the number
-  // before the approximation, then it will be at least 1, and so the
-  // approximation will produce at least e^1, or ~2.718. This requires only
-  // log2(ln(2**16)) successive doublings, or about 3.4. Round up to 4.
+  // But that's overzealous: e^x must fit in 2^FIX_INT_BITS. If we reduced the
+  // number before the approximation (as opposed to leaving it alone), then x
+  // was greater than or equal to 2, and the reduction r will be >= 1. In this
+  // case, the approximation of e^r will produce at least e^1, or ~2.718. This
+  // requires only ceil(log2(ln(2**FIX_INT_BITS))+1) successive doublings before
+  // it will overflow the fixed.
+  //
+  // squarings = [(n, math.ceil(math.log(math.log(2**n),2)+1)) for n in range(1,93)]
+  // for k, g in itertools.groupby(squarings, operator.itemgetter(1)):
+  //  int_bits = list(g)
+  //  print "#elif FIX_INT_BITS <= %d"%( max([x for x,y in int_bits]) )
+  //  print "#define FIX_SQUARE_LOOP %d"%(k)
+
+#if FIX_INT_BITS <= 1
+#define FIX_SQUARE_LOOP 1
+#elif FIX_INT_BITS <= 2
+#define FIX_SQUARE_LOOP 2
+#elif FIX_INT_BITS <= 5
+#define FIX_SQUARE_LOOP 3
+#elif FIX_INT_BITS <= 11
+#define FIX_SQUARE_LOOP 4
+#elif FIX_INT_BITS <= 23
+#define FIX_SQUARE_LOOP 5
+#elif FIX_INT_BITS <= 46
+#define FIX_SQUARE_LOOP 6
+#elif FIX_INT_BITS <= 61
+#define FIX_SQUARE_LOOP 7
+#else
+#error Unknown number of FIX_INT_BITS in fix_exp
+#endif
+
   for(int i = 0; i < 4; i++) {
     inf = 0;
     fixed r2 = FIX_MUL(result, result, inf);
-    result = MASK_UNLESS(squarings > 0, r2) | MASK_UNLESS(squarings == 0, result);
+    result = MASK_UNLESS(squarings > 0, r2) |
+             MASK_UNLESS(squarings == 0, result);
     isinfpos |= MASK_UNLESS(squarings > 0, inf);
 
     squarings = MASK_UNLESS(squarings > 0, squarings-1);
