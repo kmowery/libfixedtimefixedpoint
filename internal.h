@@ -25,17 +25,23 @@ typedef int64_t fixed_signed;
 #define FIX_FRAC_MASK (((((fixed) 1)<<(FIX_FRAC_BITS))-1) << (FIX_FLAG_BITS))
 #define FIX_INT_MASK  (((((fixed) 1)<<(FIX_INT_BITS))-1) << ((FIX_FLAG_BITS) + (FIX_FRAC_BITS)))
 
+
+
 #define FIX_SIGN_TO_64(f) ((int64_t)((int32_t)(f)))
 
-#define SIGN_EXTEND(value, n_top_bit) SIGN_EXTEND_64(value, n_top_bit)
-#define SIGN_EX_SHIFT_RIGHT_32(value, shift) SIGN_EXTEND( (value) >> (shift), 32 - (shift) )
+#define SIGN_EXTEND_32(value, n_top_bit) SIGN_EXTEND_64(value, n_top_bit)
+#define SIGN_EX_SHIFT_RIGHT_32(value, shift) SIGN_EXTEND_32( (value) >> (shift), 32 - (shift) )
+#define MASK_UNLESS_32(expression, value) (SIGN_EXTEND_32(!!(expression), 1) & (value))
 
-#define MASK_UNLESS(expression, value) (SIGN_EXTEND(!!(expression), 1) & (value))
-
-#define MASK_UNLESS_64(expression, value) (SIGN_EXTEND_64(!!(expression), 1) & (value))
 #define SIGN_EXTEND_64(value, n_top_bit) ({uint64_t SE_m__ = (1ull << ((n_top_bit)-1)); (((uint64_t) (value)) ^ SE_m__) - SE_m__;})
-
+#define MASK_UNLESS_64(expression, value) (SIGN_EXTEND_64(!!(expression), 1) & (value))
 #define SIGN_EX_SHIFT_RIGHT_64(value, shift) SIGN_EXTEND_64( (value) >> (shift), 64 - (shift) )
+
+
+#define MASK_UNLESS MASK_UNLESS_64
+#define SIGN_EXTEND SIGN_EXTEND_64
+#define SIGN_EX_SHIFT_RIGHT SIGN_EX_SHIFT_RIGHT_64
+
 
 
 #define FIX_DATA_BIT_MASK (0xFFFFFFFFFFFFFFFCLL)
@@ -217,7 +223,7 @@ uint64_t fixfrac(char* frac);
 /* Implement a simple unsigned 64x64 multiplication, and correct for negative
  * numbers. There might be a way to do it arithmetically, but haven't found
  * in...  */
-#define FIX_UNSAFE_MUL_64(op1, op2, resultlow, resulthigh)                                           \
+#define UNSAFE_MUL_64_64_128(op1, op2, resultlow, resulthigh)                                        \
 ({                                                                                                   \
   uint64_t absx = MASK_UNLESS_64( (op1>>63), (~op1) + 1 ) |                                          \
                   MASK_UNLESS_64(!(op1>>63), op1);                                                   \
@@ -257,7 +263,7 @@ uint64_t fixfrac(char* frac);
   ({ \
     uint64_t tmphigh; \
     uint64_t tmplow; \
-    FIX_UNSAFE_MUL_64(op1, op2, tmplow, tmphigh); \
+    UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
     uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, FIX_POINT_BITS); \
     uint64_t tmp = tmplow2 | \
                  ((tmphigh+((tmplow != 0) & (tmplow2==0x0))) << (64 - FIX_POINT_BITS)); \
@@ -267,6 +273,8 @@ uint64_t fixfrac(char* frac);
        | ((tmphigh & MUL_CONST) == 0)); \
     tmp; \
    })
+
+#define FIX_MUL FIX_MUL_64
 
 // Multiply two 2.28 bit fixed point numbers
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
@@ -326,6 +334,8 @@ uint64_t fixfrac(char* frac);
 uint32_t fix_circle_frac(fixed op1);
 uint8_t uint32_log2(uint32_t o);
 uint8_t uint64_log2(uint64_t o);
+
+#define fixed_log2 uint64_log2
 
 void cordic(uint32_t* Z, uint32_t* C, uint32_t* S);
 
