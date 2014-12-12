@@ -266,7 +266,7 @@ uint64_t fixfrac(char* frac);
     UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
     uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, FIX_POINT_BITS); \
     uint64_t tmp = tmplow2 | \
-                 ((tmphigh+((tmplow != 0) & (tmplow2==0x0))) << (64 - FIX_POINT_BITS)); \
+                 ((tmphigh+(((tmplow >> FIX_POINT_BITS) != 0) & (tmplow2==0x0))) << (64 - FIX_POINT_BITS)); \
     /* inf only if overflow, and not a sign thing */ \
     overflow = \
       !(((tmphigh & MUL_CONST) == MUL_CONST) \
