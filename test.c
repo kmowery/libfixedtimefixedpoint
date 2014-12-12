@@ -709,7 +709,7 @@ TEST_HELPER(exp_##name, { \
   fixed o1 = op1; \
   fixed exp = fix_exp(o1); \
   fixed expected = result; \
-  CHECK_DIFFERENCE(#name, exp, expected, expected >> 15); \
+  CHECK_DIFFERENCE(#name, exp, expected, ((expected >> 15) | FIX_EPSILON)); \
 };)
 /* Make sure we get the top 20 bits of expected right */
 
