@@ -14,27 +14,23 @@ fixed fix_exp(fixed op1) {
   uint8_t log2     = fixed_log2(op1);
   uint8_t log2_neg = fixed_log2((~op1) + 4);
 
-  /* Our taylor series works best with small numbers. Move the number to [0,2). */
-  fixed scratch =
-    MASK_UNLESS(!isneg,
-      MASK_UNLESS(log2 <= FIX_POINT_BITS, op1) |
-      MASK_UNLESS(log2 >  FIX_POINT_BITS, op1 >> (log2 - FIX_POINT_BITS))
-    ) |
-    MASK_UNLESS( isneg,
-      MASK_UNLESS(log2_neg <= FIX_POINT_BITS, op1) |
-      MASK_UNLESS(log2_neg >  FIX_POINT_BITS, SIGN_EX_SHIFT_RIGHT(op1, (log2_neg - FIX_POINT_BITS)))
-      );
+  uint8_t actuallog = MASK_UNLESS(!isneg, log2) | MASK_UNLESS( isneg, log2_neg);
 
-  /* Since we squished the number, we'll need to square the result later. */
+  /* If the number is < 2, then move it directly to the fix_internal format.
+   * Otherwise, map it to (-2, 2) in fix_internal. */
+  fix_internal scratch =
+      MASK_UNLESS(actuallog <= FIX_POINT_BITS,
+              op1 << (FIX_INTERN_FRAC_BITS - FIX_POINT_BITS)) |
+      MASK_UNLESS(actuallog > FIX_POINT_BITS & actuallog <= FIX_INTERN_FRAC_BITS,
+              op1 << (FIX_INTERN_FRAC_BITS - actuallog)) |
+      MASK_UNLESS(actuallog > FIX_INTERN_FRAC_BITS,
+              SIGN_EX_SHIFT_RIGHT(op1, (actuallog - FIX_INTERN_FRAC_BITS)));
+
+  /* Since we mapped the number down, we'll need to square the result later.
+   * Note that we don't need to or/mask in 0. */
   uint8_t squarings =
-    MASK_UNLESS(!isneg,
-      MASK_UNLESS(log2 <= FIX_POINT_BITS, 0) |
-      MASK_UNLESS(log2 >  FIX_POINT_BITS, (log2 - FIX_POINT_BITS))
-    ) |
-    MASK_UNLESS( isneg,
-      MASK_UNLESS(log2_neg <= FIX_POINT_BITS, 0) |
-      MASK_UNLESS(log2_neg >  FIX_POINT_BITS, (log2_neg - FIX_POINT_BITS))
-    );
+      /*MASK_UNLESS(actuallog <= FIX_POINT_BITS, 0 ) |*/
+      MASK_UNLESS(actuallog > FIX_POINT_BITS, actuallog - FIX_POINT_BITS );
 
   /*
    * Use the Taylor series:
@@ -67,51 +63,52 @@ fixed fix_exp(fixed op1) {
    * By summing the log_2( x/n ), you can generate the following table:
    */
 
-#if FIX_FRAC_BITS < 2
-  #define FIX_EXP_LOOP 6
-#elif FIX_FRAC_BITS < 4
-  #define FIX_EXP_LOOP 7
-#elif FIX_FRAC_BITS < 6
-  #define FIX_EXP_LOOP 8
-#elif FIX_FRAC_BITS < 8
-  #define FIX_EXP_LOOP 9
-#elif FIX_FRAC_BITS < 10
-  #define FIX_EXP_LOOP 10
-#elif FIX_FRAC_BITS < 13
-  #define FIX_EXP_LOOP 11
-#elif FIX_FRAC_BITS < 15
-  #define FIX_EXP_LOOP 12
-#elif FIX_FRAC_BITS < 18
-  #define FIX_EXP_LOOP 13
-#elif FIX_FRAC_BITS < 21
-  #define FIX_EXP_LOOP 14
-#elif FIX_FRAC_BITS < 24
-  #define FIX_EXP_LOOP 15
-#elif FIX_FRAC_BITS < 27
-  #define FIX_EXP_LOOP 16
-#elif FIX_FRAC_BITS < 30
-  #define FIX_EXP_LOOP 17
-#elif FIX_FRAC_BITS < 33
-  #define FIX_EXP_LOOP 18
-#elif FIX_FRAC_BITS < 36
-  #define FIX_EXP_LOOP 19
-#elif FIX_FRAC_BITS < 40
-  #define FIX_EXP_LOOP 20
-#elif FIX_FRAC_BITS < 43
-  #define FIX_EXP_LOOP 21
-#elif FIX_FRAC_BITS < 46
-  #define FIX_EXP_LOOP 22
-#elif FIX_FRAC_BITS < 50
-  #define FIX_EXP_LOOP 23
-#elif FIX_FRAC_BITS < 54
-  #define FIX_EXP_LOOP 24
-#elif FIX_FRAC_BITS < 57
-  #define FIX_EXP_LOOP 25
-#elif FIX_FRAC_BITS < 61
-  #define FIX_EXP_LOOP 26
-#else
-#error Unknown number of FIX_FRAC_BITS in fix_exp
-#endif
+//#if FIX_FRAC_BITS < 2
+//  #define FIX_EXP_LOOP 6
+//#elif FIX_FRAC_BITS < 4
+//  #define FIX_EXP_LOOP 7
+//#elif FIX_FRAC_BITS < 6
+//  #define FIX_EXP_LOOP 8
+//#elif FIX_FRAC_BITS < 8
+//  #define FIX_EXP_LOOP 9
+//#elif FIX_FRAC_BITS < 10
+//  #define FIX_EXP_LOOP 10
+//#elif FIX_FRAC_BITS < 13
+//  #define FIX_EXP_LOOP 11
+//#elif FIX_FRAC_BITS < 15
+//  #define FIX_EXP_LOOP 12
+//#elif FIX_FRAC_BITS < 18
+//  #define FIX_EXP_LOOP 13
+//#elif FIX_FRAC_BITS < 21
+//  #define FIX_EXP_LOOP 14
+//#elif FIX_FRAC_BITS < 24
+//  #define FIX_EXP_LOOP 15
+//#elif FIX_FRAC_BITS < 27
+//  #define FIX_EXP_LOOP 16
+//#elif FIX_FRAC_BITS < 30
+//  #define FIX_EXP_LOOP 17
+//#elif FIX_FRAC_BITS < 33
+//  #define FIX_EXP_LOOP 18
+//#elif FIX_FRAC_BITS < 36
+//  #define FIX_EXP_LOOP 19
+//#elif FIX_FRAC_BITS < 40
+//  #define FIX_EXP_LOOP 20
+//#elif FIX_FRAC_BITS < 43
+//  #define FIX_EXP_LOOP 21
+//#elif FIX_FRAC_BITS < 46
+//  #define FIX_EXP_LOOP 22
+//#elif FIX_FRAC_BITS < 50
+//  #define FIX_EXP_LOOP 23
+//#elif FIX_FRAC_BITS < 54
+//  #define FIX_EXP_LOOP 24
+//#elif FIX_FRAC_BITS < 57
+//  #define FIX_EXP_LOOP 25
+//#elif FIX_FRAC_BITS < 61
+//  #define FIX_EXP_LOOP 26
+//#else
+//#error Unknown number of FIX_FRAC_BITS in fix_exp
+//#endif
+#define FIX_EXP_LOOP 26
 
   /* To generate the preceding table:
    *
@@ -124,24 +121,22 @@ fixed fix_exp(fixed op1) {
    *       break
    */
 
-  fixed e_x = FIXINT(1);
-  fixed term = FIXINT(1);
+  fix_internal e_x = 1ull << FIX_INTERN_FRAC_BITS;
+  fix_internal term = 1ull << FIX_INTERN_FRAC_BITS;
   uint8_t overflow = 0;
 
+  printf("\n");
+
   for(int i = 1; i < FIX_EXP_LOOP; i ++) {
-    term = FIX_MUL(term, scratch, overflow);
-#if FIX_FRAC_BITS > 10
-    term = FIX_MUL(term, LUT_inv_integer[i], overflow);
-#else
-    term= fix_div_64(term, FIXINT(i), &overflow);
-#endif
+    term = FIX_MUL_INTERN(term, scratch, overflow);
+    term = FIX_MUL_INTERN(term, LUT_int_inv_integer[i], overflow);
 
     e_x += term;
   }
 
-  fixed result = e_x;
+  fix_internal result = e_x;
 
-  uint8_t inf;
+  uint8_t inf = overflow;
 
   // x is approximately in the range [-2^FIX_INT_BITS, 2^FIX_INT_BITS], and we
   // maped it to [-2, 2]. We need one squaring for each halving, which means
@@ -187,20 +182,39 @@ fixed fix_exp(fixed op1) {
 #error Unknown number of FIX_INT_BITS in fix_exp
 #endif
 
+  /* We're going to be squaring the result a few times. This process will double
+   * the number of integer bits in the number, and so we need to keep track of
+   * how many fractional bits we still have.
+   *
+   * When we do this squaring, we want to keep all resulting integer bits and
+   * crop off fractional bits. In 64-bit fixed, This is equivalent to keeping
+   * the top 64 bits of the 128-bit multiplication result.
+   */
+  fix_internal r2;
+  int8_t frac_bits_remaining = FIX_INTERN_FRAC_BITS;
+
+  uint64_t tmplow;
+
   for(int i = 0; i < FIX_SQUARE_LOOP; i++) {
     inf = 0;
-    fixed r2 = FIX_MUL(result, result, inf);
+    UNSAFE_MUL_64_64_128(result, result, tmplow, r2);
+
+    r2 += ROUND_TO_EVEN_ADDITION(r2 & 0x1, tmplow >> 63, tmplow & 0x7fffffffffffffff);
+
     result = MASK_UNLESS(squarings > 0, r2) |
              MASK_UNLESS(squarings == 0, result);
+    frac_bits_remaining = frac_bits_remaining - MASK_UNLESS(squarings > 0, (64 - frac_bits_remaining));
     isinfpos |= MASK_UNLESS(squarings > 0, inf);
 
     squarings = MASK_UNLESS(squarings > 0, squarings-1);
   }
 
+  fixed final_result = ROUND_TO_EVEN(result, (frac_bits_remaining - FIX_POINT_BITS)+FIX_FLAG_BITS) << FIX_FLAG_BITS;
+
   // note that we want to return 0 if op1 is FIX_INF_NEG...
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
-    MASK_UNLESS(!FIX_IS_INF_NEG(op1), FIX_DATA_BITS(result));
+    MASK_UNLESS(!FIX_IS_INF_NEG(op1), FIX_DATA_BITS(final_result));
 }
 
 fixed fix_ln(fixed op1) {
