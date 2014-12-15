@@ -17,7 +17,7 @@
 #include "unistd.h"
 #include <errno.h>
 
-int fd;
+FILE* fd;
 
 void p(fixed f) {
   char buf[FIX_PRINT_BUFFER_SIZE];
@@ -33,9 +33,7 @@ TEST_HELPER(print_##name, { \
   fixed o1 = op1; \
   char buf[FIX_PRINT_BUFFER_SIZE]; \
   fix_print(buf, o1); \
-  char fbuf[200]; \
-  sprintf((char*) fbuf, "  #define %-30s \"%s\" // 0x"FIX_PRINTF_HEX"\n", "PRINT_TEST_" #name, buf, op1); \
-  write(fd, fbuf, strlen(fbuf)); \
+  fprintf(fd, "  #define %-30s \"%s\" // 0x"FIX_PRINTF_HEX"\n", "PRINT_TEST_" #name, buf, op1); \
 };)
 
 
@@ -76,18 +74,15 @@ int main(int argc, char** argv) {
   char filename [40];
   sprintf((char*) filename, "test_print_results.h"); \
 
-  char buf[100];
-  fd = open(filename, O_CREAT | O_WRONLY | O_APPEND, S_IWRITE | S_IREAD);
+  fd = fopen(filename, "rw");
 
-  sprintf((char*) buf, "#if FIX_INT_BITS == %d\n", FIX_INT_BITS);
-  write(fd, buf, strlen(buf));
+  fprintf(fd, "#if FIX_INT_BITS == %d\n", FIX_INT_BITS);
 
   int i = run_tests(tests);
 
-  sprintf((char*) buf, "#endif /* FIX_INT_BITS == %d */\n", FIX_INT_BITS);
-  write(fd, buf, strlen(buf));
+  fprintf(fd, "#endif /* FIX_INT_BITS == %d */\n", FIX_INT_BITS);
 
-  close(fd);
+  fclose(fd);
 
   return i;
 }
