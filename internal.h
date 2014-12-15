@@ -127,6 +127,11 @@ typedef int64_t fixed_signed;
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
+#define ROUND_TO_EVEN_ADDITION(lowbit, highroundbit, restroundbit) \
+   !!( \
+     (!!(lowbit) & !!(highroundbit)) | \
+     ((highroundbit) & !!(restroundbit)))
+
 
 /*
  * General idea:
