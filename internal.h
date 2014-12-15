@@ -45,7 +45,7 @@ typedef int64_t fixed_signed;
 
 
 #define FIX_DATA_BIT_MASK (0xFFFFFFFFFFFFFFFCLL)
-#define FIX_DATA_BITS(f) ((f) & FIX_DATA_BIT_MASK)
+#define FIX_DATA_BITS(f) ((f) & ((fixed)FIX_DATA_BIT_MASK))
 
 #define FIX_IF_NAN(isnan) (((isnan) | ((isnan) << 1)) & FIX_NAN)
 #define FIX_IF_INF_POS(isinfpos) (((isinfpos) | ((isinfpos) << 1)) & FIX_INF_POS)
