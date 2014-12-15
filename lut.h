@@ -3,6 +3,6 @@
 
 #include "base.h"
 
-fixed LUT_inv_integer[25];
+fixed LUT_int_inv_integer[25];
 
 #endif

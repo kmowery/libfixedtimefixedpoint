@@ -16,6 +16,9 @@ except:
   int_bits  = 31
   frac_bits = (64 - flag_bits - int_bits)
 
+  internal_frac_bits = 60
+  internal_int_bits = 4
+
 if __name__ == "__main__":
     import argparse
 
@@ -84,8 +87,8 @@ if __name__ == "__main__":
       t = t.quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN)
       t = t * 2**2
       return t
-    def decimal_to_fix_extrabits(d):
-      t = (d * 2**(point_bits))
+    def decimal_to_fix_extrabits(d, fracbits = point_bits):
+      t = (d * 2**(fracbits))
       t = t.quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN)
       return t
 
@@ -100,9 +103,14 @@ if __name__ == "__main__":
         return "fixed %s[%d] = {\n"%(name, len(lut)) + \
                ",\n".join(l) + \
                "\n};\n"
+    def make_c_internal_lut(lut, name):
+        l = ["  0x%016x"%(decimal_to_fix_extrabits(x, internal_frac_bits)) for x in lut]
+        return "fixed %s[%d] = {\n"%(name, len(lut)) + \
+               ",\n".join(l) + \
+               "\n};\n"
 
     # note that 1/0 isn't very useful, so just call it 1
-    inv_integer_lut = [Decimal('1')] + [((decimal.Decimal('1')/decimal.Decimal(x))) for x in range(1,25)]
+    internal_inv_integer_lut = [Decimal('1')] + [((decimal.Decimal('1')/decimal.Decimal(x))) for x in range(1,25)]
     # Write files
 
     if args["pyfile"] is not None:
@@ -110,6 +118,8 @@ if __name__ == "__main__":
             f.write("flag_bits = %d\n" %( flag_bits ))
             f.write("int_bits = %d\n" %( int_bits ))
             f.write("frac_bits = %d\n" %( frac_bits ))
+            f.write("internal_frac_bits = 60\n");
+            f.write("internal_int_bits = 4\n");
 
     if args["file"] is not None:
         with args["file"] as f:
@@ -153,6 +163,6 @@ static const fixed fix_e = 0x%016x;
             lutc = '''#include "lut.h"
 
 %s
-'''%(make_c_lut(inv_integer_lut, "LUT_inv_integer"))
+'''%(make_c_internal_lut(internal_inv_integer_lut, "LUT_int_inv_integer"))
             f.write(lutc)
 

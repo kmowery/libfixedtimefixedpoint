@@ -259,14 +259,14 @@ uint64_t fixfrac(char* frac);
  * 1, overflow has occured. Make a mask... */
 #define MUL_CONST ((( 1ull << (FIX_INT_BITS+1) ) -1) << (FIX_POINT_BITS-1))
 
-#define FIX_MUL_64(op1, op2, overflow) \
+#define FIX_MUL_64_N(op1, op2, overflow, extra_bits) \
   ({ \
     uint64_t tmphigh; \
     uint64_t tmplow; \
     UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
-    uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, FIX_POINT_BITS); \
+    uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, extra_bits); \
     uint64_t tmp = tmplow2 + \
-                 ((tmphigh) << (64 - FIX_POINT_BITS)); \
+                 ((tmphigh) << (64 - extra_bits)); \
     /* inf only if overflow, and not a sign thing */ \
     overflow |= \
       !(((tmphigh & MUL_CONST) == MUL_CONST) \
@@ -274,7 +274,30 @@ uint64_t fixfrac(char* frac);
     tmp; \
    })
 
+#define FIX_MUL_64(op1, op2, overflow) \
+    FIX_MUL_64_N(op1, op2, overflow, FIX_POINT_BITS)
+
 #define FIX_MUL FIX_MUL_64
+
+
+/************************************************************************
+ *
+ * We're going to use an internal format for many of the apprixmations.
+ *
+ * We need to store signed numbers up to about 8, so for 64-bit builds let's use
+ * a Q4.60 fixed point.
+ *
+ ************************************************************************/
+
+#define FIX_INTERN_FRAC_BITS 60
+#define FIX_INTERN_INT_BITS 4
+
+typedef uint64_t fix_internal;
+
+#define FIX_MUL_INTERN(op1, op2, overflow) \
+    FIX_MUL_64_N(op1, op2, overflow, FIX_INTERN_FRAC_BITS)
+
+
 
 // Multiply two 2.28 bit fixed point numbers
 #define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
