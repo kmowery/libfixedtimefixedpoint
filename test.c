@@ -221,6 +221,7 @@ CONVERT_DBL(many     , 1000.4                  , FIXNUM(1000 , 4))       \
 CONVERT_DBL(many_neg , -1000.4                 , FIXNUM(-1000, 4))       \
 CONVERT_DBL(frac     , 0.5342                  , FIXNUM(0    , 5342))    \
 CONVERT_DBL(frac_neg , -0.5342                 , FIXNUM(-0   , 5342))    \
+CONVERT_DBL(underflow, 1e-60                   , FIX_ZERO)               \
 CONVERT_DBL(max      , (double) FIX_INT_MAX    , FIX_INF_POS)            \
 CONVERT_DBL(max_neg  , -((double) FIX_INT_MAX) , FIXNUM(-FIX_INT_MAX,0)) \
 CONVERT_DBL(inf_pos  , INFINITY                , FIX_INF_POS)            \
