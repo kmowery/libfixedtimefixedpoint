@@ -348,9 +348,9 @@ fixed fix_convert_from_double(double d) {
   int32_t shift = 52 - (FIX_FRAC_BITS) - exponent;
 
   fixed result = FIX_ALL_BIT_MASK & (
-      MASK_UNLESS(shift >= 2, ((ROUND_TO_EVEN(mantissa,shift)) << FIX_FLAG_BITS)) |
-      MASK_UNLESS(shift == 1, (ROUND_TO_EVEN_ONE_BIT(mantissa) << FIX_FLAG_BITS)) |
-      MASK_UNLESS(shift <= 0, (mantissa << (-shift + 2))));
+      MASK_UNLESS((shift >= 2) & (shift <  64), ((ROUND_TO_EVEN(mantissa,shift)) << FIX_FLAG_BITS)) |
+      MASK_UNLESS (shift == 1                 , (ROUND_TO_EVEN_ONE_BIT(mantissa) << FIX_FLAG_BITS)) |
+      MASK_UNLESS((shift <= 0) & (shift > -64), (mantissa << (-shift + 2))));
 
   /* If there are any integer bits that we shifted off into oblivion, the double
    * is outside our range. Generate INF... */
