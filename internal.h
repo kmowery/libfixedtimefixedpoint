@@ -262,7 +262,7 @@ uint64_t fixfrac(char* frac);
 /* We end up with FIX_INT_BITS of extra sign bit on the top of the multiplied
  * number, along with the sign bit that's already there. If they aren't all 0 or
  * 1, overflow has occured. Make a mask... */
-#define MUL_CONST ((( 1ull << (FIX_INT_BITS+1) ) -1) << (FIX_POINT_BITS-1))
+#define FIX_MUL_CONST ((( 1ull << (FIX_INT_BITS+1) ) -1) << (FIX_POINT_BITS-1))
 
 #define FIX_MUL_64_N(op1, op2, overflow, extra_bits) \
   ({ \
@@ -274,8 +274,26 @@ uint64_t fixfrac(char* frac);
                  ((tmphigh) << (64 - extra_bits)); \
     /* inf only if overflow, and not a sign thing */ \
     overflow |= \
-      !(((tmphigh & MUL_CONST) == MUL_CONST) \
-       | ((tmphigh & MUL_CONST) == 0)); \
+      !(((tmphigh & FIX_MUL_CONST) == FIX_MUL_CONST) \
+       | ((tmphigh & FIX_MUL_CONST) == 0)); \
+    tmp; \
+   })
+
+/* Sometimes we need to multiply numbers without reference to a fixed. Use this.
+ * Overflow is quite simple: are there any higher bits that we aren't giving
+ * you?
+ */
+#define MUL_64_N(op1, op2, overflow, extra_bits) \
+  ({ \
+    uint64_t tmphigh; \
+    uint64_t tmplow; \
+    UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
+    uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, extra_bits); \
+    uint64_t tmp = tmplow2 + \
+                 ((tmphigh) << (64 - extra_bits)); \
+    /* inf only if overflow, and not a sign thing */ \
+    overflow |= \
+      !!(tmphigh >> (extra_bits)); \
     tmp; \
    })
 
