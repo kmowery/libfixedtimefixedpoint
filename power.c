@@ -27,12 +27,11 @@ fixed fix_exp(fixed op1) {
       MASK_UNLESS(actuallog > FIX_INTERN_FRAC_BITS,
               SIGN_EX_SHIFT_RIGHT(op1, (actuallog - FIX_INTERN_FRAC_BITS)));
 #else
-      MASK_UNLESS(actuallog <= FIX_INTERN_FRAC_BITS,
-              op1 >> (FIX_POINT_BITS - FIX_INTERN_FRAC_BITS )) |
-      MASK_UNLESS(actuallog > FIX_INTERN_FRAC_BITS,
+      MASK_UNLESS(actuallog <= FIX_POINT_BITS,
+              SIGN_EX_SHIFT_RIGHT(op1, (FIX_POINT_BITS - FIX_INTERN_FRAC_BITS ))) |
+      MASK_UNLESS(actuallog > FIX_POINT_BITS,
               SIGN_EX_SHIFT_RIGHT(op1, (actuallog - FIX_INTERN_FRAC_BITS)));
 #endif
-
 
   /* Since we mapped the number down, we'll need to square the result later.
    * Note that we don't need to or/mask in 0. */
@@ -132,8 +131,6 @@ fixed fix_exp(fixed op1) {
   fix_internal e_x = 1ull << FIX_INTERN_FRAC_BITS;
   fix_internal term = 1ull << FIX_INTERN_FRAC_BITS;
   uint8_t overflow = 0;
-
-  printf("\n");
 
   for(int i = 1; i < FIX_EXP_LOOP; i ++) {
     term = FIX_MUL_INTERN(term, scratch, overflow);
