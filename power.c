@@ -221,6 +221,7 @@ fixed fix_exp(fixed op1) {
 
   // If we're shifted too far to the left, the result should be infinity
   // Check the sign bit as well.
+  isinfpos |= (shift < -63);
   isinfpos |= MASK_UNLESS(shift < 0, ((final_result & (~FIX_TOP_BIT_MASK)) >> (-shift)) != result);
   isinfpos |= !!(FIX_TOP_BIT(final_result));
 
