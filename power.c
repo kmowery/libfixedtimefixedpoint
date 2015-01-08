@@ -204,7 +204,7 @@ fixed fix_exp(fixed op1) {
   for(int i = 0; i < FIX_SQUARE_LOOP; i++) {
     inf = 0;
 
-    r2 = FIX_MUL_64_N(result, result, r2, 62);
+    r2 = FIX_MUL_64_N(result, result, inf, 62);
 
     result = MASK_UNLESS(squarings > 0, r2) |
              MASK_UNLESS(squarings == 0, result);
