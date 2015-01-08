@@ -19,12 +19,20 @@ fixed fix_exp(fixed op1) {
   /* If the number is < 2, then move it directly to the fix_internal format.
    * Otherwise, map it to (-2, 2) in fix_internal. */
   fix_internal scratch =
+#if FIX_INTERN_FRAC_BITS >= FIX_POINT_BITS
       MASK_UNLESS(actuallog <= FIX_POINT_BITS,
               op1 << (FIX_INTERN_FRAC_BITS - FIX_POINT_BITS)) |
       MASK_UNLESS(actuallog > FIX_POINT_BITS & actuallog <= FIX_INTERN_FRAC_BITS,
               op1 << (FIX_INTERN_FRAC_BITS - actuallog)) |
       MASK_UNLESS(actuallog > FIX_INTERN_FRAC_BITS,
               SIGN_EX_SHIFT_RIGHT(op1, (actuallog - FIX_INTERN_FRAC_BITS)));
+#else
+      MASK_UNLESS(actuallog <= FIX_INTERN_FRAC_BITS,
+              op1 >> (FIX_POINT_BITS - FIX_INTERN_FRAC_BITS )) |
+      MASK_UNLESS(actuallog > FIX_INTERN_FRAC_BITS,
+              SIGN_EX_SHIFT_RIGHT(op1, (actuallog - FIX_INTERN_FRAC_BITS)));
+#endif
+
 
   /* Since we mapped the number down, we'll need to square the result later.
    * Note that we don't need to or/mask in 0. */
@@ -193,23 +201,23 @@ fixed fix_exp(fixed op1) {
   fix_internal r2;
   int8_t frac_bits_remaining = FIX_INTERN_FRAC_BITS;
 
-  uint64_t tmplow;
-
   for(int i = 0; i < FIX_SQUARE_LOOP; i++) {
     inf = 0;
-    UNSAFE_MUL_64_64_128(result, result, tmplow, r2);
 
-    r2 += ROUND_TO_EVEN_ADDITION(r2 & 0x1, tmplow >> 63, tmplow & 0x7fffffffffffffff);
+    r2 = FIX_MUL_64_N(result, result, r2, 62);
 
     result = MASK_UNLESS(squarings > 0, r2) |
              MASK_UNLESS(squarings == 0, result);
-    frac_bits_remaining = frac_bits_remaining - MASK_UNLESS(squarings > 0, (64 - frac_bits_remaining));
+    frac_bits_remaining = frac_bits_remaining - MASK_UNLESS(squarings > 0, (62 - frac_bits_remaining));
     isinfpos |= MASK_UNLESS(squarings > 0, inf);
 
     squarings = MASK_UNLESS(squarings > 0, squarings-1);
   }
 
-  fixed final_result = ROUND_TO_EVEN(result, (frac_bits_remaining - FIX_POINT_BITS)+FIX_FLAG_BITS) << FIX_FLAG_BITS;
+  int8_t shift = frac_bits_remaining - FIX_POINT_BITS;
+  fixed final_result =
+      MASK_UNLESS(shift <  0, result << (-(shift))) |
+      MASK_UNLESS(shift >= 0, ROUND_TO_EVEN(result, (shift + FIX_FLAG_BITS)) << FIX_FLAG_BITS);
 
   // note that we want to return 0 if op1 is FIX_INF_NEG...
   return FIX_IF_NAN(isnan) |
