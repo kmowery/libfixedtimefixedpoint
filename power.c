@@ -67,54 +67,10 @@ fixed fix_exp(fixed op1) {
    *     -----   <   2 ^ (-FIX_FRAC_BITS)
    *      n !
    *
-   * By summing the log_2( x/n ), you can generate the following table:
+   * By summing the log_2( x/n ), you can pick a value for the internal
+   * representation:
    */
 
-//#if FIX_FRAC_BITS < 2
-//  #define FIX_EXP_LOOP 6
-//#elif FIX_FRAC_BITS < 4
-//  #define FIX_EXP_LOOP 7
-//#elif FIX_FRAC_BITS < 6
-//  #define FIX_EXP_LOOP 8
-//#elif FIX_FRAC_BITS < 8
-//  #define FIX_EXP_LOOP 9
-//#elif FIX_FRAC_BITS < 10
-//  #define FIX_EXP_LOOP 10
-//#elif FIX_FRAC_BITS < 13
-//  #define FIX_EXP_LOOP 11
-//#elif FIX_FRAC_BITS < 15
-//  #define FIX_EXP_LOOP 12
-//#elif FIX_FRAC_BITS < 18
-//  #define FIX_EXP_LOOP 13
-//#elif FIX_FRAC_BITS < 21
-//  #define FIX_EXP_LOOP 14
-//#elif FIX_FRAC_BITS < 24
-//  #define FIX_EXP_LOOP 15
-//#elif FIX_FRAC_BITS < 27
-//  #define FIX_EXP_LOOP 16
-//#elif FIX_FRAC_BITS < 30
-//  #define FIX_EXP_LOOP 17
-//#elif FIX_FRAC_BITS < 33
-//  #define FIX_EXP_LOOP 18
-//#elif FIX_FRAC_BITS < 36
-//  #define FIX_EXP_LOOP 19
-//#elif FIX_FRAC_BITS < 40
-//  #define FIX_EXP_LOOP 20
-//#elif FIX_FRAC_BITS < 43
-//  #define FIX_EXP_LOOP 21
-//#elif FIX_FRAC_BITS < 46
-//  #define FIX_EXP_LOOP 22
-//#elif FIX_FRAC_BITS < 50
-//  #define FIX_EXP_LOOP 23
-//#elif FIX_FRAC_BITS < 54
-//  #define FIX_EXP_LOOP 24
-//#elif FIX_FRAC_BITS < 57
-//  #define FIX_EXP_LOOP 25
-//#elif FIX_FRAC_BITS < 61
-//  #define FIX_EXP_LOOP 26
-//#else
-//#error Unknown number of FIX_FRAC_BITS in fix_exp
-//#endif
 #define FIX_EXP_LOOP 26
 
   /* To generate the preceding table:
@@ -194,6 +150,11 @@ fixed fix_exp(fixed op1) {
    * When we do this squaring, we want to keep all resulting integer bits and
    * crop off fractional bits. In 64-bit fixed, This is equivalent to keeping
    * the top 64 bits of the 128-bit multiplication result.
+   *
+   * I think we could improve accuracy slightly by computing the log_2 of
+   * result, and counting integer bits better. For example, we shouldn't end up
+   * with 16 integer bit if we're computing a fixed with 10 integer bits. For
+   * now, though, this works well enough.
    */
   fix_internal r2;
   int8_t frac_bits_remaining = FIX_INTERN_FRAC_BITS;
