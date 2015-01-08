@@ -713,29 +713,37 @@ TEST_HELPER(exp_##name, { \
 };)
 /* Make sure we get the top 20 bits of expected right */
 
-#define EXP_TESTS                                                                                           \
-EXP(zero      , FIX_ZERO          , FIXNUM(1,0))                                                            \
-EXP(half      , FIXNUM(0,5)       , FIXNUM(1,648721270700128146848650787814163571653776100710148011575079)) \
-EXP(half_neg  , FIXNUM(-0,5)      , FIXNUM(0,6065306597126334)) \
-EXP(one       , FIXNUM(1,0)       , FIXNUM(2,718281828459045235360287471352662497757247093699959574966967)) \
-EXP(one_neg   , FIXNUM(-1,0)      , FIXNUM(0,367879441171442321595523770161460867445811131031767834507836)) \
-EXP(one_25    , FIXNUM( 1,25)     , FIXNUM(3,490342957461841))                                              \
-EXP(one_25_neg, FIXNUM(-1,25)     , FIXNUM(0,2865047968601901))                                             \
-EXP(two       , FIXNUM(2,0)       , FIXNUM(7,389056098930650227230427460575007813180315570551847324087127)) \
-EXP(two_neg   , FIXNUM(-2,0)      , FIXNUM(0,135335283236612691893999494972484403407631545909575881468158)) \
-EXP(three75    , FIXNUM(3,75)     , FIXNUM(42,521082000062776)) \
-EXP(three75_neg, FIXNUM(-3,75)    , FIXNUM(0,023517745856009114)) \
-EXP(four      , FIXNUM(4,0)       , FIXNUM(54,59815003314423907811026120286087840279073703861406872582659)) \
-EXP(four_neg  , FIXNUM(-4,0)      , FIXNUM(0,018315638888734180293718021273241242211912067553475594769599)) \
-EXP(e         , FIX_E             , FIXNUM(15,15426224147926418976043027262991190552854853685613976914074)) \
-EXP(ten       , FIXNUM(10,0)      , FIXNUM(22026,46579480671651695790064528424436635351261855678107423542)) \
-EXP(ten_neg   , FIXNUM(-10,0)     , FIXNUM(0,000045399929762484851535591515560550610237918088866564969259)) \
-EXP(e_neg     , fix_neg(FIX_E)    , FIXNUM(0,065988035845312537076790187596846424938577048252796436402473)) \
-EXP(neg_many  , FIXNUM(-128,0)    , FIXNUM(0,000000000000000000000000000000000000000000000000000000000000)) \
-EXP(max       , FIX_MAX           , FIX_INF_POS)                                                            \
-EXP(inf       , FIX_INF_POS       , FIX_INF_POS)                                                            \
-EXP(inf_neg   , FIX_INF_NEG       , FIX_ZERO)                                                               \
-EXP(nan       , FIX_NAN           , FIX_NAN)                                                                \
+/* We need to do thexe dumb things with doubles, since when we have few
+ * fractional bits, e is no longer e, 1.25 is no longer 1.25, and everything breaks. */
+
+#define EXP_TESTS                                                                                              \
+EXP(zero      , FIX_ZERO          , FIXNUM(1,0))                                                               \
+EXP(half      , FIXNUM(0,5)       , FIXNUM(1,648721270700128146848650787814163571653776100710148011575079))    \
+EXP(half_neg  , FIXNUM(-0,5)      , FIXNUM(0,6065306597126334))                                                \
+EXP(one       , FIXNUM(1,0)       , FIXNUM(2,718281828459045235360287471352662497757247093699959574966967))    \
+EXP(one_neg   , FIXNUM(-1,0)      , FIXNUM(0,367879441171442321595523770161460867445811131031767834507836))    \
+EXP(one_25    , FIXNUM( 1,25)     , fix_convert_from_double( pow( M_E, fix_convert_to_double(FIXNUM(1,25)))))  \
+                                  /*FIXNUM(3,490342957461841))*/                                               \
+EXP(one_25_neg, FIXNUM(-1,25)     , fix_convert_from_double( pow( M_E, fix_convert_to_double(FIXNUM(-1,25))))) \
+                                  /*FIXNUM(0,2865047968601901))*/                                              \
+EXP(two       , FIXNUM(2,0)       , FIXNUM(7,389056098930650227230427460575007813180315570551847324087127))    \
+EXP(two_neg   , FIXNUM(-2,0)      , FIXNUM(0,135335283236612691893999494972484403407631545909575881468158))    \
+EXP(three75    , FIXNUM(3,75)     , fix_convert_from_double( pow( M_E, fix_convert_to_double(FIXNUM(3,75)))))  \
+                                  /*FIXNUM(42,521082000062776))*/                                              \
+EXP(three75_neg, FIXNUM(-3,75)    , fix_convert_from_double( pow( M_E, fix_convert_to_double(FIXNUM(-3,75))))) \
+                                  /*FIXNUM(0,023517745856009114))*/                                            \
+EXP(four      , FIXNUM(4,0)       , FIXNUM(54,59815003314423907811026120286087840279073703861406872582659))    \
+EXP(four_neg  , FIXNUM(-4,0)      , FIXNUM(0,018315638888734180293718021273241242211912067553475594769599))    \
+EXP(e         , FIX_E             , fix_convert_from_double( pow( M_E , fix_convert_to_double(FIX_E))))        \
+                                  /*FIXNUM(15,15426224147926418976043027262991190552854853685613976914074))*/  \
+EXP(ten       , FIXNUM(10,0)      , FIXNUM(22026,46579480671651695790064528424436635351261855678107423542))    \
+EXP(ten_neg   , FIXNUM(-10,0)     , FIXNUM(0,000045399929762484851535591515560550610237918088866564969259))    \
+EXP(e_neg     , fix_neg(FIX_E)    , FIXNUM(0,065988035845312537076790187596846424938577048252796436402473))    \
+EXP(neg_many  , FIXNUM(-128,0)    , FIXNUM(0,000000000000000000000000000000000000000000000000000000000000))    \
+EXP(max       , FIX_MAX           , FIX_INF_POS)                                                               \
+EXP(inf       , FIX_INF_POS       , FIX_INF_POS)                                                               \
+EXP(inf_neg   , FIX_INF_NEG       , FIX_ZERO)                                                                  \
+EXP(nan       , FIX_NAN           , FIX_NAN)                                                                   \
 EXP(regress   , FIXNUM(-1,3862915039), FIXNUM(0,25))
 EXP_TESTS
 
