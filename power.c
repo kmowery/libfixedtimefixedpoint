@@ -204,7 +204,7 @@ fixed fix_exp(fixed op1) {
   for(int i = 0; i < FIX_SQUARE_LOOP; i++) {
     inf = 0;
 
-    r2 = FIX_MUL_64_N(result, result, inf, 62);
+    r2 = MUL_64_N(result, result, inf, 62);
 
     result = MASK_UNLESS(squarings > 0, r2) |
              MASK_UNLESS(squarings == 0, result);
@@ -218,6 +218,10 @@ fixed fix_exp(fixed op1) {
   fixed final_result =
       MASK_UNLESS(shift <  0, result << (-(shift))) |
       MASK_UNLESS(shift >= 0, ROUND_TO_EVEN(result, (shift + FIX_FLAG_BITS)) << FIX_FLAG_BITS);
+
+  // If we're shifted too far to the left, the result should be infinity
+  // Check the sign bit as well.
+  isinfpos |= MASK_UNLESS(shift < 0, ((final_result & (~FIX_TOP_BIT_MASK)) >> (-shift)) != result);
 
   // note that we want to return 0 if op1 is FIX_INF_NEG...
   return FIX_IF_NAN(isnan) |
