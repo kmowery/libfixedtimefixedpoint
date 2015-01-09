@@ -420,9 +420,10 @@ fixed fix_sqrt(fixed op1) {
   // We don't need to worry about negative numbers here, since this is sqrt
   uint32_t log2 = fixed_log2(op1);
 
-  // Make a guess! Use log2(op1) if op1 > 1, otherwise just uhhhh mul op1 by 2.
+  // Make a guess! Use some constant times log2(op1) if op1 > 1, otherwise just uhhhh mul op1 by 2.
+  // Ensure that x is never zero by masking in a One.
   fixed one = FIXINT(1);
-  fixed x = MASK_UNLESS(op1 >= one, FIXINT(log2 - FIX_POINT_BITS + 1)) |
+  fixed x = MASK_UNLESS(op1 >= one, (~FIX_TOP_BIT_MASK) & (one | (FIX_INT_BITS * FIXINT(log2 - FIX_POINT_BITS + 1)))) |
             MASK_UNLESS(op1 <  one, op1 << 1);
 
   // We're going to do all math in fixed, but use the extra flag bits for
