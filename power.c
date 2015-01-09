@@ -398,6 +398,17 @@ fixed fix_sqrt(fixed op1) {
   // Each update cycle is then:
   //
   //     x' = x - f(x) / f'(x)
+  //
+  //               x^2 - op1
+  //     x' = x - -----------
+  //                   2x
+  //
+  // Optimizing for fixed bit precision:
+  //
+  //               x     1   op1
+  //     x' = x - --- + --- ----
+  //               2     2    x
+  //
 
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
   uint8_t isinfneg = 0;
@@ -405,46 +416,40 @@ fixed fix_sqrt(fixed op1) {
 
   // We need an initial guess. Let's use log_2(op1), since that's fairly quick
   // and easy, and not horribly wrong.
-  uint32_t scratch = op1;
-  uint32_t log2; // compute (int) log2(op1)  (as a uint32_t, not fixed)
-  uint32_t shift;
-
-  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
-  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
-  log2 |= (scratch >> 1);
-  //log2 is now log2(op1), considered as a uint32_t
+  //
+  // We don't need to worry about negative numbers here, since this is sqrt
+  uint32_t log2 = fixed_log2(op1);
 
   // Make a guess! Use log2(op1) if op1 > 1, otherwise just uhhhh mul op1 by 2.
-  int64_t x = MASK_UNLESS(op1 >= (((fixed) 1)<<(FIX_FRAC_BITS + FIX_FLAG_BITS)),
-                           FIXINT(log2 - (FIX_FLAG_BITS + FIX_FRAC_BITS))) |
-               MASK_UNLESS(op1 < (((fixed) 1)<<(FIX_FRAC_BITS + FIX_FLAG_BITS)),
-                           op1 << 1);
+  fixed one = FIXINT(1);
+  fixed x = MASK_UNLESS(op1 >= one, FIXINT(log2 - FIX_POINT_BITS + 1)) |
+            MASK_UNLESS(op1 <  one, op1 << 1);
 
+  // We're going to do all math in fixed, but use the extra flag bits for
+  // precision. We'll mask them off later...
 
-  // We're going to do all math in a 47.17 uint64_t
+  uint8_t overflow = 0;
 
-  uint64_t op1neg = FIX_SIGN_TO_64(fix_neg(op1));
+  for(int i = 0; i < 20; i++) {
+    printf("\n");
 
-  // we're going to use 15.17 fixed point numbers to do the calculation, and
-  // then mask off our flag bits later
-  for(int i = 0; i < 8; i++) {
-    int64_t x2 = (x * x) >> 17;
-    int64_t t = x2 + op1neg;
+    // Compute x/2
+    fixed x2 = ROUND_TO_EVEN_ONE_BIT(x);
 
-    x = x | (x==0); // don't divide by zero...
+    // Compute op1 / x
+    fixed op1x = fix_div_var(op1, x, &overflow);
+    fixed op1x2 = ROUND_TO_EVEN_ONE_BIT(op1x);
 
-    // t = t / f'(x) = t / 2x
-    t = ROUND_TO_EVEN((t<<22) / (x<<1), 5);
-
-    x = x - t;
+    x = x - x2 + op1x2;
   }
+
+  // Get rid of spare bits.
+  x = ROUND_TO_EVEN(x, FIX_FLAG_BITS) << FIX_FLAG_BITS;
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    FIX_DATA_BITS(x & 0xffffffff);
+    FIX_DATA_BITS(x);
 }
 
 /* fix_pow: Computes x^y.
