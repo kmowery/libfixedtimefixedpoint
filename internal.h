@@ -394,4 +394,6 @@ void cordic(uint32_t* Z, uint32_t* C, uint32_t* S);
 
 uint64_t fix_div_64(uint64_t x, uint64_t y, uint8_t* overflow);
 
+#define fix_div_var fix_div_64
+
 #endif
