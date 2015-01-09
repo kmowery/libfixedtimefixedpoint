@@ -23,6 +23,8 @@
   #define PRINT_TEST_inf                 " Inf                                                            " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                            " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                            " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(-1,0000000000000000000000000000000000000000000000000000000000000) // 0x8000000000000000
+  // Max was FIXNUM( 0.9999999999999999995663191310057982263970188796520233154296875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 1 */
 #if FIX_INT_BITS == 2
   #define PRINT_TEST_zero                " 0.000000000000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -47,6 +49,8 @@
   #define PRINT_TEST_inf                 " Inf                                                           " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                           " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                           " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM( 1,414213562373095050064830680014438257785513997077941894531250) // 0x5a827999fcef3248
+  // Max was FIXNUM( 1.999999999999999999132638262011596452794037759304046630859375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 2 */
 #if FIX_INT_BITS == 3
   #define PRINT_TEST_zero                " 0.00000000000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -71,6 +75,8 @@
   #define PRINT_TEST_inf                 " Inf                                                          " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                          " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                          " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM( 2,00000000000000000000000000000000000000000000000000000000000) // 0x4000000000000000
+  // Max was FIXNUM( 3.99999999999999999826527652402319290558807551860809326171875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 3 */
 #if FIX_INT_BITS == 4
   #define PRINT_TEST_zero                " 0.0000000000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -95,6 +101,8 @@
   #define PRINT_TEST_inf                 " Inf                                                         " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                         " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                         " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM( 2,8284271247461901001296613600288765155710279941558837890625) // 0x2d413cccfe779924
+  // Max was FIXNUM( 7.9999999999999999965305530480463858111761510372161865234375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 4 */
 #if FIX_INT_BITS == 5
   #define PRINT_TEST_zero                " 00.000000000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -119,6 +127,8 @@
   #define PRINT_TEST_inf                 " Inf                                                         " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                         " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                         " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(  4,000000000000000000000000000000000000000000000000000000000) // 0x2000000000000000
+  // Max was FIXNUM( 15.999999999999999993061106096092771622352302074432373046875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 5 */
 #if FIX_INT_BITS == 6
   #define PRINT_TEST_zero                " 00.00000000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -143,6 +153,8 @@
   #define PRINT_TEST_inf                 " Inf                                                        " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                        " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                        " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(  5,65685424949238019332042881615052465349435806274414062500) // 0x16a09e667f3bcc90
+  // Max was FIXNUM( 31.99999999999999998612221219218554324470460414886474609375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 6 */
 #if FIX_INT_BITS == 7
   #define PRINT_TEST_zero                " 00.0000000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -167,6 +179,8 @@
   #define PRINT_TEST_inf                 " Inf                                                       " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                       " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                       " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(  8,0000000000000000000000000000000000000000000000000000000) // 0x1000000000000000
+  // Max was FIXNUM( 63.9999999999999999722444243843710864894092082977294921875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 7 */
 #if FIX_INT_BITS == 8
   #define PRINT_TEST_zero                " 000.000000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -191,6 +205,8 @@
   #define PRINT_TEST_inf                 " Inf                                                       " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                       " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                       " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(  11,313708498984760386640857632301049306988716125488281250) // 0x0b504f333f9de648
+  // Max was FIXNUM( 127.999999999999999944488848768742172978818416595458984375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 8 */
 #if FIX_INT_BITS == 9
   #define PRINT_TEST_zero                " 000.00000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -215,6 +231,8 @@
   #define PRINT_TEST_inf                 " Inf                                                      " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                      " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                      " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(  16,00000000000000000000000000000000000000000000000000000) // 0x0800000000000000
+  // Max was FIXNUM( 255.99999999999999988897769753748434595763683319091796875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 9 */
 #if FIX_INT_BITS == 10
   #define PRINT_TEST_zero                " 000.0000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -239,6 +257,8 @@
   #define PRINT_TEST_inf                 " Inf                                                     " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                     " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                     " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(  22,6274169979695207732817152646020986139774322509765625) // 0x05a827999fcef324
+  // Max was FIXNUM( 511.9999999999999997779553950749686919152736663818359375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 10 */
 #if FIX_INT_BITS == 11
   #define PRINT_TEST_zero                " 0000.000000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -263,6 +283,8 @@
   #define PRINT_TEST_inf                 " Inf                                                     " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                     " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                     " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(   32,000000000000000000000000000000000000000000000000000) // 0x0400000000000000
+  // Max was FIXNUM( 1023.999999999999999555910790149937383830547332763671875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 11 */
 #if FIX_INT_BITS == 12
   #define PRINT_TEST_zero                " 0000.00000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -287,6 +309,8 @@
   #define PRINT_TEST_inf                 " Inf                                                    " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                    " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                    " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(   45,25483399593904110247422067914158105850219726562500) // 0x02d413cccfe77990
+  // Max was FIXNUM( 2047.99999999999999911182158029987476766109466552734375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 12 */
 #if FIX_INT_BITS == 13
   #define PRINT_TEST_zero                " 0000.0000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -311,6 +335,8 @@
   #define PRINT_TEST_inf                 " Inf                                                   " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                   " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                   " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(   64,0000000000000000000000000000000000000000000000000) // 0x0200000000000000
+  // Max was FIXNUM( 4095.9999999999999982236431605997495353221893310546875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 13 */
 #if FIX_INT_BITS == 14
   #define PRINT_TEST_zero                " 0000.000000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -335,6 +361,8 @@
   #define PRINT_TEST_inf                 " Inf                                                  " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                  " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                  " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(   90,509667991878082204948441358283162117004394531250) // 0x016a09e667f3bcc8
+  // Max was FIXNUM( 8191.999999999999996447286321199499070644378662109375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 14 */
 #if FIX_INT_BITS == 15
   #define PRINT_TEST_zero                " 00000.00000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -359,6 +387,8 @@
   #define PRINT_TEST_inf                 " Inf                                                  " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                  " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                  " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(   128,00000000000000000000000000000000000000000000000) // 0x0100000000000000
+  // Max was FIXNUM( 16383.99999999999999289457264239899814128875732421875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 15 */
 #if FIX_INT_BITS == 16
   #define PRINT_TEST_zero                " 00000.0000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -383,6 +413,8 @@
   #define PRINT_TEST_inf                 " Inf                                                 " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                 " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                 " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(   181,0193359837561644098968827165663242340087890625) // 0x00b504f333f9de64
+  // Max was FIXNUM( 32767.9999999999999857891452847979962825775146484375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 16 */
 #if FIX_INT_BITS == 17
   #define PRINT_TEST_zero                " 00000.000000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -407,6 +439,8 @@
   #define PRINT_TEST_inf                 " Inf                                                " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(   256,000000000000000000000000000000000000000000000) // 0x0080000000000000
+  // Max was FIXNUM( 65535.999999999999971578290569595992565155029296875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 17 */
 #if FIX_INT_BITS == 18
   #define PRINT_TEST_zero                " 000000.00000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -431,6 +465,8 @@
   #define PRINT_TEST_inf                 " Inf                                                " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                                " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                                " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(    362,03867196751230039808433502912521362304687500) // 0x005a827999fcef30
+  // Max was FIXNUM( 131071.99999999999994315658113919198513031005859375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 18 */
 #if FIX_INT_BITS == 19
   #define PRINT_TEST_zero                " 000000.0000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -455,6 +491,8 @@
   #define PRINT_TEST_inf                 " Inf                                               " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                               " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                               " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(    512,0000000000000000000000000000000000000000000) // 0x0040000000000000
+  // Max was FIXNUM( 262143.9999999999998863131622783839702606201171875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 19 */
 #if FIX_INT_BITS == 20
   #define PRINT_TEST_zero                " 000000.000000000000000000000000000000000000000000" // 0x0000000000000000
@@ -479,6 +517,8 @@
   #define PRINT_TEST_inf                 " Inf                                              " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                              " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                              " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(    724,077343935024600796168670058250427246093750) // 0x002d413cccfe7798
+  // Max was FIXNUM( 524287.999999999999772626324556767940521240234375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 20 */
 #if FIX_INT_BITS == 21
   #define PRINT_TEST_zero                " 0000000.00000000000000000000000000000000000000000" // 0x0000000000000000
@@ -503,6 +543,8 @@
   #define PRINT_TEST_inf                 " Inf                                              " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                              " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                              " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(    1024,00000000000000000000000000000000000000000) // 0x0020000000000000
+  // Max was FIXNUM( 1048575.99999999999954525264911353588104248046875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 21 */
 #if FIX_INT_BITS == 22
   #define PRINT_TEST_zero                " 0000000.0000000000000000000000000000000000000000" // 0x0000000000000000
@@ -527,6 +569,8 @@
   #define PRINT_TEST_inf                 " Inf                                             " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                             " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                             " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(    1448,1546878700492015923373401165008544921875) // 0x0016a09e667f3bcc
+  // Max was FIXNUM( 2097151.9999999999990905052982270717620849609375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 22 */
 #if FIX_INT_BITS == 23
   #define PRINT_TEST_zero                " 0000000.000000000000000000000000000000000000000" // 0x0000000000000000
@@ -551,6 +595,8 @@
   #define PRINT_TEST_inf                 " Inf                                            " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                            " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                            " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(    2048,000000000000000000000000000000000000000) // 0x0010000000000000
+  // Max was FIXNUM( 4194303.999999999998181010596454143524169921875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 23 */
 #if FIX_INT_BITS == 24
   #define PRINT_TEST_zero                " 0000000.00000000000000000000000000000000000000" // 0x0000000000000000
@@ -575,6 +621,8 @@
   #define PRINT_TEST_inf                 " Inf                                           " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                           " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                           " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(    2896,30937574009658419527113437652587890625) // 0x000b504f333f9de4
+  // Max was FIXNUM( 8388607.99999999999636202119290828704833984375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 24 */
 #if FIX_INT_BITS == 25
   #define PRINT_TEST_zero                " 00000000.0000000000000000000000000000000000000" // 0x0000000000000000
@@ -599,6 +647,8 @@
   #define PRINT_TEST_inf                 " Inf                                           " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                           " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                           " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(     4096,0000000000000000000000000000000000000) // 0x0008000000000000
+  // Max was FIXNUM( 16777215.9999999999927240423858165740966796875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 25 */
 #if FIX_INT_BITS == 26
   #define PRINT_TEST_zero                " 00000000.000000000000000000000000000000000000" // 0x0000000000000000
@@ -623,6 +673,8 @@
   #define PRINT_TEST_inf                 " Inf                                          " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                          " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                          " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(     5792,618751480200444348156452178955078125) // 0x0005a827999fcef4
+  // Max was FIXNUM( 33554431.999999999985448084771633148193359375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 26 */
 #if FIX_INT_BITS == 27
   #define PRINT_TEST_zero                " 00000000.00000000000000000000000000000000000" // 0x0000000000000000
@@ -647,6 +699,8 @@
   #define PRINT_TEST_inf                 " Inf                                         " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                         " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                         " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(     8192,00000000000000000000000000000000000) // 0x0004000000000000
+  // Max was FIXNUM( 67108863.99999999997089616954326629638671875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 27 */
 #if FIX_INT_BITS == 28
   #define PRINT_TEST_zero                " 000000000.0000000000000000000000000000000000" // 0x0000000000000000
@@ -671,6 +725,8 @@
   #define PRINT_TEST_inf                 " Inf                                         " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                         " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                         " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(     11585,2375029603717848658561706542968750) // 0x0002d413cccfe778
+  // Max was FIXNUM( 134217727.9999999999417923390865325927734375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 28 */
 #if FIX_INT_BITS == 29
   #define PRINT_TEST_zero                " 000000000.000000000000000000000000000000000" // 0x0000000000000000
@@ -695,6 +751,8 @@
   #define PRINT_TEST_inf                 " Inf                                        " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                        " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                        " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(     16384,000000000000000000000000000000000) // 0x0002000000000000
+  // Max was FIXNUM( 268435455.999999999883584678173065185546875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 29 */
 #if FIX_INT_BITS == 30
   #define PRINT_TEST_zero                " 000000000.00000000000000000000000000000000" // 0x0000000000000000
@@ -719,6 +777,8 @@
   #define PRINT_TEST_inf                 " Inf                                       " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                       " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                       " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(     23170,47500592074356973171234130859375) // 0x00016a09e667f3bc
+  // Max was FIXNUM( 536870911.99999999976716935634613037109375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 30 */
 #if FIX_INT_BITS == 31
   #define PRINT_TEST_zero                " 0000000000.0000000000000000000000000000000" // 0x0000000000000000
@@ -743,6 +803,8 @@
   #define PRINT_TEST_inf                 " Inf                                       " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                       " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                       " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(      32768,0000000000000000000000000000000) // 0x0001000000000000
+  // Max was FIXNUM( 1073741823.9999999995343387126922607421875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 31 */
 #if FIX_INT_BITS == 32
   #define PRINT_TEST_zero                " 0000000000.000000000000000000000000000000" // 0x0000000000000000
@@ -767,6 +829,8 @@
   #define PRINT_TEST_inf                 " Inf                                      " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                      " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                      " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(      46340,950011841021478176116943359375) // 0x0000b504f333f9dc
+  // Max was FIXNUM( 2147483647.999999999068677425384521484375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 32 */
 #if FIX_INT_BITS == 33
   #define PRINT_TEST_zero                " 0000000000.00000000000000000000000000000" // 0x0000000000000000
@@ -791,6 +855,8 @@
   #define PRINT_TEST_inf                 " Inf                                     " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                     " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                     " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(      65536,00000000000000000000000000000) // 0x0000800000000000
+  // Max was FIXNUM( 4294967295.99999999813735485076904296875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 33 */
 #if FIX_INT_BITS == 34
   #define PRINT_TEST_zero                " 0000000000.0000000000000000000000000000" // 0x0000000000000000
@@ -815,6 +881,8 @@
   #define PRINT_TEST_inf                 " Inf                                    " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                    " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                    " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(      92681,9000236839056015014648437500) // 0x00005a827999fcf0
+  // Max was FIXNUM( 8589934591.9999999962747097015380859375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 34 */
 #if FIX_INT_BITS == 35
   #define PRINT_TEST_zero                " 00000000000.000000000000000000000000000" // 0x0000000000000000
@@ -839,6 +907,8 @@
   #define PRINT_TEST_inf                 " Inf                                    " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                    " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                    " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(      131072,000000000000000000000000000) // 0x0000400000000000
+  // Max was FIXNUM( 17179869183.999999992549419403076171875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 35 */
 #if FIX_INT_BITS == 36
   #define PRINT_TEST_zero                " 00000000000.00000000000000000000000000" // 0x0000000000000000
@@ -863,6 +933,8 @@
   #define PRINT_TEST_inf                 " Inf                                   " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                   " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                   " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(      185363,80004736781120300292968750) // 0x00002d413cccfe78
+  // Max was FIXNUM( 34359738367.99999998509883880615234375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 36 */
 #if FIX_INT_BITS == 37
   #define PRINT_TEST_zero                " 00000000000.0000000000000000000000000" // 0x0000000000000000
@@ -887,6 +959,8 @@
   #define PRINT_TEST_inf                 " Inf                                  " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                  " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                  " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(      262144,0000000000000000000000000) // 0x0000200000000000
+  // Max was FIXNUM( 68719476735.9999999701976776123046875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 37 */
 #if FIX_INT_BITS == 38
   #define PRINT_TEST_zero                " 000000000000.000000000000000000000000" // 0x0000000000000000
@@ -911,6 +985,8 @@
   #define PRINT_TEST_inf                 " Inf                                  " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                  " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                  " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(       370727,600094735622406005859375) // 0x000016a09e667f3c
+  // Max was FIXNUM( 137438953471.999999940395355224609375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 38 */
 #if FIX_INT_BITS == 39
   #define PRINT_TEST_zero                " 000000000000.00000000000000000000000" // 0x0000000000000000
@@ -935,6 +1011,8 @@
   #define PRINT_TEST_inf                 " Inf                                 " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                 " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                 " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(       524288,00000000000000000000000) // 0x0000100000000000
+  // Max was FIXNUM( 274877906943.99999988079071044921875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 39 */
 #if FIX_INT_BITS == 40
   #define PRINT_TEST_zero                " 000000000000.0000000000000000000000" // 0x0000000000000000
@@ -959,6 +1037,8 @@
   #define PRINT_TEST_inf                 " Inf                                " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(       741455,2001893520355224609375) // 0x00000b504f333f9c
+  // Max was FIXNUM( 549755813887.9999997615814208984375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 40 */
 #if FIX_INT_BITS == 41
   #define PRINT_TEST_zero                " 0000000000000.000000000000000000000" // 0x0000000000000000
@@ -983,6 +1063,8 @@
   #define PRINT_TEST_inf                 " Inf                                " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                                " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                                " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(       1048576,000000000000000000000) // 0x0000080000000000
+  // Max was FIXNUM( 1099511627775.999999523162841796875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 41 */
 #if FIX_INT_BITS == 42
   #define PRINT_TEST_zero                " 0000000000000.00000000000000000000" // 0x0000000000000000
@@ -1007,6 +1089,8 @@
   #define PRINT_TEST_inf                 " Inf                               " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                               " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                               " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(       1482910,40037918090820312500) // 0x000005a827999fd0
+  // Max was FIXNUM( 2199023255551.99999904632568359375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 42 */
 #if FIX_INT_BITS == 43
   #define PRINT_TEST_zero                " 0000000000000.0000000000000000000" // 0x0000000000000000
@@ -1031,6 +1115,8 @@
   #define PRINT_TEST_inf                 " Inf                              " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                              " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                              " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(       2097152,0031795501708984375) // 0x0000040000001a0c
+  // Max was FIXNUM( 4398046511103.9999980926513671875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 43 */
 #if FIX_INT_BITS == 44
   #define PRINT_TEST_zero                " 0000000000000.000000000000000000" // 0x0000000000000000
@@ -1055,6 +1141,8 @@
   #define PRINT_TEST_inf                 " Inf                             " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                             " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                             " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(       2965822,282199859619140625) // 0x000002d413e483e4
+  // Max was FIXNUM( 8796093022207.999996185302734375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 44 */
 #if FIX_INT_BITS == 45
   #define PRINT_TEST_zero                " 00000000000000.00000000000000000" // 0x0000000000000000
@@ -1079,6 +1167,8 @@
   #define PRINT_TEST_inf                 " Inf                             " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                             " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                             " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        4194444,10636138916015625) // 0x000002000460d9d4
+  // Max was FIXNUM( 17592186044415.99999237060546875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 45 */
 #if FIX_INT_BITS == 46
   #define PRINT_TEST_zero                " 00000000000000.0000000000000000" // 0x0000000000000000
@@ -1103,6 +1193,8 @@
   #define PRINT_TEST_inf                 " Inf                            " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                            " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                            " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        5935806,1304016113281250) // 0x0000016a4af88588
+  // Max was FIXNUM( 35184372088831.9999847412109375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 46 */
 #if FIX_INT_BITS == 47
   #define PRINT_TEST_zero                " 00000000000000.000000000000000" // 0x0000000000000000
@@ -1127,6 +1219,8 @@
   #define PRINT_TEST_inf                 " Inf                           " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                           " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                           " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        8442176,698333740234375) // 0x00000101a281658c
+  // Max was FIXNUM( 70368744177663.999969482421875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 47 */
 #if FIX_INT_BITS == 48
   #define PRINT_TEST_zero                " 000000000000000.00000000000000" // 0x0000000000000000
@@ -1151,6 +1245,8 @@
   #define PRINT_TEST_inf                 " Inf                           " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                           " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                           " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        12241671,28436279296875) // 0x000000bacb0748cc
+  // Max was FIXNUM( 140737488355327.99993896484375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 48 */
 #if FIX_INT_BITS == 49
   #define PRINT_TEST_zero                " 000000000000000.0000000000000" // 0x0000000000000000
@@ -1175,6 +1271,8 @@
   #define PRINT_TEST_inf                 " Inf                          " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                          " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                          " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        18535323,8349609375000) // 0x0000008d69cdeae0
+  // Max was FIXNUM( 281474976710655.9998779296875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 49 */
 #if FIX_INT_BITS == 50
   #define PRINT_TEST_zero                " 000000000000000.000000000000" // 0x0000000000000000
@@ -1199,6 +1297,8 @@
   #define PRINT_TEST_inf                 " Inf                         " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                         " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                         " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        29874072,389648437500) // 0x00000071f5e618f0
+  // Max was FIXNUM( 562949953421311.999755859375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 50 */
 #if FIX_INT_BITS == 51
   #define PRINT_TEST_zero                " 0000000000000000.00000000000" // 0x0000000000000000
@@ -1223,6 +1323,8 @@
   #define PRINT_TEST_inf                 " Inf                         " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                         " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                         " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(         51351730,49902343750) // 0x00000061f2164ff8
+  // Max was FIXNUM( 1125899906842623.99951171875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 51 */
 #if FIX_INT_BITS == 52
   #define PRINT_TEST_zero                " 0000000000000000.0000000000" // 0x0000000000000000
@@ -1247,6 +1349,8 @@
   #define PRINT_TEST_inf                 " Inf                        " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                        " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                        " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(         92944811,1005859375) // 0x00000058a39ab19c
+  // Max was FIXNUM( 2251799813685247.9990234375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 52 */
 #if FIX_INT_BITS == 53
   #define PRINT_TEST_zero                " 0000000000000000.000000000" // 0x0000000000000000
@@ -1271,6 +1375,8 @@
   #define PRINT_TEST_inf                 " Inf                       " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                       " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                       " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        174180266,699218750) // 0x000000530e3d5598
+  // Max was FIXNUM( 4503599627370495.998046875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 53 */
 #if FIX_INT_BITS == 54
   #define PRINT_TEST_zero                " 0000000000000000.00000000" // 0x0000000000000000
@@ -1295,6 +1401,8 @@
   #define PRINT_TEST_inf                 " Inf                      " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                      " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                      " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        333358390,94921875) // 0x0000004f7a94dbcc
+  // Max was FIXNUM( 9007199254740991.99609375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 54 */
 #if FIX_INT_BITS == 55
   #define PRINT_TEST_zero                " 00000000000000000.0000000" // 0x0000000000000000
@@ -1319,6 +1427,8 @@
   #define PRINT_TEST_inf                 " Inf                      " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                      " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                      " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(         645700759,7578125) // 0x0000004cf9392f84
+  // Max was FIXNUM( 18014398509481983.9921875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 55 */
 #if FIX_INT_BITS == 56
   #define PRINT_TEST_zero                " 00000000000000000.000000" // 0x0000000000000000
@@ -1343,6 +1453,8 @@
   #define PRINT_TEST_inf                 " Inf                     " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                     " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                     " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        1259042221,781250) // 0x0000004b0b75adc8
+  // Max was FIXNUM( 36028797018963967.984375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 56 */
 #if FIX_INT_BITS == 57
   #define PRINT_TEST_zero                " 00000000000000000.00000" // 0x0000000000000000
@@ -1367,6 +1479,8 @@
   #define PRINT_TEST_inf                 " Inf                    " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                    " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                    " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        2464045939,34375) // 0x000000496f2db9ac
+  // Max was FIXNUM( 72057594037927935.96875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 57 */
 #if FIX_INT_BITS == 58
   #define PRINT_TEST_zero                " 000000000000000000.0000" // 0x0000000000000000
@@ -1391,6 +1505,8 @@
   #define PRINT_TEST_inf                 " Inf                    " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                    " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                    " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(         4832376779,0625) // 0x00000048020df2c4
+  // Max was FIXNUM( 144115188075855871.9375) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 58 */
 #if FIX_INT_BITS == 59
   #define PRINT_TEST_zero                " 000000000000000000.000" // 0x0000000000000000
@@ -1415,6 +1531,8 @@
   #define PRINT_TEST_inf                 " Inf                   " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                   " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                   " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(         9488682582,750) // 0x00000046b239cad8
+  // Max was FIXNUM( 288230376151711743.875) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 59 */
 #if FIX_INT_BITS == 60
   #define PRINT_TEST_zero                " 000000000000000000.00" // 0x0000000000000000
@@ -1439,6 +1557,8 @@
   #define PRINT_TEST_inf                 " Inf                  " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                  " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                  " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(        18646100157,75) // 0x00000045764e8bdc
+  // Max was FIXNUM( 576460752303423487.75) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 60 */
 #if FIX_INT_BITS == 61
   #define PRINT_TEST_zero                " 0000000000000000000.0" // 0x0000000000000000
@@ -1463,6 +1583,8 @@
   #define PRINT_TEST_inf                 " Inf                  " // 0x0000000000000002
   #define PRINT_TEST_inf_neg             "-Inf                  " // 0x0000000000000003
   #define PRINT_TEST_nan                 " NaN                  " // 0x0000000000000001
+  #define SQRT_MAX_FIXED                 FIXNUM(         36660872752,5) // 0x0000004449443184
+  // Max was FIXNUM( 1152921504606846975.5) // 0x7ffffffffffffffc
 #endif /* FIX_INT_BITS == 61 */
 
 #endif

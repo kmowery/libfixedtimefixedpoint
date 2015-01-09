@@ -11,6 +11,7 @@
 #include <math.h>
 
 #include "ftfp.h"
+#include "test_print_results.h"
 
 static void null_test_success(void **state) {
   //(void) state;
@@ -766,25 +767,40 @@ TEST_HELPER(sqrt_##name, { \
   fixed fsqrt = fix_sqrt(o1); \
   fixed expected = result; \
   fixed square = fix_mul(fsqrt, fsqrt); \
-  if(!FIX_IS_NAN(expected)) { \
+  if(!FIX_EQ_NAN(fsqrt, expected)) { \
+    /* compute the square error bars using doubles. If the square root is within
+     * an Epsilon of the the real square root, the squared square root will be
+     * how far from the original number?
+     *
+     * Because doubles are dumb, check that there's enough bits...
+     * */ \
+    double dsqrt = fix_convert_to_double(expected); \
+    double eps = fix_convert_to_double(FIX_EPSILON); \
+    if(fixed_log2(expected) > 53) { \
+      /* adding epsilon to expected as a double won't do anything; make epsilon
+       * larger */ \
+      eps = fix_convert_to_double(FIX_DATA_BITS(expected >> 52)); \
+    }  \
+    double squarederror = ((dsqrt+eps)*(dsqrt+eps)) - (dsqrt * dsqrt); \
+    fixed errorbar = fix_convert_from_double(squarederror); \
     CHECK_DIFFERENCE(#name " sqrt",   fsqrt,  expected, 0x80); \
-    CHECK_DIFFERENCE(#name " square", square, op1,      FIX_EPSILON); \
+    CHECK_DIFFERENCE(#name " square", square, op1,      errorbar); \
   } else { \
     CHECK_EQ_NAN(#name, fsqrt, expected); \
   } \
 };)
 
-#define SQRT_TESTS                                                                               \
-SQRT(zero   , FIX_ZERO          , FIXNUM(0,0))                                                   \
-SQRT(half   , FIXNUM(0,5)       , FIXNUM(0,7071067811865476))                                    \
-SQRT(one    , FIXNUM(1,0)       , FIXNUM(1,0))                                                   \
-SQRT(two    , FIXNUM(2,0)       , FIXNUM(1,4142135623730951))                                    \
-SQRT(e      , FIX_E             , FIXNUM(1,6487212707001282))                                    \
-SQRT(ten    , FIXNUM(10,0)      , FIX_INT_BITS > 5  ? FIXNUM(3,1622776601683795) : FIX_INF_POS)  \
-SQRT(big    , FIXNUM(10000,5345), FIX_INT_BITS > 13 ? FIXNUM(100,00267246428967) : FIX_INF_POS)  \
-SQRT(max    , FIX_MAX           , fix_convert_from_double(sqrt(fix_convert_to_double(FIX_MAX)))) \
-SQRT(inf    , FIX_INF_POS       , FIX_INF_POS)                                                   \
-SQRT(neg    , FIXNUM(-1,0)      , FIX_NAN)                                                       \
+#define SQRT_TESTS                                                                              \
+SQRT(zero   , FIX_ZERO          , FIXNUM(0,0))                                                  \
+SQRT(half   , FIXNUM(0,5)       , FIXNUM(0,7071067811865476))                                   \
+SQRT(one    , FIXNUM(1,0)       , FIXNUM(1,0))                                                  \
+SQRT(two    , FIXNUM(2,0)       , FIXNUM(1,4142135623730951))                                   \
+SQRT(e      , FIX_E             , FIXNUM(1,6487212707001282))                                   \
+SQRT(ten    , FIXNUM(10,0)      , FIX_INT_BITS > 5  ? FIXNUM(3,1622776601683795) : FIX_INF_POS) \
+SQRT(big    , FIXNUM(10000,5345), FIX_INT_BITS > 14 ? FIXNUM(100,00267246428967) : FIX_INF_POS) \
+SQRT(max    , FIX_MAX           , SQRT_MAX_FIXED)                                               \
+SQRT(inf    , FIX_INF_POS       , FIX_INF_POS)                                                  \
+SQRT(neg    , FIXNUM(-1,0)      , FIX_NAN)                                                      \
 SQRT(nan    , FIX_NAN           , FIX_NAN)
 SQRT_TESTS
 
@@ -944,8 +960,6 @@ TEST_HELPER(print_##name, { \
   assert_memory_equal(buf, expected, 23); \
 };)
 
-
-#include "test_print_results.h"
 
 #define PRINT_TESTS                                                     \
 PRINT(zero        , FIX_ZERO                  , PRINT_TEST_zero       ) \

@@ -62,6 +62,29 @@ PRINT(inf_neg     , FIX_INF_NEG               )  \
 PRINT(nan         , FIX_NAN                   )
 PRINT_TESTS
 
+#define SQRT(name, op1, result) \
+TEST_HELPER(sqrt_##name, { \
+  fixed o1 = op1; \
+  fixed fsqrt = fix_sqrt(o1); \
+  char buf[FIX_PRINT_BUFFER_SIZE]; \
+  fix_print(buf, fsqrt); \
+  /* replace . with , */ \
+  char* dot = strstr(buf, "."); \
+  *dot = ','; \
+  char* leadingzeroes = strstr(buf, " 0"); \
+  if(leadingzeroes != NULL) { \
+    for( leadingzeroes++; *leadingzeroes == '0'; leadingzeroes++ ) { \
+      *leadingzeroes = ' '; \
+    } \
+  } \
+  fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX"\n", "SQRT_MAX_FIXED", buf, fsqrt); \
+  fix_print(buf, op1); \
+  fprintf(fd, "  // Max was FIXNUM(%s) // 0x"FIX_PRINTF_HEX"\n", buf, op1); \
+};)
+#define SQRT_TESTS \
+SQRT(max    , FIX_MAX           , fix_convert_from_double(sqrt(fix_convert_to_double(FIX_MAX))))
+SQRT_TESTS
+
 #undef TEST_HELPER
 #define TEST_HELPER(name, code) unit_test(name),
 
@@ -69,12 +92,13 @@ int main(int argc, char** argv) {
 
   const UnitTest tests[] = {
     PRINT_TESTS
+    SQRT_TESTS
   };
 
   char filename [40];
   sprintf((char*) filename, "test_print_results.h"); \
 
-  fd = fopen(filename, "rw");
+  fd = fopen(filename, "a+");
 
   fprintf(fd, "#if FIX_INT_BITS == %d\n", FIX_INT_BITS);
 
