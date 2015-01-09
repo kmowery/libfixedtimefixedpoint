@@ -430,7 +430,7 @@ fixed fix_sqrt(fixed op1) {
 
   uint8_t overflow = 0;
 
-  for(int i = 0; i < 20; i++) {
+  for(int i = 0; i < 19; i++) {
     printf("\n");
 
     // Compute x/2

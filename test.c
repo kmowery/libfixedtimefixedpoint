@@ -43,7 +43,7 @@ static void null_test_success(void **state) {
     CHECK_CONDITION(error_msg, value == expected, fixed1, fixed2)
 
 #define CHECK_DIFFERENCE(error_msg, value, expected, bound) \
-    CHECK_CONDITION(error_msg, (fix_eq_nan(value, expected) | (fix_abs(fix_sub(value, expected)) <= bound)), value, expected)
+    CHECK_CONDITION(error_msg, (fix_eq_nan(value, expected) | (fix_abs(fix_sub(value, expected)) <= (bound))), value, expected)
 
 #define CHECK_INT_EQUAL(error_msg, var1, var2) \
   if( !(var1 == var2) ) { \
@@ -756,25 +756,35 @@ EXP_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
 
+// Sometimes we compute results with doubles, and those results can be wrong due
+// to double's 53-bit precision. Set a pretty high difference when comparing the
+// sqrt results, but re-check by computing the square of the sqrt.
+
 #define SQRT(name, op1, result) \
 TEST_HELPER(sqrt_##name, { \
   fixed o1 = op1; \
-  fixed sqrt = fix_sqrt(o1); \
+  fixed fsqrt = fix_sqrt(o1); \
   fixed expected = result; \
-  CHECK_EQ_NAN(#name, sqrt, expected); \
+  fixed square = fix_mul(fsqrt, fsqrt); \
+  if(!FIX_IS_NAN(expected)) { \
+    CHECK_DIFFERENCE(#name " sqrt",   fsqrt,  expected, 0x80); \
+    CHECK_DIFFERENCE(#name " square", square, op1,      FIX_EPSILON); \
+  } else { \
+    CHECK_EQ_NAN(#name, fsqrt, expected); \
+  } \
 };)
 
-#define SQRT_TESTS \
-SQRT(zero   , 0x0               , FIXNUM(0,0))  \
-SQRT(half   , FIXNUM(0,5)       , FIXNUM(0,707092))  \
-SQRT(one    , FIXNUM(1,0)       , FIXNUM(1,0))  \
-SQRT(two    , FIXNUM(2,0)       , FIXNUM(1,414215))  \
-SQRT(e      , FIX_E             , FIXNUM(1,648712) )  \
-SQRT(ten    , FIXNUM(10,0)      , FIXNUM(3,162262) )  /* not precisely sqrt(10) but so close  */ \
-SQRT(big    , FIXNUM(10000,5345), FIXNUM(100,002655) )  \
-SQRT(max    , FIX_MAX           , FIXNUM(128,0) )  \
-SQRT(inf    , FIX_INF_POS       , FIX_INF_POS)  \
-SQRT(neg    , FIXNUM(-1,0)      , FIX_NAN)  \
+#define SQRT_TESTS                                                                               \
+SQRT(zero   , FIX_ZERO          , FIXNUM(0,0))                                                   \
+SQRT(half   , FIXNUM(0,5)       , FIXNUM(0,7071067811865476))                                    \
+SQRT(one    , FIXNUM(1,0)       , FIXNUM(1,0))                                                   \
+SQRT(two    , FIXNUM(2,0)       , FIXNUM(1,4142135623730951))                                    \
+SQRT(e      , FIX_E             , FIXNUM(1,6487212707001282))                                    \
+SQRT(ten    , FIXNUM(10,0)      , FIX_INT_BITS > 5  ? FIXNUM(3,1622776601683795) : FIX_INF_POS)  \
+SQRT(big    , FIXNUM(10000,5345), FIX_INT_BITS > 13 ? FIXNUM(100,00267246428967) : FIX_INF_POS)  \
+SQRT(max    , FIX_MAX           , fix_convert_from_double(sqrt(fix_convert_to_double(FIX_MAX)))) \
+SQRT(inf    , FIX_INF_POS       , FIX_INF_POS)                                                   \
+SQRT(neg    , FIXNUM(-1,0)      , FIX_NAN)                                                       \
 SQRT(nan    , FIX_NAN           , FIX_NAN)
 SQRT_TESTS
 
