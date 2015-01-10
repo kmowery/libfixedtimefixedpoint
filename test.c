@@ -792,11 +792,11 @@ TEST_HELPER(sqrt_##name, { \
 
 #define SQRT_TESTS                                                                              \
 SQRT(zero   , FIX_ZERO          , FIXNUM(0,0))                                                  \
-SQRT(half   , FIXNUM(0,5)       , FIXNUM(0,7071067811865476))                                   \
+SQRT(half   , FIXNUM(0,5)       , FIXNUM(0,7071067811865475244008443621))                       \
 SQRT(one    , FIXNUM(1,0)       , FIXNUM(1,0))                                                  \
-SQRT(two    , FIXNUM(2,0)       , FIXNUM(1,4142135623730951))                                   \
-SQRT(e      , FIX_E             , FIXNUM(1,6487212707001282))                                   \
-SQRT(ten    , FIXNUM(10,0)      , FIX_INT_BITS > 5  ? FIXNUM(3,1622776601683795) : FIX_INF_POS) \
+SQRT(two    , FIXNUM(2,0)       , FIX_INT_BITS >= 3 ? FIXNUM(1,4142135623730951) : FIX_INF_POS) \
+SQRT(e      , FIX_E             , FIX_INT_BITS >= 3 ? FIXNUM(1,6487212707001282) : FIX_INF_POS) \
+SQRT(ten    , FIXNUM(10,0)      , FIX_INT_BITS >= 5 ? FIXNUM(3,1622776601683795) : FIX_INF_POS) \
 SQRT(big    , FIXNUM(10000,5345), FIX_INT_BITS > 14 ? FIXNUM(100,00267246428967) : FIX_INF_POS) \
 SQRT(max    , FIX_MAX           , SQRT_MAX_FIXED)                                               \
 SQRT(inf    , FIX_INF_POS       , FIX_INF_POS)                                                  \

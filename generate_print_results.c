@@ -74,7 +74,9 @@ TEST_HELPER(sqrt_##name, { \
   char* leadingzeroes = strstr(buf, " 0"); \
   if(leadingzeroes != NULL) { \
     for( leadingzeroes++; *leadingzeroes == '0'; leadingzeroes++ ) { \
-      *leadingzeroes = ' '; \
+      if(*(leadingzeroes+1) != ',' ) { \
+        *leadingzeroes = ' '; \
+      } \
     } \
   } \
   fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX"\n", "SQRT_MAX_FIXED", buf, fsqrt); \

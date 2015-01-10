@@ -414,17 +414,26 @@ fixed fix_sqrt(fixed op1) {
   uint8_t isinfneg = 0;
   uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
 
+
+  // Make a guess! Use some constant times log2(op1) if op1 > 1, otherwise just uhhhh mul op1 by 2.
+  // Ensure that x is never zero by masking in a One. If One can't exist, do
+  // something else.
+#if FIX_INT_BITS > 1
   // We need an initial guess. Let's use log_2(op1), since that's fairly quick
   // and easy, and not horribly wrong.
   //
   // We don't need to worry about negative numbers here, since this is sqrt
   uint32_t log2 = fixed_log2(op1);
 
-  // Make a guess! Use some constant times log2(op1) if op1 > 1, otherwise just uhhhh mul op1 by 2.
-  // Ensure that x is never zero by masking in a One.
   fixed one = FIXINT(1);
-  fixed x = MASK_UNLESS(op1 >= one, (~FIX_TOP_BIT_MASK) & (one | (FIX_INT_BITS * FIXINT(log2 - FIX_POINT_BITS + 1)))) |
-            MASK_UNLESS(op1 <  one, op1 << 1);
+  fixed x =
+    MASK_UNLESS(op1 >= one, (~FIX_TOP_BIT_MASK) & (one | (FIX_INT_BITS * FIXINT(log2 - FIX_POINT_BITS + 1)))) |
+    MASK_UNLESS(op1 <  one, op1 << 1);
+#else
+  // substract one here to ensure we are nonzero, and mask back to zero if op1
+  // is zero
+  fixed x = MASK_UNLESS(op1 != 0, (~FIX_TOP_BIT_MASK) & ((op1 << 1) - (fixed) 1));
+#endif
 
   // We're going to do all math in fixed, but use the extra flag bits for
   // precision. We'll mask them off later...
@@ -432,8 +441,6 @@ fixed fix_sqrt(fixed op1) {
   uint8_t overflow = 0;
 
   for(int i = 0; i < 19; i++) {
-    printf("\n");
-
     // Compute x/2
     fixed x2 = ROUND_TO_EVEN_ONE_BIT(x);
 
@@ -444,8 +451,18 @@ fixed fix_sqrt(fixed op1) {
     x = x - x2 + op1x2;
   }
 
+#if FIX_INT_BITS > 1
   // Get rid of spare bits.
   x = ROUND_TO_EVEN(x, FIX_FLAG_BITS) << FIX_FLAG_BITS;
+
+#else
+  // If we only have one int bit, the square root result might be FIX_MAX. Check
+  // for this and return FIX_MAX if the rounding goes bad.
+  x = ROUND_TO_EVEN(x, FIX_FLAG_BITS) << FIX_FLAG_BITS;
+  x = MASK_UNLESS(x == FIX_MIN, FIX_MAX) |
+      MASK_UNLESS(x != FIX_MIN, x);
+
+#endif
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
