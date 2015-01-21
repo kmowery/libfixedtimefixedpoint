@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
   };
 
   char filename [40];
-  sprintf((char*) filename, "test_print_results.h"); \
+  sprintf((char*) filename, "test_helper.h"); \
 
   fd = fopen(filename, "a+");
 
