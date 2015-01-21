@@ -24,8 +24,8 @@ static void null_test_success(void **state) {
     fixed difference = fix_sub(var1, var2); \
     char b3[FIX_PRINT_BUFFER_SIZE]; fix_print(b3, difference); \
     fail_msg( error_msg ": \n%s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX \
-        ")\n difference %s ("FIX_PRINTF_HEX")", \
-        b1, var1, b2, var2, b3, difference); \
+        ")\n difference %s ("FIX_PRINTF_HEX", "FIX_PRINTF_HEX")", \
+        b1, var1, b2, var2, b3, difference, ~difference+4); \
   }
 
 #define CHECK_EQ(error_msg, var1, var2) \
