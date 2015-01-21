@@ -11,7 +11,7 @@
 #include <math.h>
 
 #include "ftfp.h"
-#include "test_print_results.h"
+#include "test_helper.h"
 
 static void null_test_success(void **state) {
   //(void) state;
