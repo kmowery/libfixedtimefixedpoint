@@ -61,14 +61,14 @@ pre: $(test_ftfp_pre) $(ftfp_pre) $(perf_ftfp_pre)
 clean:
 	$(RM) -r $(progs) $(libs) $(ftfp_obj) $(test_ftfp_obj) $(test_ftfp_pre) ${perf_ftfp_obj} ${perf_ftfp_pre} ${gen_test_obj} ${gen_test_pre} ${autogens}
 
-alltests:
+run_tests:
 	set -x ; \
 	number=1 ; while [[ $$number -le 61  ]] ; do \
 		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make test && ./test || exit 1; \
 		((number = number + 1)) ; \
 	done
 
-do_generate_test_helper:
+run_generate_test_helper:
 	set -x ; \
 	echo "#ifndef TEST_HELPER_H" > test_helper.h ; \
 	echo "#define TEST_HELPER_H" >> test_helper.h ; \
