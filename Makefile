@@ -6,8 +6,8 @@ LDFLAGS := -lcmocka -lm
 
 progs             := test perf_test generate_test_helper
 libs              := libftfp.so
-ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c lut.c
-ftfp_inc          := ftfp.h internal.h base.h
+ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c
+ftfp_inc          := ftfp.h internal.h base.h lut.h
 ftfp_obj          := $(ftfp_src:.c=.o)
 ftfp_pre          := $(ftfp_src:.c=.pre)
 
@@ -35,8 +35,8 @@ base.py : generate_base.py
 
 autogen.c : generate_print.py base.py
 	python generate_print.py --file autogen.c
-lut.c : generate_base.py
-	python generate_base.py --lutfile lut.c
+lut.h : generate_base.py
+	python generate_base.py --lutfile lut.h
 
 %.o: %.c ${ftfp_inc} Makefile
 	$(CC) -c -o $@ $(CFLAGS) $<
