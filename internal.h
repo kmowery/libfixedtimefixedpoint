@@ -120,9 +120,9 @@ typedef int64_t fixed_signed;
 //     ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
 //   ))
 inline uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits) {
-    uint8_t lowbit = (value >> n_shift_bits) & 0x1;
-    uint8_t highroundbit = (value >> (n_shift_bits-1)) & 0x1;
-    uint64_t restroundbits = (value) & ((1ull << (n_shift_bits-1)) -1);
+    uint8_t lowbit = (value >> (n_shift_bits)) & 0x1;
+    uint8_t highroundbit = (value >> ((n_shift_bits)-1)) & 0x1;
+    uint64_t restroundbits = (value) & ((1ull << ((n_shift_bits)-1)) -1);
     return (value >> n_shift_bits) + ROUND_TO_EVEN_ADDITION(lowbit, highroundbit, restroundbits);
 }
 
@@ -237,10 +237,10 @@ uint64_t fixfrac(char* frac);
  * in...  */
 #define UNSAFE_MUL_64_64_128(op1, op2, resultlow, resulthigh)                                        \
 ({                                                                                                   \
-  uint64_t absx = MASK_UNLESS_64( (op1>>63), (~op1) + 1 ) |                                          \
-                  MASK_UNLESS_64(!(op1>>63), op1);                                                   \
-  uint64_t absy = MASK_UNLESS_64( (op2>>63), (~op2) + 1 ) |                                          \
-                  MASK_UNLESS_64(!(op2>>63), op2);                                                   \
+  uint64_t absx = MASK_UNLESS_64( ((op1)>>63), (~(op1)) + 1 ) |                                      \
+                  MASK_UNLESS_64(!((op1)>>63), (op1));                                               \
+  uint64_t absy = MASK_UNLESS_64( ((op2)>>63), (~(op2)) + 1 ) |                                      \
+                  MASK_UNLESS_64(!((op2)>>63), (op2));                                               \
                                                                                                      \
   uint64_t xhigh = absx >> 32;                                                                       \
   uint64_t xlow = absx & 0xffffffff;                                                                 \
@@ -257,7 +257,7 @@ uint64_t fixfrac(char* frac);
                                                                                                      \
   resulthigh = carry + z3 + ((z1 & 0xffffffff00000000) >> 32) + ((z2 & 0xffffffff00000000) >> 32);   \
                                                                                                      \
-  uint8_t negresult = ( (op1 >> 63) ^ (op2 >> 63) );                                                 \
+  uint8_t negresult = ( ((op1) >> 63) ^ ((op2) >> 63) );                                             \
   resultlow = MASK_UNLESS( negresult, (~resultlow) + 1 ) |                                           \
               MASK_UNLESS(!negresult, ( resultlow)     );                                            \
   resulthigh= MASK_UNLESS( negresult, (~resulthigh) + (resultlow==0) ) |                             \
@@ -278,7 +278,7 @@ uint64_t fixfrac(char* frac);
     UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
     uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, extra_bits); \
     uint64_t tmp = tmplow2 + \
-                 ((tmphigh) << (64 - extra_bits)); \
+                 ((tmphigh) << (64 - (extra_bits))); \
     /* inf only if overflow, and not a sign thing */ \
     overflow |= \
       !(((tmphigh & FIX_MUL_CONST) == FIX_MUL_CONST) \
@@ -297,7 +297,7 @@ uint64_t fixfrac(char* frac);
     UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
     uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, extra_bits); \
     uint64_t tmp = tmplow2 + \
-                 ((tmphigh) << (64 - extra_bits)); \
+                 ((tmphigh) << (64 - (extra_bits))); \
     /* inf only if overflow, and not a sign thing */ \
     overflow |= \
       !!(tmphigh >> (extra_bits)); \
