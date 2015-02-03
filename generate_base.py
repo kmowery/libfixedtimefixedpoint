@@ -105,12 +105,13 @@ if __name__ == "__main__":
                "\n};\n"
     def make_c_internal_lut(lut, name):
         l = ["  0x%016x"%(decimal_to_fix_extrabits(x, internal_frac_bits)) for x in lut]
-        return "fixed %s[%d] = {\n"%(name, len(lut)) + \
+        return "fix_internal %s[%d] = {\n"%(name, len(lut)) + \
                ",\n".join(l) + \
                "\n};\n"
 
     # note that 1/0 isn't very useful, so just call it 1
     internal_inv_integer_lut = [Decimal('1')] + [((decimal.Decimal('1')/decimal.Decimal(x))) for x in range(1,25)]
+
     # Write files
 
     if args["pyfile"] is not None:
@@ -160,9 +161,13 @@ static const fixed fix_e = 0x%016x;
 
     if args["lutfile"] is not None:
         with args["lutfile"] as f:
-            lutc = '''#include "lut.h"
-
-%s
-'''%(make_c_internal_lut(internal_inv_integer_lut, "LUT_int_inv_integer"))
+            lutc  = '#ifndef LUT_H\n'
+            lutc += '#define LUT_H\n'
+            lutc += '\n'
+            lutc += '#include "base.h"\n'
+            lutc += '#include "internal.h"\n'
+            lutc += "\n"
+            lutc += (make_c_internal_lut(internal_inv_integer_lut, "LUT_int_inv_integer"))
+            lutc += "\n#endif\n"
             f.write(lutc)
 
