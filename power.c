@@ -189,15 +189,8 @@ fixed fix_exp(fixed op1) {
     MASK_UNLESS(!FIX_IS_INF_NEG(op1), FIX_DATA_BITS(final_result));
 }
 
-fixed fix_ln(fixed op1) {
-  /* Approach taken from http://eesite.bitbucket.org/html/software/log_app/log_app.html */
-
-  uint8_t isinfpos = FIX_IS_INF_POS(op1);
-  uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
-  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
-
+  // We don't want to use a inline function here to avoid pointers
   // compute (int) log2(op1)  (as a uint32_t, not fixed)
-  uint32_t log2 = uint32_log2(op1);
 
   // We need to figure out how to map op1 into [-.5, .5], to use our polynomial
   // approxmation. First, we'll map op1 into [0.5, 1.5].
@@ -205,42 +198,89 @@ fixed fix_ln(fixed op1) {
   // We'll look at the top 2 bits of the number. If they're both 1, then we'll
   // move it to be just above 0.5. In that case, though, we need to increment
   // the log2 by 1.
-  uint32_t top2mask = (3 << (log2 - 1));
-  uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0;
-  log2 += top2set;
 
   // we need to move op1 into [-0.5, 0.5] in xx.2.28
   //
   // first, let's move to [0.5, 1.5] in xx.2.28...
-  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2))) |
-    MASK_UNLESS(log2 > 28, op1 >> (log2 - 28));
 
   // and then shift down by '1'. (1.28 bits of zero)
-  m -= (1 << 28);
+#define FIX_LOG_PROLOG(op1, log2, m) \
+  uint32_t log2 = fixed_log2(op1); \
+  fixed top2mask = (3 << (log2 - 1)); \
+  uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0; \
+  log2 += top2set; \
+  fix_internal m = \
+    MASK_UNLESS(log2 <= FIX_INTERN_FRAC_BITS, op1 << (FIX_INTERN_FRAC_BITS - (log2))) | \
+    MASK_UNLESS(log2 >  FIX_INTERN_FRAC_BITS, op1 >> (log2 - FIX_INTERN_FRAC_BITS)); \
+  m -= (((fix_internal) 1) << FIX_INTERN_FRAC_BITS);
 
-  fixed ln2 = 0x000162e4; // python: "0x%08x"%(math.log(2) * 2**17)
-  fixed nln2 = ln2 * (log2 - FIX_FRAC_BITS - FIX_FLAG_BITS); // correct for nonsense
-    // we want this to go negative for numbers < 1.
+fixed fix_ln(fixed op1) {
+  /* Approach taken from http://eesite.bitbucket.org/html/software/log_app/log_app.html */
 
-  // now, calculate ln(1+m):
-  uint32_t c411933 = 0x0697470e; // "0x%08x"%(0.411933 * 2**28)
-  uint32_t c574785 = 0x093251c1; // "0x%08x"%(0.574785 * 2**28)
-  uint32_t c994946 = 0x0feb4c7f; // "0x%08x"%(0.994946 * 2**28)
-  uint32_t c0022683 = 0x00094a7c; // "0x%08x"%(0.0022683 * 2**28)
+  uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
+  uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
 
-  // (((0.411x - 0.57)x + 0.99)x + 0.0022..
+  FIX_LOG_PROLOG(op1, log2, m);
 
-  uint32_t tempresult =
-    (MUL_2x28(m,
-        MUL_2x28(m,
-          MUL_2x28(m,
-            c411933)
-          - c574785)
-        + c994946)
-      + c0022683);
+  // Python: "0x%016x"%((decimal.Decimal(2).ln() * 2**63)
+  //     .quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN))
+  uint64_t ln2 = 0x58b90bfbe8e7bcd6;
+  uint8_t overflow = 0;
 
-  fixed r = convert_228_to_fixed(tempresult);
-  r += nln2 - 0x128; // adjustment constant for when log should be 0
+  printf("op1: %016llx\n", op1);
+  printf("log2: %d\n", log2);
+  printf("mult: %d\n", log2 - FIX_POINT_BITS);
+
+  internald64("m", m);
+
+  // this will go negative for numbers < 1.
+  fixed nln2 = MUL_64_N(ln2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow, 63 - FIX_POINT_BITS);
+  //printf("nln2: %016llx\n", nln2);
+
+  //// now, calculate ln(1+m):
+  internald64("0", FIX_LN_COEF_0);
+  internald64("1", FIX_LN_COEF_1);
+  internald64("2", FIX_LN_COEF_2);
+  internald64("3", FIX_LN_COEF_3);
+
+  printf("overflow: %d\n", overflow);
+
+  fix_internal t;
+
+  printf("\n");
+  internald64("stage m", m);
+  internald64("LC3    ", FIX_LN_COEF_3);
+  t = FIX_MUL_INTERN(m, FIX_LN_COEF_3, overflow);
+  internald64("stage 1", t);
+  printf("\n");
+  internald64("LC2    ", FIX_LN_COEF_2);
+  t = FIX_MUL_INTERN(m, t, overflow) - FIX_LN_COEF_2;
+  internald64("stage 2", t);
+
+  fix_internal tempresult =
+    (FIX_MUL_INTERN(m,
+        FIX_MUL_INTERN(m,
+          FIX_MUL_INTERN(m,
+            FIX_LN_COEF_3, overflow)
+          + FIX_LN_COEF_2, overflow)
+        + FIX_LN_COEF_1, overflow)
+      + FIX_LN_COEF_0);
+
+  internald64("tempresult", tempresult);
+  fixed r = FIX_INTERN_TO_FIXED(tempresult);
+
+
+  printf("overflow: %d\n", overflow);
+
+  d64("r    ", r);
+  d64("nln2 ", nln2);
+
+
+  r += nln2;
+
+  //fixed r = convert_228_to_fixed(tempresult);
+  //r += nln2;
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |

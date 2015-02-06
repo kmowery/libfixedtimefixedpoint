@@ -90,6 +90,8 @@ if __name__ == "__main__":
     def decimal_to_fix_extrabits(d, fracbits = point_bits):
       t = (d * 2**(fracbits))
       t = t.quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN)
+      if t < 0:
+          t = Decimal(2**64) + t + 1
       return t
 
     fix_pi =  fix_inf_pos if int_bits < 3 else decimal_to_fix(pi)
@@ -108,9 +110,13 @@ if __name__ == "__main__":
         return "fix_internal %s[%d] = {\n"%(name, len(lut)) + \
                ",\n".join(l) + \
                "\n};\n"
+    def make_c_internal_defines(lut, name):
+        l = ["#define %s_%d ((fix_internal) 0x%016x)"%(name, i, decimal_to_fix_extrabits(x, internal_frac_bits)) for i,x in enumerate(lut)]
+        return "\n".join(l)
 
     # note that 1/0 isn't very useful, so just call it 1
     internal_inv_integer_lut = [Decimal('1')] + [((decimal.Decimal('1')/decimal.Decimal(x))) for x in range(1,25)]
+    ln_coef_lut = [Decimal('0.0016419'), Decimal('0.9961764'), Decimal('-0.5624485'), Decimal('0.4004560')]
 
     # Write files
 
@@ -168,6 +174,7 @@ static const fixed fix_e = 0x%016x;
             lutc += '#include "internal.h"\n'
             lutc += "\n"
             lutc += (make_c_internal_lut(internal_inv_integer_lut, "LUT_int_inv_integer"))
+            lutc += (make_c_internal_defines(ln_coef_lut, "FIX_LN_COEF"))
             lutc += "\n#endif\n"
             f.write(lutc)
 

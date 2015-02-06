@@ -13,6 +13,8 @@
 #include "ftfp.h"
 #include "test_helper.h"
 
+#include "lut.h"
+
 static void null_test_success(void **state) {
   //(void) state;
 }
@@ -630,23 +632,26 @@ TEST_HELPER(ln_##name, { \
   fixed o1 = op1; \
   fixed ln = fix_ln(o1); \
   fixed expected = result; \
-  CHECK_EQ_NAN(#name, ln, expected); \
+  if(FIX_IS_INF_POS(op1)) { \
+    expected = FIX_INF_POS; \
+  } \
+  CHECK_DIFFERENCE(#name, ln, expected, FIXNUM(0,006) | FIX_EPSILON); \
 };)
 
-#define LN_TESTS \
-LN(zero   , 0x0               , FIX_INF_NEG) \
-LN(0xf0   , 0xf0              , FIXNUM(-6,3028564453)) /* -6.302863146 */ \
-LN(0x80   , 0x80              , 0xfff22318) \
-LN(0xa0   , 0xa0              , 0xfff29358) \
-LN(two    , FIXNUM(2,0)       , FIXNUM(0 , 69314718)) \
-LN(one    , FIXNUM(1,0)       , FIXNUM(0 , 0)) \
-LN(half   , FIXNUM(0,5)       , FIXNUM(-0,693145751953)) \
-LN(e      , FIX_E             , FIXNUM(0,9954223632) ) /* not quite FIXNUM(1 , 0), but close */ \
-LN(ten    , FIXNUM(10,0)      , FIXNUM(2,2986755371) ) /* not quite FIXNUM(2 , 30258509), but close */ \
-LN(max    , FIX_MAX           , FIXNUM(9,7040405273 ))  /* not quite 9.70406052597 */ \
-LN(inf    , FIX_INF_POS       , FIX_INF_POS) \
-LN(neg    , FIXNUM(-1,0)      , FIX_NAN) \
+#define LN_TESTS                                                         \
+LN(zero   , FIX_ZERO          , FIX_INF_NEG)                             \
+LN(half   , FIXNUM(0,5)       , FIXNUM(-0,6931471805599453094172321215)) \
+LN(one    , FIXNUM(1,0)       , FIXNUM(0 , 0))                           \
+LN(two    , FIXNUM(2,0)       , FIXNUM(0,6931471805599453094172321215))  \
+LN(four   , FIXNUM(4,0)       , FIXNUM(1,386294361119890618834464243))   \
+LN(e      , FIX_E             , FIXNUM(1,0) )                            \
+LN(ten    , FIXNUM(10,0)      , FIXNUM(2,302585092994045684017991455) )  \
+LN(epsilon, FIX_EPSILON       , FIX_TEST_LN_epsilon)                     \
+LN(max    , FIX_MAX           , FIX_TEST_LN_max)                         \
+LN(inf    , FIX_INF_POS       , FIX_INF_POS)                             \
+LN(neg    , FIXNUM(-1,0)      , FIX_NAN)                                 \
 LN(nan    , FIX_NAN           , FIX_NAN)
+
 LN_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
