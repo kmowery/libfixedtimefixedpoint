@@ -235,7 +235,12 @@ fixed fix_ln(fixed op1) {
   internald64("m", m);
 
   // this will go negative for numbers < 1.
+#if 63 - FIX_POINT_BITS != 0
   fixed nln2 = MUL_64_N(ln2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow, 63 - FIX_POINT_BITS);
+#else
+  fixed nln2 = MUL_64_ALL(ln2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow);
+#endif
+
   //printf("nln2: %016llx\n", nln2);
 
   //// now, calculate ln(1+m):

@@ -104,7 +104,7 @@ TEST_HELPER(ln_##name, {                                                        
     fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX", actual %g\n",  \
       "FIX_TEST_LN_"#name, buf, ln, actual);                                      \
   } else {                                                                        \
-    fprintf(fd, "  #define %-30s FIX_NEG_INF // actual: %g\n",                    \
+    fprintf(fd, "  #define %-30s FIX_INF_NEG // actual: %g\n",                    \
       "FIX_TEST_LN_"#name, actual);                                               \
   }                                                                               \
 };)

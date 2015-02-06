@@ -309,6 +309,20 @@ uint64_t fixfrac(char* frac);
     tmp; \
    })
 
+// This is the degenerate case of MUL_64_N, where you want the lower 64 bits
+#define MUL_64_ALL(op1, op2, overflow) \
+  ({ \
+    uint64_t tmphigh; \
+    uint64_t tmplow; \
+    UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
+    uint64_t tmplow2 = tmplow; \
+    uint64_t tmp = tmplow2; \
+    /* inf only if overflow, and not a sign thing */ \
+    overflow |= \
+      !!(tmphigh); \
+    tmp; \
+   })
+
 #define FIX_MUL_64(op1, op2, overflow) \
     FIX_MUL_64_N(op1, op2, overflow, FIX_POINT_BITS)
 
