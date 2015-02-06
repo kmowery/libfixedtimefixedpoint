@@ -26,6 +26,21 @@ void p(fixed f) {
   printf("n: %s ("FIX_PRINTF_HEX")\n", buf, f);
 }
 
+/* Change , to ., and remove leading zeros in the integer */
+void fix_buffer(char* buf, int size) {
+  /* replace . with , */
+  char* dot = strstr(buf, ".");
+  *dot = ',';
+  char* leadingzeroes = buf;
+  if(leadingzeroes != NULL) {
+    for( leadingzeroes++; *leadingzeroes == '0'; leadingzeroes++ ) {
+      if(*(leadingzeroes+1) != ',' ) {
+        *leadingzeroes = ' ';
+      }
+    }
+  }
+}
+
 #define TEST_HELPER(name, code) static void name(void **state) code
 
 #define PRINT(name, op1) \
@@ -68,17 +83,7 @@ TEST_HELPER(sqrt_##name, { \
   fixed fsqrt = fix_sqrt(o1); \
   char buf[FIX_PRINT_BUFFER_SIZE]; \
   fix_print(buf, fsqrt); \
-  /* replace . with , */ \
-  char* dot = strstr(buf, "."); \
-  *dot = ','; \
-  char* leadingzeroes = strstr(buf, " 0"); \
-  if(leadingzeroes != NULL) { \
-    for( leadingzeroes++; *leadingzeroes == '0'; leadingzeroes++ ) { \
-      if(*(leadingzeroes+1) != ',' ) { \
-        *leadingzeroes = ' '; \
-      } \
-    } \
-  } \
+    fix_buffer(buf, FIX_PRINT_BUFFER_SIZE); \
   fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX"\n", "SQRT_MAX_FIXED", buf, fsqrt); \
   fix_print(buf, op1); \
   fprintf(fd, "  // Max was FIXNUM(%s) // 0x"FIX_PRINTF_HEX"\n", buf, op1); \
@@ -86,6 +91,28 @@ TEST_HELPER(sqrt_##name, { \
 #define SQRT_TESTS \
 SQRT(max    , FIX_MAX           , fix_convert_from_double(sqrt(fix_convert_to_double(FIX_MAX))))
 SQRT_TESTS
+
+#define LN(name, op1)                                                             \
+TEST_HELPER(ln_##name, {                                                          \
+  fixed o1 = op1;                                                                 \
+  fixed ln = fix_ln(o1);                                                          \
+  double actual = (log(fix_convert_to_double(op1)));                              \
+  if(actual >= fix_convert_to_double(FIX_MIN)) {                                  \
+    char buf[FIX_PRINT_BUFFER_SIZE];                                              \
+    fix_print(buf, ln);                                                           \
+    fix_buffer(buf, FIX_PRINT_BUFFER_SIZE);                                       \
+    fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX", actual %g\n",  \
+      "FIX_TEST_LN_"#name, buf, ln, actual);                                      \
+  } else {                                                                        \
+    fprintf(fd, "  #define %-30s FIX_NEG_INF // actual: %g\n",                    \
+      "FIX_TEST_LN_"#name, actual);                                               \
+  }                                                                               \
+};)
+
+#define LN_TESTS            \
+LN(epsilon, FIX_EPSILON)    \
+LN(max, FIX_MAX)
+LN_TESTS
 
 #undef TEST_HELPER
 #define TEST_HELPER(name, code) unit_test(name),
@@ -95,6 +122,7 @@ int main(int argc, char** argv) {
   const UnitTest tests[] = {
     PRINT_TESTS
     SQRT_TESTS
+    LN_TESTS
   };
 
   char filename [40];

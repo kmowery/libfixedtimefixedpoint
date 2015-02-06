@@ -327,6 +327,32 @@ typedef uint64_t fix_internal;
 #define FIX_MUL_INTERN(op1, op2, overflow) \
     FIX_MUL_64_N(op1, op2, overflow, FIX_INTERN_FRAC_BITS)
 
+// Define convert_internal_to_fixed
+#if FIX_POINT_BITS > FIX_INTERN_FRAC_BITS
+// shift left. We should probably be concerned about overflow here...
+#define FIX_INTERN_TO_FIXED(intern) \
+  FIX_DATA_BITS( ((fixed) (intern)) << (FIX_POINT_BITS - FIX_INTERN_FRAC_BITS) )
+
+#elif FIX_POINT_BITS == FIX_INTERN_FRAC_BITS
+#define FIX_INTERN_TO_FIXED(intern) \
+  FIX_DATA_BITS( (fixed) (intern) )
+
+#elif FIX_POINT_BITS == (FIX_INTERN_FRAC_BITS-1)
+// need to shift right, and potentially round
+#define FIX_INTERN_TO_FIXED(intern) \
+  FIX_DATA_BITS( \
+    ROUND_TO_EVEN_ONE_BIT( ((fixed) intern) ) \
+      )
+#elif FIX_POINT_BITS < (FIX_INTERN_FRAC_BITS-1)
+#define FIX_INTERN_TO_FIXED(intern) \
+  FIX_DATA_BITS( \
+    ROUND_TO_EVEN( ((fixed) intern), FIX_INTERN_FRAC_BITS - FIX_POINT_BITS ) \
+      )
+
+#else
+#error Problem with FIX_INTERN_TO_FIXED definition
+#endif
+
 
 
 // Multiply two 2.28 bit fixed point numbers
