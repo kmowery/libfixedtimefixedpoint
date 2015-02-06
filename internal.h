@@ -140,6 +140,11 @@ inline uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits) {
      ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
    ))
 
+#define ROUND_TO_EVEN_ONE_BIT_SIGNED(value) \
+    (((((fixed) value) >> 1) + \
+     ((value & 3) == 3)) & \
+     (value & (1ull << (sizeof(fixed)-1))))
+
 /*
  * General idea:
  *   This creates the fractional portion of a fixed point, given a decimal
@@ -341,12 +346,12 @@ typedef uint64_t fix_internal;
 // need to shift right, and potentially round
 #define FIX_INTERN_TO_FIXED(intern) \
   FIX_DATA_BITS( \
-    ROUND_TO_EVEN_ONE_BIT( ((fixed) intern) ) \
+    ROUND_TO_EVEN_ONE_BIT_SIGNED( ((fixed) intern) ) \
       )
 #elif FIX_POINT_BITS < (FIX_INTERN_FRAC_BITS-1)
 #define FIX_INTERN_TO_FIXED(intern) \
   FIX_DATA_BITS( \
-    ROUND_TO_EVEN( ((fixed) intern), FIX_INTERN_FRAC_BITS - FIX_POINT_BITS ) \
+    ROUND_TO_EVEN_SIGNED_64( ((fixed) intern), FIX_INTERN_FRAC_BITS - FIX_FRAC_BITS ) << FIX_FLAG_BITS \
       )
 
 #else
