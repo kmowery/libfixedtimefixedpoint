@@ -665,7 +665,7 @@ TEST_HELPER(log2_##name, { \
   if(FIX_IS_INF_POS(op1)) { \
     expected = FIX_INF_POS; \
   } \
-  CHECK_DIFFERENCE(#name, log2, expected, FIXNUM(0,006) | FIX_EPSILON); \
+  CHECK_DIFFERENCE(#name, log2, expected, FIXNUM(0,009) | FIX_EPSILON); \
 };)
 
 #define LOG2_TESTS                                             \
@@ -693,20 +693,25 @@ TEST_HELPER(log10_##name, { \
   fixed o1 = op1; \
   fixed log10 = fix_log10(o1); \
   fixed expected = result; \
-  CHECK_EQ_NAN(#name, log10, expected); \
+  if(FIX_IS_INF_POS(op1)) { \
+    expected = FIX_INF_POS; \
+  } \
+  CHECK_DIFFERENCE(#name, log10, expected, FIXNUM(0,0002) | FIX_EPSILON); \
 };)
 
 #define LOG10_TESTS \
-LOG10(zero   , 0x0               , FIX_INF_NEG) \
-LOG10(one    , FIXNUM(1,0)       , FIXNUM(-0 , 000061035)) /* almost 0. */ \
-LOG10(two    , FIXNUM(2,0)       , FIXNUM(0 , 30096435))   /* almost 0.30102999 */ \
-LOG10(e      , FIX_E             , FIXNUM(0 , 434265136))  /* 0.43429448 */ \
-LOG10(ten    , FIXNUM(10,0)      , FIXNUM(1 , 0)) \
-LOG10(fifteen, FIXNUM(15,0)      , FIXNUM(1 , 1760253906 )) /* 1.176091259 */ \
-LOG10(63     , FIXNUM(63,0)      , FIXNUM(1 , 7992553710 )) /* 1.79934054945 */ \
-LOG10(64     , FIXNUM(64,0)      , FIXNUM(1 , 8060913085 )) /* 1.80617997398 */ \
-LOG10(64_5   , FIXNUM(64,5)      , FIXNUM(1 , 8094787597 )) /* 1.80955971463 */ \
-LOG10(max    , FIX_MAX           , FIXNUM(4 , 214294433)) /* 4.21441993848 */ \
+LOG10(zero   , FIX_ZERO          , FIX_INF_NEG)                 \
+LOG10(half   , FIXNUM(0,5)       , FIXNUM(-0,3010299956639811952137388947)) \
+LOG10(one    , FIXNUM(1,0)       , FIXNUM(0,0))               \
+LOG10(two    , FIXNUM(2,0)       , FIXNUM(0,3010299956639811952137388947))               \
+LOG10(e      , FIX_E             , FIXNUM(0,4342944819032518045543160246) ) \
+LOG10(ten    , FIXNUM(10,0)      , FIXNUM(1,0) ) \
+LOG10(fifteen, FIXNUM(15,0)      , FIXNUM(1,176091259055681242081289009)) \
+LOG10(63     , FIXNUM(63,0)      , FIXNUM(1,799340549453581705302272065))   \
+LOG10(64     , FIXNUM(64,0)      , FIXNUM(1,806179973983887171282433368) )               \
+LOG10(64_5   , FIXNUM(64,5)      , FIXNUM(1,809559714635267768486377162))   \
+LOG10(epsilon, FIX_EPSILON       , FIX_TEST_LOG10_epsilon)       \
+LOG10(max    , FIX_MAX           , FIX_TEST_LOG10_max )          \
 LOG10(inf    , FIX_INF_POS       , FIX_INF_POS) \
 LOG10(neg    , FIXNUM(-1,0)      , FIX_NAN) \
 LOG10(nan    , FIX_NAN           , FIX_NAN)

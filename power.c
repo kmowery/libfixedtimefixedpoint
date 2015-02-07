@@ -315,25 +315,19 @@ fixed fix_log10(fixed op1) {
   uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
   uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
 
-  // compute (int) log2(op1)  (as a uint32_t, not fixed)
-  uint32_t log2 = uint32_log2(op1);
+  FIX_LOG_PROLOG(op1, log2, m);
 
-  uint32_t top2mask = (3 << (log2 - 1));
-  uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0;
-  log2 += top2set;
+  // Python: "0x%016x"%((decimal.Decimal(2).ln() * 2**63)
+  //     .quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN))
+  fixed log10_2 = 0x268826a13ef3fde6;
+  uint8_t overflow = 0;
 
-  // we need to move op1 into [-0.5, 0.5] in xx.2.28
-  //
-  // first, let's move to [0.5, 1.5] in xx.2.28...
-  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2))) |
-    MASK_UNLESS(log2 > 28, op1 >> (log2 - 28));
-
-  // and then shift down by '1'. (1.28 bits of zero)
-  m -= (1 << 28);
-
-  fixed log10_2 = 0x00009a20; // python: "0x%08x"%(math.log(2,10) * 2**17)
-  fixed nlog10_2 = log10_2 * (log2 - FIX_FRAC_BITS - FIX_FLAG_BITS); // correct for nonsense
-    // we want this to go negative for numbers < 1.
+  // this will go negative for numbers < 1.
+#if 63 - FIX_POINT_BITS != 0
+  fixed nlog10_2 = MUL_64_N(log10_2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow, 63 - FIX_POINT_BITS);
+#else
+  fixed nlog10_2 = MUL_64_ALL(log10_2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow);
+#endif
 
   // A third-order or fourth-order approximation polynomial does very poorly on
   // log10. Use a 5th order approximation instead:
@@ -343,43 +337,27 @@ fixed fix_log10(fixed op1) {
   // ans =
 
   //    1.1942e-01  -1.3949e-01   1.4074e-01  -2.1438e-01   4.3441e-01  -3.4210e-05
-
-  // now, calculate log10(1+m):
   //
-  // constants:
-  //
-  // print "\n".join(["uint32_t k%d = 0x%08x;"%(5-i, num * 2**28) for
-  // i,num in enumerate([abs(eval(x)) for x in re.split(" +", "1.1942e-01
-  // -1.3949e-01   1.4074e-01  -2.1438e-01   4.3441e-01  -3.4210e-05" )])])
-  //
+  // Accurate to within about 0.00016:
+  // http://www.wolframalpha.com/input/?i=log%28x%2B1%29%2Flog%2810%29+-+%281.1942e-01+*+x%5E5+%2B+-1.3949e-01+*+x+%5E+4+%2B+1.4074e-01*x%5E3++%2B+-2.1438e-01*x%5E2+%2B+4.3441e-01*x+-3.4210e-05%29+over+%5B-.5%2C+.5%5D
 
-  uint32_t k5 = 0x01e924f2;
-  uint32_t k4 = 0x023b59dd;
-  uint32_t k3 = 0x02407896;
-  uint32_t k2 = 0x036e19b9;
-  uint32_t k1 = 0x06f357e6;
-  uint32_t k0 = 0x000023df;
+  fix_internal tmp;
+  tmp = FIX_MUL_INTERN(m,       FIX_LOG10_COEF_5, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_4, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_3, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_2, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_1, overflow);
+  tmp =                   tmp + FIX_LOG10_COEF_0;
 
-  uint32_t tempresult =
-    (MUL_2x28(m,
-       MUL_2x28(m,
-         MUL_2x28(m,
-            MUL_2x28(m,
-              MUL_2x28(m,
-                k5)
-              - k4)
-            + k3)
-          - k2)
-        + k1)
-       - k0);
+  fixed r = FIX_INTERN_TO_FIXED(tmp);
+  r += nlog10_2;
 
-  tempresult = convert_228_to_fixed(tempresult);
-  tempresult += nlog10_2;
+  isinfneg |= (!isnan) & (!isinfpos) & overflow;
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    FIX_DATA_BITS(tempresult);
+    FIX_DATA_BITS(r);
 }
 
 
