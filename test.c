@@ -662,26 +662,28 @@ TEST_HELPER(log2_##name, { \
   fixed o1 = op1; \
   fixed log2 = fix_log2(o1); \
   fixed expected = result; \
-  CHECK_EQ_NAN(#name, log2, expected); \
+  if(FIX_IS_INF_POS(op1)) { \
+    expected = FIX_INF_POS; \
+  } \
+  CHECK_DIFFERENCE(#name, log2, expected, FIXNUM(0,006) | FIX_EPSILON); \
 };)
 
-#define LOG2_TESTS \
-LOG2(zero   , 0x0               , FIX_INF_NEG) \
-LOG2(0xf0   , 0xf0              , FIXNUM(-9,093139648)) /*9.093139648*/ \
-LOG2(0x80   , 0x80              , FIXNUM(-10,0)) \
-LOG2(0xa0   , 0xa0              , FIXNUM(-9,6824035644)) \
-LOG2(one    , FIXNUM(1,0)       , FIXNUM(0 , 0)) \
-LOG2(two    , FIXNUM(2,0)       , FIXNUM(1 , 0)) \
-LOG2(e      , FIX_E             , FIXNUM(1,43826293945) ) /* not quite 1.4426 but close */ \
-LOG2(ten    , FIXNUM(10,0)      , FIXNUM(3,31759643554) ) /* not quite 3.3219 but close */ \
-LOG2(63     , FIXNUM(63,0)      , FIXNUM(5,977355957 )) /* 5.9772799236 */ \
-LOG2(64     , FIXNUM(64,0)      , FIXNUM(6, 0) ) \
-LOG2(64_5   , FIXNUM(64,5)      , FIXNUM(6, 01116943359)) /* 6.011227255423254 */ \
-LOG2(max    , FIX_MAX           , FIXNUM(13,9999999) ) /* not quite 3.3219 but close */ \
-LOG2(min    , FIX_MIN           , FIX_NAN ) \
-LOG2(inf    , FIX_INF_POS       , FIX_INF_POS) \
-LOG2(neg    , FIXNUM(-1,0)      , FIX_NAN) \
+#define LOG2_TESTS                                             \
+LOG2(zero   , FIX_ZERO          , FIX_INF_NEG)                 \
+LOG2(one    , FIXNUM(1,0)       , FIXNUM(0 , 0))               \
+LOG2(two    , FIXNUM(2,0)       , FIXNUM(1 , 0))               \
+LOG2(e      , FIX_E             , FIXNUM(1,4426950408889634) ) \
+LOG2(ten    , FIXNUM(10,0)      , FIXNUM(3,3219280948873626) ) \
+LOG2(63     , FIXNUM(63,0)      , FIXNUM(5,977279923499917))   \
+LOG2(64     , FIXNUM(64,0)      , FIXNUM(6, 0) )               \
+LOG2(64_5   , FIXNUM(64,5)      , FIXNUM(6,011227255423254))   \
+LOG2(epsilon, FIX_EPSILON       , FIX_TEST_LOG2_epsilon)       \
+LOG2(max    , FIX_MAX           , FIX_TEST_LOG2_max )          \
+LOG2(min    , FIX_MIN           , FIX_NAN )                    \
+LOG2(inf    , FIX_INF_POS       , FIX_INF_POS)                 \
+LOG2(neg    , FIXNUM(-1,0)      , FIX_NAN)                     \
 LOG2(nan    , FIX_NAN           , FIX_NAN)
+
 LOG2_TESTS
 
 //////////////////////////////////////////////////////////////////////////////

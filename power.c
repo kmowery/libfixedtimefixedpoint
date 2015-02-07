@@ -272,29 +272,16 @@ fixed fix_log2(fixed op1) {
   uint8_t isinfneg = FIX_IS_INF_NEG(op1) | (op1 == 0);
   uint8_t isnan = FIX_IS_NAN(op1) | FIX_IS_NEG(op1);
 
-  // compute (int) log2(op1)  (as a uint32_t, not fixed)
-  uint32_t log2 = uint32_log2(op1);
+  FIX_LOG_PROLOG(op1, log2, m);
 
-  // We need to figure out how to map op1 into [-.5, .5], to use our polynomial
-  // approxmation. First, we'll map op1 into [0.5, 1.5].
-  //
-  // We'll look at the top 2 bits of the number. If they're both 1, then we'll
-  // move it to be just above 0.5. In that case, though, we need to increment
-  // the log2 by 1.
-  uint32_t top2mask = (3 << (log2 - 1));
-  uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0;
-  log2 += top2set;
+  uint8_t overflow = 0;
 
-  // we need to move op1 into [-0.5, 0.5] in xx.2.28
-  //
-  // first, let's move to [0.5, 1.5] in xx.2.28...
-  uint32_t m = MASK_UNLESS(log2 <= 28, op1 << (28 - (log2))) |
-    MASK_UNLESS(log2 > 28, op1 >> (log2 - 28));
+  // Check if we're going to overflow n
+  fixed ntmp = (((fixed) (log2)) - FIX_POINT_BITS);
+  fixed sign_mask = ~((((fixed) 1) << (64 - FIX_POINT_BITS - 1)) - 1);
+  overflow |= ((ntmp & sign_mask) != 0) & ((ntmp & sign_mask) != sign_mask);
 
-  // and then shift down by '1'. (1.28 bits of zero)
-  m -= (1 << 28);
-
-  fixed n = ((fixed) (log2 - FIX_FRAC_BITS - FIX_FLAG_BITS)) << (FIX_FRAC_BITS + FIX_FLAG_BITS);
+  fixed n = ntmp << FIX_POINT_BITS;
 
   // octave:31> x = -0.5:1/10000:0.5;
   // octave:32> polyfit( x, log2(x+1), 3)
@@ -303,30 +290,22 @@ fixed fix_log2(fixed op1) {
   //   0.5777570  -0.8114606   1.4371765   0.0023697
 
   // now, calculate log2(1+m):
-  //
-  uint32_t c5777570 = 0x093e7e1f; // "0x%08x"%(0.5777570 * 2**28)
-  uint32_t c8114606 = 0x0cfbbe1c; // "0x%08x"%(0.8114606 * 2**28)
-  uint32_t c14371765 = 0x16feacc9; // "0x%08x"%(1.4371765 * 2**28)
-  uint32_t c0023697 = 0x0009b4cf; // "0x%08x"%(0.0023697 * 2**28)
+  fix_internal tmp;
 
-  // (((0.577x - 0.811)x + 1.43)x + 0.0023..
+  tmp = FIX_MUL_INTERN(m,       FIX_LOG2_COEF_3, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_2, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_1, overflow);
+  tmp =                   tmp + FIX_LOG2_COEF_0;
 
-  uint32_t tempresult =
-    (MUL_2x28(m,
-        MUL_2x28(m,
-          MUL_2x28(m,
-            c5777570)
-          - c8114606)
-        + c14371765)
-      + c0023697);
+  fixed r = FIX_INTERN_TO_FIXED(tmp);
+  r += n;
 
-  tempresult = convert_228_to_fixed(tempresult);
-  tempresult += n - 0x134; // adjustment constant for when log should be 0
+  isinfneg |= (!isnan) & (!isinfpos) & overflow;
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
     FIX_IF_INF_NEG(isinfneg) |
-    FIX_DATA_BITS(tempresult);
+    FIX_DATA_BITS(r);
 }
 
 fixed fix_log10(fixed op1) {
