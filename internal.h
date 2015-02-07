@@ -142,7 +142,7 @@ inline uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits) {
 
 #define ROUND_TO_EVEN_ONE_BIT_SIGNED(value) \
     (((((fixed) value) >> 1) + \
-     ((value & 3) == 3)) & \
+     ((value & 3) == 3)) | \
      (value & (1ull << (sizeof(fixed)-1))))
 
 /*
@@ -293,19 +293,21 @@ uint64_t fixfrac(char* frac);
 
 /* Sometimes we need to multiply numbers without reference to a fixed. Use this.
  * Overflow is quite simple: are there any higher bits that we aren't giving
- * you?
+ * you? Check to see if the sign bits are equal, though.
  */
 #define MUL_64_N(op1, op2, overflow, extra_bits) \
   ({ \
     uint64_t tmphigh; \
     uint64_t tmplow; \
+    uint64_t signconst = (~1ull) & (~((1ull << (extra_bits)) - 1)); \
     UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
     uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, extra_bits); \
     uint64_t tmp = tmplow2 + \
                  ((tmphigh) << (64 - (extra_bits))); \
     /* inf only if overflow, and not a sign thing */ \
     overflow |= \
-      !!(tmphigh >> (extra_bits)); \
+      !(((tmphigh & signconst) == signconst) \
+       | ((tmphigh & signconst) == 0)); \
     tmp; \
    })
 
@@ -344,25 +346,22 @@ uint64_t fixfrac(char* frac);
 typedef uint64_t fix_internal;
 
 #define FIX_MUL_INTERN(op1, op2, overflow) \
-    FIX_MUL_64_N(op1, op2, overflow, FIX_INTERN_FRAC_BITS)
+    MUL_64_N(op1, op2, overflow, FIX_INTERN_FRAC_BITS)
 
 // Define convert_internal_to_fixed
-#if FIX_POINT_BITS > FIX_INTERN_FRAC_BITS
+#if FIX_FRAC_BITS >= FIX_INTERN_FRAC_BITS
 // shift left. We should probably be concerned about overflow here...
 #define FIX_INTERN_TO_FIXED(intern) \
   FIX_DATA_BITS( ((fixed) (intern)) << (FIX_POINT_BITS - FIX_INTERN_FRAC_BITS) )
 
-#elif FIX_POINT_BITS == FIX_INTERN_FRAC_BITS
-#define FIX_INTERN_TO_FIXED(intern) \
-  FIX_DATA_BITS( (fixed) (intern) )
-
-#elif FIX_POINT_BITS == (FIX_INTERN_FRAC_BITS-1)
+#elif FIX_FRAC_BITS == (FIX_INTERN_FRAC_BITS-1)
 // need to shift right, and potentially round
 #define FIX_INTERN_TO_FIXED(intern) \
   FIX_DATA_BITS( \
-    ROUND_TO_EVEN_ONE_BIT_SIGNED( ((fixed) intern) ) \
+    ROUND_TO_EVEN_ONE_BIT_SIGNED( ((fixed) intern) ) << FIX_FLAG_BITS \
       )
-#elif FIX_POINT_BITS < (FIX_INTERN_FRAC_BITS-1)
+
+#elif FIX_FRAC_BITS < (FIX_INTERN_FRAC_BITS-1)
 #define FIX_INTERN_TO_FIXED(intern) \
   FIX_DATA_BITS( \
     ROUND_TO_EVEN_SIGNED_64( ((fixed) intern), FIX_INTERN_FRAC_BITS - FIX_FRAC_BITS ) << FIX_FLAG_BITS \
