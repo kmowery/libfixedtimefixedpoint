@@ -206,7 +206,7 @@ fixed fix_exp(fixed op1) {
   // and then shift down by '1'. (1.28 bits of zero)
 #define FIX_LOG_PROLOG(op1, log2, m) \
   uint32_t log2 = fixed_log2(op1); \
-  fixed top2mask = (3 << (log2 - 1)); \
+  fixed top2mask = (((fixed) 3) << (log2 - 1)); \
   uint8_t top2set = ((op1 & top2mask) ^ top2mask) == 0; \
   log2 += top2set; \
   fix_internal m = \
