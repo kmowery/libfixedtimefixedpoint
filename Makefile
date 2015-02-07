@@ -6,7 +6,7 @@ LDFLAGS := -lcmocka -lm
 
 progs             := test perf_test generate_test_helper
 libs              := libftfp.so
-ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c
+ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c debug.c
 ftfp_inc          := ftfp.h internal.h base.h lut.h
 ftfp_obj          := $(ftfp_src:.c=.o)
 ftfp_pre          := $(ftfp_src:.c=.pre)
@@ -53,7 +53,7 @@ test: $(test_ftfp_obj) $(libs)
 generate_test_helper: $(gen_test_obj) $(libs)
 	$(CC) -lftfp -L . ${CFLAGS} -o $@ $< ${LDFLAGS}
 
-pre: $(test_ftfp_pre) $(ftfp_pre) $(perf_ftfp_pre)
+pre: $(test_ftfp_pre) $(ftfp_pre) $(perf_ftfp_pre) $(gen_test_pre)
 
 %.pre: %.c Makefile
 	$(CC) -c -E -o $@ $(CFLAGS) $<
