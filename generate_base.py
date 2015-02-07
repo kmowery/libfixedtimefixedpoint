@@ -118,6 +118,8 @@ if __name__ == "__main__":
     internal_inv_integer_lut = [Decimal('1')] + [((decimal.Decimal('1')/decimal.Decimal(x))) for x in range(1,25)]
     ln_coef_lut = [Decimal('0.0016419'), Decimal('0.9961764'), Decimal('-0.5624485'), Decimal('0.4004560')]
     log2_coef_lut = [Decimal('0.0023697'), Decimal('1.4371765'), Decimal('-0.8114606'), Decimal('0.5777570')]
+    log10_coef_lut = reversed([
+          Decimal('1.1942e-01'), Decimal('-1.3949e-01'), Decimal('1.4074e-01'), Decimal('-2.1438e-01'), Decimal('4.3441e-01'), Decimal('-3.4210e-05')])
 
     # Write files
 
@@ -177,6 +179,7 @@ static const fixed fix_e = 0x%016x;
             lutc += (make_c_internal_lut(internal_inv_integer_lut, "LUT_int_inv_integer"))
             lutc += (make_c_internal_defines(ln_coef_lut, "FIX_LN_COEF"))
             lutc += (make_c_internal_defines(log2_coef_lut, "FIX_LOG2_COEF"))
+            lutc += (make_c_internal_defines(log10_coef_lut, "FIX_LOG10_COEF"))
             lutc += "\n#endif\n"
             f.write(lutc)
 

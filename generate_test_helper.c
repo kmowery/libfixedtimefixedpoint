@@ -134,8 +134,29 @@ TEST_HELPER(log2_##name, {                                                      
 #define LOG2_TESTS            \
 LOG2(epsilon, FIX_EPSILON)    \
 LOG2(max,     FIX_MAX)
-
 LOG2_TESTS
+
+#define LOG10(name, op1)                                                          \
+TEST_HELPER(log10_##name, {                                                       \
+  fixed o1 = op1;                                                                 \
+  fixed lg10 = fix_log10(o1);                                                     \
+  double actual = (log10(fix_convert_to_double(op1)));                            \
+  if(actual >= fix_convert_to_double(FIX_MIN)) {                                  \
+    char buf[FIX_PRINT_BUFFER_SIZE];                                              \
+    fix_print(buf, lg10);                                                         \
+    fix_buffer(buf, FIX_PRINT_BUFFER_SIZE);                                       \
+    fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX", actual %g\n",  \
+      "FIX_TEST_LOG10_"#name, buf, lg10, actual);                                 \
+  } else {                                                                        \
+    fprintf(fd, "  #define %-30s FIX_INF_NEG // actual: %g\n",                    \
+      "FIX_TEST_LOG10_"#name, actual);                                            \
+  }                                                                               \
+};)
+
+#define LOG10_TESTS            \
+LOG10(epsilon, FIX_EPSILON)    \
+LOG10(max,     FIX_MAX)
+LOG10_TESTS
 
 #undef TEST_HELPER
 #define TEST_HELPER(name, code) unit_test(name),
@@ -147,6 +168,7 @@ int main(int argc, char** argv) {
     SQRT_TESTS
     LN_TESTS
     LOG2_TESTS
+    LOG10_TESTS
   };
 
   char filename [40];
