@@ -228,12 +228,6 @@ fixed fix_ln(fixed op1) {
   uint64_t ln2 = 0x58b90bfbe8e7bcd6;
   uint8_t overflow = 0;
 
-  printf("op1: %016llx\n", op1);
-  printf("log2: %d\n", log2);
-  printf("mult: %d\n", log2 - FIX_POINT_BITS);
-
-  internald64("m", m);
-
   // this will go negative for numbers < 1.
 #if 63 - FIX_POINT_BITS != 0
   fixed nln2 = MUL_64_N(ln2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow, 63 - FIX_POINT_BITS);
@@ -241,25 +235,10 @@ fixed fix_ln(fixed op1) {
   fixed nln2 = MUL_64_ALL(ln2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow);
 #endif
 
-  internald64("ln2", ln2);
-  printf("log: %lld\n", ((int64_t) (log2)) - FIX_POINT_BITS);
-
-  printf("nln2: %016llx\n", nln2);
-  d64("nln2", nln2);
-
   //// now, calculate ln(1+m):
-  internald64("0", FIX_LN_COEF_0);
-  internald64("1", FIX_LN_COEF_1);
-  internald64("2", FIX_LN_COEF_2);
-  internald64("3", FIX_LN_COEF_3);
 
-  printf("overflow: %d\n", overflow);
-
-  printf("\n");
-
-  printf("before overflow: %d\n", overflow);
-
-  //fix_internal tempresult =
+  // This works, but replicates work:
+  //fix_internal tmp =
   //  (FIX_MUL_INTERN(m,
   //      FIX_MUL_INTERN(m,
   //        FIX_MUL_INTERN(m,
@@ -269,55 +248,15 @@ fixed fix_ln(fixed op1) {
   //    + FIX_LN_COEF_0);
   fix_internal tmp;
 
-  internald64("stage m", m);
-  internald64("LC3    ", FIX_LN_COEF_3);
   tmp = FIX_MUL_INTERN(m,       FIX_LN_COEF_3, overflow);
-  internald64("stage 1", tmp);
-  printf("overflow: %d\n", overflow);
-  printf("\n");
-
-  internald64("stage m", tmp + FIX_LN_COEF_2);
-  internald64("LC2    ", FIX_LN_COEF_2);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_2, overflow);
-  internald64("stage 2", tmp);
-  printf("overflow: %d\n", overflow);
-  printf("\n");
-
-  internald64("stage m", tmp + FIX_LN_COEF_1);
-  internald64("LC1    ", FIX_LN_COEF_1);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_1, overflow);
-  internald64("stage 3", tmp);
-  printf("overflow: %d\n", overflow);
-  printf("\n");
-
-  internald64("stage m", tmp + FIX_LN_COEF_0);
-  internald64("LC0    ", FIX_LN_COEF_0);
   tmp =                   tmp + FIX_LN_COEF_0;
 
-
-  internald64("tempresult", tmp);
   fixed r = FIX_INTERN_TO_FIXED(tmp);
-
-  printf("rteobs: %016llx\n", ROUND_TO_EVEN_ONE_BIT_SIGNED( (fixed) tmp));
-
-//#define FIX_INTERN_TO_FIXED(intern) \
-//  FIX_DATA_BITS( \
-//    ROUND_TO_EVEN_ONE_BIT_SIGNED( ((fixed) intern) ) << FIX_FLAG_BITS \
-//      )
-
-
-  printf("overflow: %d\n", overflow);
-
-  d64("r    ", r);
-  d64("nln2 ", nln2);
-
-  isinfneg |= (!isnan) & (!isinfpos) & overflow;
-
-
   r += nln2;
 
-  //fixed r = convert_228_to_fixed(tempresult);
-  //r += nln2;
+  isinfneg |= (!isnan) & (!isinfpos) & overflow;
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos) |
