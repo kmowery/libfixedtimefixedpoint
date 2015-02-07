@@ -299,7 +299,7 @@ uint64_t fixfrac(char* frac);
   ({ \
     uint64_t tmphigh; \
     uint64_t tmplow; \
-    uint64_t signconst = (~1ull) & (~((1ull << (extra_bits)) - 1)); \
+    uint64_t signconst = (~1ull) & (~((1ull << (extra_bits -1)) - 1)); \
     UNSAFE_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
     uint64_t tmplow2 = ROUND_TO_EVEN_64(tmplow, extra_bits); \
     uint64_t tmp = tmplow2 + \

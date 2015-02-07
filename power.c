@@ -241,7 +241,11 @@ fixed fix_ln(fixed op1) {
   fixed nln2 = MUL_64_ALL(ln2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow);
 #endif
 
-  //printf("nln2: %016llx\n", nln2);
+  internald64("ln2", ln2);
+  printf("log: %lld\n", ((int64_t) (log2)) - FIX_POINT_BITS);
+
+  printf("nln2: %016llx\n", nln2);
+  d64("nln2", nln2);
 
   //// now, calculate ln(1+m):
   internald64("0", FIX_LN_COEF_0);
