@@ -235,7 +235,11 @@ fixed fix_ln(fixed op1) {
   fixed nln2 = MUL_64_ALL(ln2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow);
 #endif
 
-  //// now, calculate ln(1+m):
+  // now, calculate ln(1+m):
+
+  // Accurate to about0.007:
+  // http://www.wolframalpha.com/input/?i=ln%28x%2B1%29+-+%280.4004560*x%5E3+-+0.5624485*x%5E2+%2B+0.9961764*x+%2B+0.0016419%29+over+%5B-.5%2C+.5%5D
+  //
 
   // This works, but replicates work:
   //fix_internal tmp =
@@ -288,6 +292,9 @@ fixed fix_log2(fixed op1) {
   // ans =
 
   //   0.5777570  -0.8114606   1.4371765   0.0023697
+  //
+  // Accurate to about 0.009:
+  // http://www.wolframalpha.com/input/?i=log_2%28x%2B1%29+-+%280.5777570*x%5E3+-+0.8114606*x%5E2+%2B++1.4371765*x+%2B0.0023697%29+over+%5B-.5%2C+.5%5D
 
   // now, calculate log2(1+m):
   fix_internal tmp;
