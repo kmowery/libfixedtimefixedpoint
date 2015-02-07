@@ -13,6 +13,7 @@
 #include "ftfp.h"
 #include "test_helper.h"
 
+#include "debug.h"
 #include "lut.h"
 
 static void null_test_success(void **state) {
