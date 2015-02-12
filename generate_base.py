@@ -128,8 +128,8 @@ if __name__ == "__main__":
             f.write("flag_bits = %d\n" %( flag_bits ))
             f.write("int_bits = %d\n" %( int_bits ))
             f.write("frac_bits = %d\n" %( frac_bits ))
-            f.write("internal_frac_bits = 60\n");
-            f.write("internal_int_bits = 4\n");
+            f.write("internal_frac_bits = %d\n"%(internal_frac_bits));
+            f.write("internal_int_bits = %d\n"%(internal_int_bits));
 
     if args["file"] is not None:
         with args["file"] as f:
@@ -156,6 +156,8 @@ typedef uint64_t fixed;
 #define FIX_INT_BITS  %d
 #define FIX_BITS (8*sizeof(fixed))
 
+#define FIX_INTERN_FRAC_BITS %d
+#define FIX_INTERN_INT_BITS %d
 
 static const fixed fix_pi = 0x%016x;
 static const fixed fix_tau = 0x%016x;
@@ -165,7 +167,9 @@ static const fixed fix_e = 0x%016x;
 #define FIX_TAU fix_tau
 #define FIX_E fix_e
 
-#endif"""%(buffer_length, flag_bits, frac_bits, int_bits,fix_pi,fix_tau,fix_e)
+#endif"""%(buffer_length, flag_bits, frac_bits, int_bits,
+           internal_frac_bits, internal_int_bits,
+           fix_pi,fix_tau,fix_e)
           f.write(baseh)
 
     if args["lutfile"] is not None:

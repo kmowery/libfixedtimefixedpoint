@@ -340,9 +340,6 @@ uint64_t fixfrac(char* frac);
  *
  ************************************************************************/
 
-#define FIX_INTERN_FRAC_BITS 60
-#define FIX_INTERN_INT_BITS 4
-
 #if FIX_INTERN_FRAC_BITS + FIX_INTERN_INT_BITS != 64
 #error FIX_INTERN underspecified
 #endif
