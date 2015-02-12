@@ -103,10 +103,11 @@ fixed fix_sin_fast(fixed op1);
 fixed  fix_convert_from_double(double d);
 double fix_convert_to_double(fixed op1);
 
-/* Prints the fixed into a buffer in base 10. The buffer must be at least 23
+/* Prints the fixed into a buffer in base 10. The buffer must be at least FIX_PRINT_BUFFER_SIZE
  * characters long. */
 void fix_print(char* buffer, fixed f);
 void fix_print_nospecial(char* buffer, fixed f);
+void fix_internal_print(char* buffer, fix_internal f);
 
 /* Note that this is not constant time, but will return a buffer sized to the
  * number. */

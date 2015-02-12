@@ -117,7 +117,7 @@ def make_print_function(preamble, int_bits, frac_bits, flag_bits):
 
   f = fix_abs(f);"""
 
-    f += "\n".join(["  uint8_t bit%d = (((f) >> (%d))&1);"%(i,i) for i in range(2,2+number_bits)])
+    f += "\n".join(["  uint8_t bit%d = (((f) >> (%d))&1);"%(i,i) for i in range(flag_bits,flag_bits+number_bits)])
 
     extra_polynomials = {
             1: " + (isnan * %d) + (isinfpos | isinfneg) * %d"%(ord('N'), ord('I')),
@@ -184,4 +184,9 @@ with args["file"] as f:
   uint8_t isnan = 0;""",
   int_bits, frac_bits, flag_bits))
 
+    f.write(make_print_function( """void fix_internal_print(char* buffer, fix_internal f) {
+  uint8_t isinfpos = 0;
+  uint8_t isinfneg = 0;
+  uint8_t isnan = 0;""",
+  internal_int_bits, internal_frac_bits, 0))
 
