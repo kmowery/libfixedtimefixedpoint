@@ -102,9 +102,10 @@ TEST_HELPER(ln_##name, {                                                        
     fix_print(buf, ln);                                                           \
     fix_buffer(buf, FIX_PRINT_BUFFER_SIZE);                                       \
     fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX", actual %.20g, "\
-      "difference: %.20g epsilon: %g\n",                                          \
+      "difference: %.20g epsilon: %g larger: %d\n",                               \
       "FIX_TEST_LN_"#name, buf, ln, actual,                                       \
-          actual-fix_convert_to_double(ln), fix_convert_to_double(FIX_EPSILON));  \
+          actual-fix_convert_to_double(ln), fix_convert_to_double(FIX_EPSILON),   \
+          fabs(actual - fix_convert_to_double(ln)) > fix_convert_to_double(FIX_EPSILON));\
   } else {                                                                        \
     fprintf(fd, "  #define %-30s FIX_INF_NEG // actual: %g\n",                    \
       "FIX_TEST_LN_"#name, actual);                                               \
@@ -126,9 +127,10 @@ TEST_HELPER(log2_##name, {                                                      
     fix_print(buf, lg2);                                                          \
     fix_buffer(buf, FIX_PRINT_BUFFER_SIZE);                                       \
     fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX", actual %.20g, "\
-      "difference: %.20g epsilon: %g\n",                                          \
+      "difference: %.20g epsilon: %g larger: %d\n",                               \
       "FIX_TEST_LOG2_"#name, buf, lg2, actual,                                    \
-          actual-fix_convert_to_double(lg2), fix_convert_to_double(FIX_EPSILON)); \
+          actual-fix_convert_to_double(lg2), fix_convert_to_double(FIX_EPSILON),  \
+          fabs(actual - fix_convert_to_double(lg2)) > fix_convert_to_double(FIX_EPSILON));\
   } else {                                                                        \
     fprintf(fd, "  #define %-30s FIX_INF_NEG // actual: %g\n",                    \
       "FIX_TEST_LOG2_"#name, actual);                                             \
@@ -150,9 +152,10 @@ TEST_HELPER(log10_##name, {                                                     
     fix_print(buf, lg10);                                                         \
     fix_buffer(buf, FIX_PRINT_BUFFER_SIZE);                                       \
     fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX", actual %.20g, "\
-      "difference: %.20g epsilon: %g\n",                                          \
+      "difference: %.20g epsilon: %g larger: %d\n",                              \
       "FIX_TEST_LOG10_"#name, buf, lg10, actual,                                  \
-          actual-fix_convert_to_double(lg10), fix_convert_to_double(FIX_EPSILON));\
+          actual-fix_convert_to_double(lg10), fix_convert_to_double(FIX_EPSILON), \
+          fabs(actual - fix_convert_to_double(lg10)) > fix_convert_to_double(FIX_EPSILON));\
   } else {                                                                        \
     fprintf(fd, "  #define %-30s FIX_INF_NEG // actual: %g\n",                    \
       "FIX_TEST_LOG10_"#name, actual);                                            \
