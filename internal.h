@@ -143,7 +143,7 @@ inline uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits) {
 #define ROUND_TO_EVEN_ONE_BIT_SIGNED(value) \
     (((((fixed) value) >> 1) + \
      ((value & 3) == 3)) | \
-     (value & (1ull << (sizeof(fixed)-1))))
+     FIX_TOP_BIT(value))
 
 /*
  * General idea:
