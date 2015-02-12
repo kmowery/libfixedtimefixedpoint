@@ -106,6 +106,7 @@ double fix_convert_to_double(fixed op1);
 /* Prints the fixed into a buffer in base 10. The buffer must be at least 23
  * characters long. */
 void fix_print(char* buffer, fixed f);
+void fix_print_nospecial(char* buffer, fixed f);
 
 /* Note that this is not constant time, but will return a buffer sized to the
  * number. */
