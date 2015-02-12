@@ -91,7 +91,7 @@ if __name__ == "__main__":
       t = (d * 2**(fracbits))
       t = t.quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN)
       if t < 0:
-          t = Decimal(2**64) + t + 1
+          t = Decimal(2**64) + t
       return t
 
     fix_pi =  fix_inf_pos if int_bits < 3 else decimal_to_fix(pi)
