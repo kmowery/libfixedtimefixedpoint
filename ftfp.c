@@ -49,6 +49,35 @@ int8_t fix_cmp(fixed op1, fixed op2) {
   return result;
 }
 
+uint8_t fix_le(fixed op1, fixed op2) {
+  uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2));
+  int8_t result = fix_cmp(op1, op2);
+
+  return MASK_UNLESS(!nans, result <= 0);
+}
+
+uint8_t fix_ge(fixed op1, fixed op2) {
+  uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2));
+  int8_t result = fix_cmp(op1, op2);
+
+  return MASK_UNLESS(!nans, result >= 0);
+}
+
+uint8_t fix_lt(fixed op1, fixed op2) {
+  uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2));
+  int8_t result = fix_cmp(op1, op2);
+
+  return MASK_UNLESS(!nans, result < 0);
+}
+
+uint8_t fix_gt(fixed op1, fixed op2) {
+  uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2));
+  int8_t result = fix_cmp(op1, op2);
+
+  return MASK_UNLESS(!nans, result > 0);
+}
+
+
 fixed fix_neg(fixed op1){
   // Flip our infs
   // NaN is still NaN

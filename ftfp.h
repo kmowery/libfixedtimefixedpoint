@@ -59,6 +59,12 @@ int8_t fix_eq_nan(fixed op1, fixed op2);
  */
 int8_t fix_cmp(fixed op1, fixed op2);
 
+uint8_t fix_le(fixed op1, fixed op2);
+uint8_t fix_ge(fixed op1, fixed op2);
+
+uint8_t fix_lt(fixed op1, fixed op2);
+uint8_t fix_gt(fixed op1, fixed op2);
+
 // Useful constants
 #define FIX_EPSILON     ((fixed) (1 << FIX_FLAG_BITS))
 #define FIX_EPSILON_NEG ((fixed) ~((1 << FIX_FLAG_BITS)-1))

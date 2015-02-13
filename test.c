@@ -44,7 +44,7 @@ static void null_test_success(void **state) {
     CHECK_CONDITION(error_msg, fix_eq_nan(var1, var2) == value, var1, var2)
 
 #define CHECK_VALUE(error_msg, value, expected, fixed1, fixed2) \
-    CHECK_CONDITION(error_msg, value == expected, fixed1, fixed2)
+    CHECK_CONDITION(error_msg, (value) == (expected), fixed1, fixed2)
 
 #define CHECK_DIFFERENCE(error_msg, value, expected, bound) \
     CHECK_CONDITION(error_msg, (fix_eq_nan(value, expected) | (fix_abs(fix_sub(value, expected)) <= (bound))), value, expected)
@@ -415,9 +415,13 @@ static void constants(void **state) {
 TEST_HELPER(cmp_##name, { \
   fixed o1 = op1; \
   fixed o2 = op2; \
-  int32_t cmp = fix_cmp(o1, o2); \
-  int32_t expected = result; \
+  int8_t cmp = fix_cmp(o1, o2); \
+  int8_t expected = result; \
   CHECK_VALUE("cmp failed", cmp, expected, o1, o2); \
+  CHECK_VALUE("lt failed", fix_lt(o1, o2), (!(FIX_IS_NAN(o1) | FIX_IS_NAN(o2))) & (expected <  0), o1, o2); \
+  CHECK_VALUE("gt failed", fix_gt(o1, o2), (!(FIX_IS_NAN(o1) | FIX_IS_NAN(o2))) & (expected >  0), o1, o2); \
+  CHECK_VALUE("le failed", fix_le(o1, o2), (!(FIX_IS_NAN(o1) | FIX_IS_NAN(o2))) & (expected <= 0), o1, o2); \
+  CHECK_VALUE("ge failed", fix_ge(o1, o2), (!(FIX_IS_NAN(o1) | FIX_IS_NAN(o2))) & (expected >= 0), o1, o2); \
 };)
 
 #define CMP_TESTS                                                              \
@@ -435,21 +439,21 @@ TEST_CMP(nan_inf_pos     , FIX_NAN                 , FIX_INF_POS         , 1)  \
 TEST_CMP(nan_inf_neg     , FIX_NAN                 , FIX_INF_NEG         , 1)  \
 TEST_CMP(nan_pos         , FIX_NAN                 , FIXNUM(0   , 5)    , 1)   \
 TEST_CMP(nan_neg         , FIX_NAN                 , FIXNUM(-0  , 5)    , 1)   \
-TEST_CMP(pos_nan         , FIXNUM(0   , 5)        , FIX_NAN             , 1)   \
-TEST_CMP(neg_nan         , FIXNUM(-0  , 5)        , FIX_NAN             , 1)   \
+TEST_CMP(pos_nan         , FIXNUM(0   , 5)         , FIX_NAN             , 1)   \
+TEST_CMP(neg_nan         , FIXNUM(-0  , 5)         , FIX_NAN             , 1)   \
 TEST_CMP(inf_inf         , FIX_INF_POS             , FIX_INF_POS         , 0)  \
 TEST_CMP(inf_pos         , FIX_INF_POS             , FIXNUM(0   , 5)    , 1)   \
 TEST_CMP(inf_neg         , FIX_INF_POS             , FIXNUM(-0  , 5)    , 1)   \
 TEST_CMP(inf_inf_neg     , FIX_INF_POS             , FIX_INF_NEG         , 1)  \
-TEST_CMP(pos_inf         , FIXNUM(0   , 5)        , FIX_INF_POS         , -1)  \
-TEST_CMP(neg_inf         , FIXNUM(-0  , 5)        , FIX_INF_POS         , -1)  \
-TEST_CMP(pos_inf_neg     , FIXNUM(0   , 5)        , FIX_INF_NEG         ,  1)  \
-TEST_CMP(neg_inf_neg     , FIXNUM(-0  , 5)        , FIX_INF_NEG         ,  1)  \
+TEST_CMP(pos_inf         , FIXNUM(0   , 5)         , FIX_INF_POS         , -1)  \
+TEST_CMP(neg_inf         , FIXNUM(-0  , 5)         , FIX_INF_POS         , -1)  \
+TEST_CMP(pos_inf_neg     , FIXNUM(0   , 5)         , FIX_INF_NEG         ,  1)  \
+TEST_CMP(neg_inf_neg     , FIXNUM(-0  , 5)         , FIX_INF_NEG         ,  1)  \
 TEST_CMP(inf_neg_inf_pos , FIX_INF_NEG             , FIX_INF_POS         , -1) \
 TEST_CMP(inf_neg_pos     , FIX_INF_NEG             , FIXNUM(0   , 5)    , -1)  \
 TEST_CMP(inf_neg_neg     , FIX_INF_NEG             , FIXNUM(-0  , 5)    , -1)  \
-TEST_CMP(pos_neg         , FIXNUM(17   , 3)         , FIXNUM(-24  , 5)   , 1)  \
-TEST_CMP(neg_pos         , FIXNUM(-16  , 3)         , FIXNUM(24   , 5)   , -1)
+TEST_CMP(pos_neg         , FIXNUM(17   , 3)        , FIXNUM(-24  , 5)   , 1)  \
+TEST_CMP(neg_pos         , FIXNUM(-16  , 3)        , FIXNUM(24   , 5)   , -1)
 CMP_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
