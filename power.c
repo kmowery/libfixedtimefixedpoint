@@ -237,9 +237,13 @@ fixed fix_ln(fixed op1) {
 
   // now, calculate ln(1+m):
 
-  // Accurate to about0.007:
-  // http://www.wolframalpha.com/input/?i=ln%28x%2B1%29+-+%280.4004560*x%5E3+-+0.5624485*x%5E2+%2B+0.9961764*x+%2B+0.0016419%29+over+%5B-.5%2C+.5%5D
+  // Use a order-24 polynomial over -5,5, accurate to about 2**-48:
   //
+  // octave:85> format long
+  // octave:86> p = polyfit( x, log(x+1), 24)
+  // octave:87> log2(max(abs(polyval(p, x) - log(1+x))))
+  // ans = -48.4454111483224
+
 
   // This works, but replicates work:
   //fix_internal tmp =
@@ -252,7 +256,28 @@ fixed fix_ln(fixed op1) {
   //    + FIX_LN_COEF_0);
   fix_internal tmp;
 
-  tmp = FIX_MUL_INTERN(m,       FIX_LN_COEF_3, overflow);
+  tmp = FIX_MUL_INTERN(m,       FIX_LN_COEF_24, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_23, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_22, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_21, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_20, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_19, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_18, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_17, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_16, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_15, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_14, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_13, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_12, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_11, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_10, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_9, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_8, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_7, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_6, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_5, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_4, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_3, overflow);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_2, overflow);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LN_COEF_1, overflow);
   tmp =                   tmp + FIX_LN_COEF_0;
@@ -287,19 +312,39 @@ fixed fix_log2(fixed op1) {
 
   fixed n = ntmp << FIX_POINT_BITS;
 
-  // octave:31> x = -0.5:1/10000:0.5;
-  // octave:32> polyfit( x, log2(x+1), 3)
-  // ans =
-
-  //   0.5777570  -0.8114606   1.4371765   0.0023697
+  // Use an order-25 polynomial to approximate log2(1+m) over -.5,5.
+  // Accurate to about 2**-48.
   //
-  // Accurate to about 0.009:
-  // http://www.wolframalpha.com/input/?i=log_2%28x%2B1%29+-+%280.5777570*x%5E3+-+0.8114606*x%5E2+%2B++1.4371765*x+%2B0.0023697%29+over+%5B-.5%2C+.5%5D
+  // octave:88> p = polyfit( x, log2(x+1), 25)
+  // octave:89> log2(max(abs(polyval(p, x) - log2(1+x))))
+  // ans = -48.2995602818589
 
   // now, calculate log2(1+m):
   fix_internal tmp;
 
-  tmp = FIX_MUL_INTERN(m,       FIX_LOG2_COEF_3, overflow);
+  tmp = FIX_MUL_INTERN(m,       FIX_LOG2_COEF_25, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_24, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_23, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_22, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_21, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_20, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_19, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_18, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_17, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_16, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_15, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_14, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_13, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_12, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_11, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_10, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_9, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_8, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_7, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_6, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_5, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_4, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_3, overflow);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_2, overflow);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG2_COEF_1, overflow);
   tmp =                   tmp + FIX_LOG2_COEF_0;
@@ -336,20 +381,34 @@ fixed fix_log10(fixed op1) {
   fixed nlog10_2 = MUL_64_ALL(log10_2, ((int64_t) (log2)) - FIX_POINT_BITS, overflow);
 #endif
 
-  // A third-order or fourth-order approximation polynomial does very poorly on
-  // log10. Use a 5th order approximation instead:
-
-  // octave:31> x = -0.5:1/10000:0.5;
-  // octave:32> polyfit( x, log10(x+1), 5)
-  // ans =
-
-  //    1.1942e-01  -1.3949e-01   1.4074e-01  -2.1438e-01   4.3441e-01  -3.4210e-05
+  // Use a 24-order polynomial to approximate log10 on -5,5. Accurate to about 2*-48.
   //
-  // Accurate to within about 0.00016:
-  // http://www.wolframalpha.com/input/?i=log%28x%2B1%29%2Flog%2810%29+-+%281.1942e-01+*+x%5E5+%2B+-1.3949e-01+*+x+%5E+4+%2B+1.4074e-01*x%5E3++%2B+-2.1438e-01*x%5E2+%2B+4.3441e-01*x+-3.4210e-05%29+over+%5B-.5%2C+.5%5D
+  // octave:80> p = polyfit( x, log10(x+1), 24)
+  // octave:81> log2(max(abs(polyval(p, x) - log10(1+x))))
+  // ans = -48.6780719051126
 
   fix_internal tmp;
-  tmp = FIX_MUL_INTERN(m,       FIX_LOG10_COEF_5, overflow);
+
+  tmp = FIX_MUL_INTERN(m,       FIX_LOG10_COEF_24, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_23, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_22, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_21, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_20, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_19, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_18, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_17, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_16, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_15, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_14, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_13, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_12, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_11, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_10, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_9, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_8, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_7, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_6, overflow);
+  tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_5, overflow);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_4, overflow);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_3, overflow);
   tmp = FIX_MUL_INTERN(m, tmp + FIX_LOG10_COEF_2, overflow);
