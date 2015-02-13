@@ -18,8 +18,8 @@ except:
 
   # We're going for 48-bit accuracy on log and exp.
   # TODO: explain everything usefully in documentation
-  internal_frac_bits = 50
-  internal_int_bits = 14
+  internal_frac_bits = 60
+  internal_int_bits = 4
 
 if __name__ == "__main__":
     import argparse
