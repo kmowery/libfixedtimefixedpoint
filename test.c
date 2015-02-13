@@ -636,7 +636,7 @@ TEST_HELPER(ln_##name, { \
   if(FIX_IS_INF_POS(op1)) { \
     expected = FIX_INF_POS; \
   } \
-  CHECK_DIFFERENCE(#name, ln, expected, FIXNUM(0,006) | FIX_EPSILON); \
+  CHECK_DIFFERENCE(#name, ln, expected, FIXNUM(0,000000000000004) | FIX_EPSILON); \
 };)
 
 #define LN_TESTS                                                         \
@@ -646,7 +646,11 @@ LN(one    , FIXNUM(1,0)       , FIXNUM(0 , 0))                           \
 LN(two    , FIXNUM(2,0)       , FIXNUM(0,6931471805599453094172321215))  \
 LN(four   , FIXNUM(4,0)       , FIXNUM(1,386294361119890618834464243))   \
 LN(e      , FIX_E             , FIXNUM(1,0) )                            \
+LN(two75  , FIXNUM(2,75)      , FIXNUM(1,011600911678479925227479335))   \
 LN(ten    , FIXNUM(10,0)      , FIXNUM(2,302585092994045684017991455) )  \
+LN(63     , FIXNUM(63,0)      , FIXNUM(4,143134726391532687895843217))   \
+LN(64     , FIXNUM(64,0)      , FIXNUM(4,158883083359671856503392729))   \
+LN(64_5   , FIXNUM(64,5)      , FIXNUM(4,166665223801726805450855629))   \
 LN(epsilon, FIX_EPSILON       , FIX_TEST_LN_epsilon)                     \
 LN(max    , FIX_MAX           , FIX_TEST_LN_max)                         \
 LN(inf    , FIX_INF_POS       , FIX_INF_POS)                             \
@@ -665,14 +669,14 @@ TEST_HELPER(log2_##name, { \
   if(FIX_IS_INF_POS(op1)) { \
     expected = FIX_INF_POS; \
   } \
-  CHECK_DIFFERENCE(#name, log2, expected, FIXNUM(0,009) | FIX_EPSILON); \
+  CHECK_DIFFERENCE(#name, log2, expected, FIXNUM(0,000000000000004) | FIX_EPSILON); \
 };)
 
 #define LOG2_TESTS                                             \
 LOG2(zero   , FIX_ZERO          , FIX_INF_NEG)                 \
 LOG2(one    , FIXNUM(1,0)       , FIXNUM(0 , 0))               \
 LOG2(two    , FIXNUM(2,0)       , FIXNUM(1 , 0))               \
-LOG2(e      , FIX_E             , FIXNUM(1,4426950408889634) ) \
+LOG2(two75  , FIXNUM(2,75)      , FIXNUM(1,4594316186372973))  \
 LOG2(ten    , FIXNUM(10,0)      , FIXNUM(3,3219280948873626) ) \
 LOG2(63     , FIXNUM(63,0)      , FIXNUM(5,977279923499917))   \
 LOG2(64     , FIXNUM(64,0)      , FIXNUM(6, 0) )               \
@@ -696,25 +700,26 @@ TEST_HELPER(log10_##name, { \
   if(FIX_IS_INF_POS(op1)) { \
     expected = FIX_INF_POS; \
   } \
-  CHECK_DIFFERENCE(#name, log10, expected, FIXNUM(0,0002) | FIX_EPSILON); \
+  CHECK_DIFFERENCE(#name, log10, expected, FIXNUM(0,000000000000004) | FIX_EPSILON); \
 };)
 
-#define LOG10_TESTS \
-LOG10(zero   , FIX_ZERO          , FIX_INF_NEG)                 \
+#define LOG10_TESTS                                                         \
+LOG10(zero   , FIX_ZERO          , FIX_INF_NEG)                             \
 LOG10(half   , FIXNUM(0,5)       , FIXNUM(-0,3010299956639811952137388947)) \
-LOG10(one    , FIXNUM(1,0)       , FIXNUM(0,0))               \
-LOG10(two    , FIXNUM(2,0)       , FIXNUM(0,3010299956639811952137388947))               \
-LOG10(e      , FIX_E             , FIXNUM(0,4342944819032518045543160246) ) \
-LOG10(ten    , FIXNUM(10,0)      , FIXNUM(1,0) ) \
-LOG10(fifteen, FIXNUM(15,0)      , FIXNUM(1,176091259055681242081289009)) \
+LOG10(one    , FIXNUM(1,0)       , FIXNUM(0,0))                             \
+LOG10(two    , FIXNUM(2,0)       , FIXNUM(0,3010299956639811952137388947))  \
+LOG10(two75  , FIXNUM(2,75)      , FIXNUM(0,4393326938302626503227221818) ) \
+LOG10(ten    , FIXNUM(10,0)      , FIXNUM(1,0) )                            \
+LOG10(fifteen, FIXNUM(15,0)      , FIXNUM(1,176091259055681242081289009))   \
 LOG10(63     , FIXNUM(63,0)      , FIXNUM(1,799340549453581705302272065))   \
-LOG10(64     , FIXNUM(64,0)      , FIXNUM(1,806179973983887171282433368) )               \
+LOG10(64     , FIXNUM(64,0)      , FIXNUM(1,806179973983887171282433368) )  \
 LOG10(64_5   , FIXNUM(64,5)      , FIXNUM(1,809559714635267768486377162))   \
-LOG10(epsilon, FIX_EPSILON       , FIX_TEST_LOG10_epsilon)       \
-LOG10(max    , FIX_MAX           , FIX_TEST_LOG10_max )          \
-LOG10(inf    , FIX_INF_POS       , FIX_INF_POS) \
-LOG10(neg    , FIXNUM(-1,0)      , FIX_NAN) \
+LOG10(epsilon, FIX_EPSILON       , FIX_TEST_LOG10_epsilon)                  \
+LOG10(max    , FIX_MAX           , FIX_TEST_LOG10_max )                     \
+LOG10(inf    , FIX_INF_POS       , FIX_INF_POS)                             \
+LOG10(neg    , FIXNUM(-1,0)      , FIX_NAN)                                 \
 LOG10(nan    , FIX_NAN           , FIX_NAN)
+
 LOG10_TESTS
 
 //////////////////////////////////////////////////////////////////////////////

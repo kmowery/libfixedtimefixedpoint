@@ -152,7 +152,7 @@ TEST_HELPER(log10_##name, {                                                     
     fix_print(buf, lg10);                                                         \
     fix_buffer(buf, FIX_PRINT_BUFFER_SIZE);                                       \
     fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX", actual %.20g, "\
-      "difference: %.20g epsilon: %g larger: %d\n",                              \
+      "difference: %.20g epsilon: %g larger: %d\n",                               \
       "FIX_TEST_LOG10_"#name, buf, lg10, actual,                                  \
           actual-fix_convert_to_double(lg10), fix_convert_to_double(FIX_EPSILON), \
           fabs(actual - fix_convert_to_double(lg10)) > fix_convert_to_double(FIX_EPSILON));\
