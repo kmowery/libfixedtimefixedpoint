@@ -525,9 +525,20 @@ fixed fix_sqrt(fixed op1) {
 /* The complicated bits here are to deal with the case where you do x^y, but x
  * is negative and y is non-integer... */
 fixed fix_pow(fixed x, fixed y) {
+  uint8_t isnan = FIX_IS_NAN(x) | FIX_IS_NAN(y);
+
+  uint8_t xisinfpos = FIX_IS_INF_POS(x);
+  uint8_t yisinfpos = FIX_IS_INF_POS(y);
+  uint8_t xisinfneg = FIX_IS_INF_NEG(x);
+  uint8_t yisinfneg = FIX_IS_INF_NEG(y);
+
+  uint8_t excep = isnan |
+    xisinfpos | xisinfneg |
+    yisinfpos | yisinfneg;
 
   /* Store x's sign, and then check if it's positive. */
   uint8_t xneg = FIX_IS_NEG(x);
+  uint8_t yneg = FIX_IS_NEG(y);
   x = fix_abs(x);
 
   // To know if y is an integer, we need it to be positive.
@@ -539,16 +550,112 @@ fixed fix_pow(fixed x, fixed y) {
   fixed prod = fix_mul(lnx, y);
   fixed result = fix_exp(prod);
 
+  uint8_t isinfpos = 0;
+  uint8_t isinfneg = 0;
+  uint8_t isone = 0;
+  uint8_t iszero = 0;
+  uint8_t isnegone = 0;
+
+  fixed one = FIXINT(1);
+  fixed neg_one = fix_neg(one);
+  uint8_t xmagone  = fix_eq(x, one);
+  uint8_t xmagonel = fix_lt(x, one);
+  uint8_t xmagoneg = fix_gt(x, one);
+
+  uint8_t isresult = 0;
+
+
   /* if x > 0, then return the result.
    * if x < 0 and y is an integer, then return the result with the proper sign.
    * if x < 0 and y is not an int, then return NaN.
    */
-  result =
-    MASK_UNLESS( !xneg, result ) |
-    MASK_UNLESS( xneg & y_is_int,
-        MASK_UNLESS(y_int_mod_2 == 0, result) |
-        MASK_UNLESS(y_int_mod_2 == 1, fix_neg(result))) |
-    MASK_UNLESS( xneg & !y_is_int, FIX_NAN);
 
-  return result;
+  /**************************************************
+   *
+   * Special case table!
+   *
+   * R means some non-exceptional, non-zero number.
+   *
+   *    x             y        result
+   *  --------------------------------
+   *   NaN            -          NaN
+   *    -            NaN         NaN
+   *
+   *   Inf           Inf         Inf
+   *   Inf          -Inf         Inf
+   *  -Inf           Inf        -Inf
+   *  -Inf          -Inf        -Inf
+   *
+   *   R>0           R>0         R^R
+   *   R<0           R>0         R^R
+   *
+   *    0            R>0          0
+   *
+   *   R>0            0           1
+   *    0             0           1
+   *   R<0            0           1
+   *
+   *   R!=0          R<0, int    R^R *
+   *   R<0           R<0, nonint NaN
+   *
+   *   R>1           Inf         Inf
+   *    1            Inf          1
+   *   R<1 & R >-1   Inf          0
+   *    0            Inf          0
+   *   -1            Inf         -1
+   *   R<-1          Inf        -Inf
+   *
+   *   R>1          -Inf          0
+   *    1           -Inf          1
+   *   R<1 & R >0   -Inf         Inf
+   *   R=0          -Inf          0
+   *   R<0 ^ R >-1  -Inf        -Inf
+   *   -1           -Inf         -1
+   *   R<-1         -Inf          0
+   */
+
+  isnan     |= xneg & (!y_is_int);
+
+  isinfpos  |= xisinfpos;
+  isinfneg  |= xisinfneg;
+
+  isinfpos  |= yisinfpos & (!xisinfpos) & (!xneg);
+  isinfneg  |= yisinfpos & (!xisinfpos) & ( xneg);
+
+  isresult  |= (x != FIX_ZERO) & (!yneg) & (y != FIX_ZERO);
+  iszero    |= (x == FIX_ZERO) & (!yneg) & (y != FIX_ZERO);
+
+  isone     |= (y == FIX_ZERO);
+
+  isresult  |= (x != FIX_ZERO) & (yneg) & (y_is_int);
+
+  isnan     |= (xneg) & (yneg) & (!y_is_int);
+
+  isinfpos  |= (yisinfpos) & (!xneg) & (xmagoneg);
+  isone     |= (yisinfpos) & (!xneg) & (xmagone );
+  iszero    |= (yisinfpos) & (!xneg) & (xmagonel);
+  iszero    |= (yisinfpos) & ( xneg) & (xmagonel);
+  isnegone  |= (yisinfpos) & ( xneg) & (xmagone );
+  isinfneg  |= (yisinfpos) & ( xneg) & (xmagoneg);
+
+  iszero    |= (yisinfneg) & (!xneg) & (xmagoneg);
+  isone     |= (yisinfneg) & (!xneg) & (xmagone );
+  isinfpos  |= (yisinfneg) & (!xneg) & (xmagonel) & (x != FIX_ZERO);
+  iszero    |= (yisinfneg) & (x != FIX_ZERO);
+  isinfneg  |= (yisinfneg) & ( xneg) & (xmagonel) & (x != FIX_ZERO);
+  isnegone  |= (yisinfneg) & ( xneg) & (xmagone );
+  iszero    |= (yisinfneg) & ( xneg) & (xmagoneg);
+
+  // The truth table is simple; it doesn't say when we need to flip the sign of
+  // the result in the R^R case. Spell it out here...
+  uint8_t invert_result = (xneg) & (y_is_int) & (y_int_mod_2 == 1);
+
+  return FIX_IF_NAN(isnan)   |
+    FIX_IF_INF_POS(isinfpos) |
+    FIX_IF_INF_NEG(isinfneg) |
+    MASK_UNLESS( (!isnan) & isone, one) |
+    MASK_UNLESS( (!isnan) & iszero, FIX_ZERO) |  /* no-op, but it keeps the compiler happy */
+    MASK_UNLESS( (!isnan) & isnegone, neg_one) |
+    MASK_UNLESS( (!excep) & isresult & (!invert_result), result) |
+    MASK_UNLESS( (!excep) & isresult & ( invert_result), fix_neg(result));
 }
