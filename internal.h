@@ -270,6 +270,27 @@ uint64_t fixfrac(char* frac);
   0;                                                                                                 \
 })
 
+#define UNSAFE_UNSIGNED_MUL_64_64_128(op1, op2, resultlow, resulthigh)                                 \
+({                                                                                                     \
+  uint64_t xhigh = op1 >> 32;                                                                            \
+  uint64_t xlow = op1 & 0xffffffff;                                                                      \
+  uint64_t yhigh = op2 >> 32;                                                                            \
+  uint64_t ylow = op2 & 0xffffffff;                                                                      \
+                                                                                                       \
+  uint64_t z0 = xlow * ylow;                                                                           \
+  uint64_t z1 = xlow * yhigh;                                                                          \
+  uint64_t z2 = xhigh * ylow;                                                                          \
+  uint64_t z3 = xhigh * yhigh;                                                                         \
+                                                                                                       \
+  resultlow = (z0) + ((z1 & 0xffffffff) << 32) + ((z2 & 0xffffffff) << 32);                            \
+  uint64_t carry = (((z0 >> 32) + (z1 & 0xffffffff) + (z2 & 0xffffffff)) & 0xffffffff00000000) >> 32;  \
+                                                                                                       \
+  resulthigh = carry + z3 + ((z1 & 0xffffffff00000000) >> 32) + ((z2 & 0xffffffff00000000) >> 32);     \
+                                                                                                       \
+  0;                                                                                                   \
+})
+
+
 
 /* We end up with FIX_INT_BITS of extra sign bit on the top of the multiplied
  * number, along with the sign bit that's already there. If they aren't all 0 or
@@ -324,6 +345,19 @@ uint64_t fixfrac(char* frac);
       !!(tmphigh); \
     tmp; \
    })
+//
+// This is the degenerate case of MUL_64_N, where you want the top 64 bits.
+// Can't overflow! Maybe don't give it signed things?
+#define MUL_64_TOP(op1, op2) \
+  ({ \
+    uint64_t tmphigh; \
+    uint64_t tmplow; \
+    UNSAFE_UNSIGNED_MUL_64_64_128(op1, op2, tmplow, tmphigh); \
+    uint64_t tmp = tmphigh + \
+        ((ROUND_TO_EVEN_ADDITION(tmphigh & 1, tmplow & (1ull << 63), tmplow & ~(1ull << 63)))); \
+    tmp; \
+   })
+
 
 #define FIX_MUL_64(op1, op2, overflow) \
     FIX_MUL_64_N(op1, op2, overflow, FIX_POINT_BITS)
