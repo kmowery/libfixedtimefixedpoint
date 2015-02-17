@@ -69,11 +69,14 @@ fixed fix_exp(fixed op1) {
    *
    * By summing the log_2( x/n ), you can pick a value for the internal
    * representation:
+   *
+   * Since we chose this such that the last round adds nothing, we are
+   * guaranteed bit-accurate taylor series approximation (at least in a fix_internal).
    */
 
 #define FIX_EXP_LOOP 26
 
-  /* To generate the preceding table:
+  /* To generate the table of fractional bits vs. loop iterations:
    *
    * l = 0.
    * for i in range(1,40):
@@ -95,24 +98,26 @@ fixed fix_exp(fixed op1) {
     e_x += term;
   }
 
+  isinfpos |= overflow;
+
   fix_internal result = e_x;
 
-  uint8_t inf = overflow;
-
-  // x is approximately in the range [-2^FIX_INT_BITS, 2^FIX_INT_BITS], and we
-  // maped it to [-2, 2]. We need one squaring for each halving, which means
+  // x is in the range [-2^FIX_INT_BITS, 2^FIX_INT_BITS], and we
+  // mapped it to [-2, 2]. We need one squaring for each halving, which means
   // that squarings can be at most log2(2^FIX_INT_BITS)-2 or
   // log2(2^FIX_FRAC_BITS)-2.
   //
-  // (We need to worry about frac bits because negative numbers will to <= -1,
+  // (We need to worry about frac bits because negative numbers will map to <= -1,
   // which produces 0.367, which might then need to multiply itself out of
   // existence.)
   //
-  // But that's overzealous: If x is positive, e^x must fit in 2^FIX_INT_BITS.
+  // But that's overzealous: If x is positive, e^x must fit in 2^FIX_INT_BITS,
+  // or we will return FIX_INF_POS.
+  //
   // If we reduced the number before the approximation (as opposed to leaving it
   // alone), then x was greater than or equal to 2, and the reduction r will be
   // >= 1. In this case, the approximation of e^r will produce at least e^1, or
-  // ~2.718. This requires only ceil(log2(ln(2**FIX_INT_BITS))+1) successive
+  // ~2.718. This requires only ceil(log2(ln(2^FIX_INT_BITS))+1) successive
   // doublings before it will overflow the fixed.
   //
   // If x is negative, we need s squarings so that 0.367 will square itself
@@ -143,45 +148,67 @@ fixed fix_exp(fixed op1) {
 #error Unknown number of FIX_INT_BITS in fix_exp
 #endif
 
-  /* We're going to be squaring the result a few times. This process will double
-   * the number of integer bits in the number, and so we need to keep track of
-   * how many fractional bits we still have.
+  /* We need to square the result a few times. To do this as accurately as
+   * possible, we'd like to keep as many significant bits as we can. To this
+   * end, we build our own one-off floating point format.
    *
-   * When we do this squaring, we want to keep all resulting integer bits and
-   * crop off fractional bits. In 64-bit fixed, This is equivalent to keeping
-   * the top 64 bits of the 128-bit multiplication result.
+   * First, result is some number in [e^-2, e^2], which means it's positive.
    *
-   * I think we could improve accuracy slightly by computing the log_2 of
-   * result, and counting integer bits better. For example, we shouldn't end up
-   * with 16 integer bit if we're computing a fixed with 10 integer bits. For
-   * now, though, this works well enough.
+   * Take the floor(log2(result)), and save that as the "int bits" i. Then, in
+   * rshift, shift result such that its MSB is in bit 63. Treated as a 0.64
+   * fixed point value, this number is in [0.5, 1).
+   *
+   *   resultl         = rshift * 2^i
+   *
+   * To square things, we do:
+   *
+   *   result * result = rshift * rshift * 2^i * 2^i
+   *   result * result = rshift * rshift * 2^(i+i)
+   *
+   * Note though, that rshift is in [0.25, 1). We want to keep as many
+   * significant bit as possible. Therefore, if rshift * rshift < 0.5, shift it
+   * up one and subtract off one int bit.
+   *
+   *   r2shift * 2^i' = rshift * rshift * 2^(2i)
+   *
+   *   r2shift = rshift * rshift             if rshift * rshift >= 0.5
+   *   r2shift = rshift * rshift * 2          otherwise.
+   *
+   *   i' = 2i                               if rshift * rshift >= 0.5
+   *   i' = 2i - 1                           if rshift * rshift < 0.5
+   *
    */
-  fix_internal r2;
-  int8_t frac_bits_remaining = FIX_INTERN_FRAC_BITS;
+
+  int32_t rlog = fixed_log2(result);
+  fix_internal rshift = (result) << (63 - rlog);
+  int32_t rint_bits = rlog - FIX_INTERN_FRAC_BITS +1; // +1 is for the sign bit we're not using
+
+  fix_internal r2shift = 0;
 
   for(int i = 0; i < FIX_SQUARE_LOOP; i++) {
-    inf = 0;
 
-    r2 = MUL_64_N(result, result, inf, 62);
+    r2shift = MUL_64_TOP(rshift, rshift);
 
-    result = MASK_UNLESS(squarings > 0, r2) |
-             MASK_UNLESS(squarings == 0, result);
-    frac_bits_remaining = frac_bits_remaining - MASK_UNLESS(squarings > 0, (62 - frac_bits_remaining));
-    isinfpos |= MASK_UNLESS(squarings > 0, inf);
+    // r2shift will represent a number between [0.25, 1) in 0.64 fixed. Therefore, it _might_
+    // have a zero top bit. If it does, take it off.
+
+    rshift = MASK_UNLESS(squarings >  0, r2shift << !(FIX_TOP_BIT(r2shift))) |
+             MASK_UNLESS(squarings == 0, rshift);
+
+    rint_bits = rint_bits + MASK_UNLESS(squarings > 0, rint_bits - !FIX_TOP_BIT(r2shift));
 
     squarings = MASK_UNLESS(squarings > 0, squarings-1);
   }
 
-  int8_t shift = frac_bits_remaining - FIX_POINT_BITS;
-  fixed final_result =
-      MASK_UNLESS(shift <  0, result << (-(shift))) |
-      MASK_UNLESS(shift >= 0, ROUND_TO_EVEN(result, (shift + FIX_FLAG_BITS)) << FIX_FLAG_BITS);
+  // If this is positive, we've overflowed the 64-bit range.
+  // If this is zero, we've overflowed the sign bit.
+  int32_t shift = rint_bits - FIX_INT_BITS;
 
-  // If we're shifted too far to the left, the result should be infinity
-  // Check the sign bit as well.
-  isinfpos |= (shift < -63);
-  isinfpos |= MASK_UNLESS(shift < 0, ((final_result & (~FIX_TOP_BIT_MASK)) >> (-shift)) != result);
-  isinfpos |= !!(FIX_TOP_BIT(final_result));
+  // This round will work if FIX_FLAG_BITS >= 2.
+  fixed final_result = MASK_UNLESS(shift > (-64 + FIX_FLAG_BITS),
+        ROUND_TO_EVEN(rshift, ((-shift) + FIX_FLAG_BITS)) << FIX_FLAG_BITS);
+
+  isinfpos |= (shift >= 0);
 
   // note that we want to return 0 if op1 is FIX_INF_NEG...
   return FIX_IF_NAN(isnan) |
