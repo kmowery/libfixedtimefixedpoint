@@ -114,6 +114,7 @@ double fix_convert_to_double(fixed op1);
 void fix_print(char* buffer, fixed f);
 void fix_print_nospecial(char* buffer, fixed f);
 void fix_internal_print(char* buffer, fix_internal f);
+void fix_allfrac_print(char* buffer, fix_internal f);
 
 /* Note that this is not constant time, but will return a buffer sized to the
  * number. */
