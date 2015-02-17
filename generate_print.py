@@ -113,9 +113,7 @@ def make_print_function(preamble, int_bits, frac_bits, flag_bits):
 
   uint32_t carry = 0;
   uint32_t scratch = 0;
-  uint32_t neg = !!FIX_TOP_BIT(f);
-
-  f = fix_abs(f);"""
+  """
 
     f += "\n".join(["  uint8_t bit%d = (((f) >> (%d))&1);"%(i,i) for i in range(flag_bits,flag_bits+number_bits)])
 
@@ -173,7 +171,9 @@ with args["file"] as f:
     f.write(make_print_function("""void fix_print(char* buffer, fixed f) {
   uint8_t isinfpos = FIX_IS_INF_POS(f);
   uint8_t isinfneg = FIX_IS_INF_NEG(f);
-  uint8_t isnan = FIX_IS_NAN(f);""",
+  uint8_t isnan = FIX_IS_NAN(f);
+  uint32_t neg = !!FIX_TOP_BIT(f);
+  f = fix_abs(f);""",
   int_bits, frac_bits, flag_bits))
 
     f.write("\n\n");
@@ -181,12 +181,23 @@ with args["file"] as f:
     f.write(make_print_function( """void fix_print_nospecial(char* buffer, fixed f) {
   uint8_t isinfpos = 0;
   uint8_t isinfneg = 0;
-  uint8_t isnan = 0;""",
+  uint8_t isnan = 0;
+  uint32_t neg = !!FIX_TOP_BIT(f);
+  f = fix_abs(f);""",
   int_bits, frac_bits, flag_bits))
 
     f.write(make_print_function( """void fix_internal_print(char* buffer, fix_internal f) {
   uint8_t isinfpos = 0;
   uint8_t isinfneg = 0;
-  uint8_t isnan = 0;""",
+  uint8_t isnan = 0;
+  uint32_t neg = !!FIX_TOP_BIT(f);
+  f = fix_abs(f);""",
   internal_int_bits, internal_frac_bits, 0))
 
+    f.write(make_print_function( """void fix_allfrac_print(char* buffer, fix_internal f) {
+  uint8_t isinfpos = 0;
+  uint8_t isinfneg = 0;
+  uint8_t isnan = 0;
+  uint32_t neg = 0;
+  """,
+  0, 64, 0))
