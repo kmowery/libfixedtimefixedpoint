@@ -342,7 +342,7 @@ uint64_t fixfrac(char* frac);
     uint64_t tmp = tmplow2; \
     /* inf only if overflow, and not a sign thing */ \
     overflow |= \
-      !!(tmphigh); \
+      (!!(tmphigh) & (tmphigh != -1)); \
     tmp; \
    })
 //
