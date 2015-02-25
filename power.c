@@ -7,6 +7,7 @@
 fixed fix_exp(fixed op1) {
 
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
+  uint8_t isinfneg = FIX_IS_INF_NEG(op1);
   uint8_t isnan    = FIX_IS_NAN(op1);
 
   uint8_t isneg    = FIX_IS_NEG(op1);
@@ -166,7 +167,7 @@ fixed fix_exp(fixed op1) {
    *   result * result = rshift * rshift * 2^(i+i)
    *
    * Note though, that rshift is in [0.25, 1). We want to keep as many
-   * significant bit as possible. Therefore, if rshift * rshift < 0.5, shift it
+   * significant bits as possible. Therefore, if rshift * rshift < 0.5, shift it
    * up one and subtract off one int bit.
    *
    *   r2shift * 2^i' = rshift * rshift * 2^(2i)
@@ -176,6 +177,22 @@ fixed fix_exp(fixed op1) {
    *
    *   i' = 2i                               if rshift * rshift >= 0.5
    *   i' = 2i - 1                           if rshift * rshift < 0.5
+   *
+   * Error calculations:
+   *
+   *  rshift begins as a exp result, accurate to 2^FIX_INTERN_FRAC_BITS, or
+   *  2^60.
+   *
+   *  Each time we square the number, we retain 64 significant bits, and lose 64
+   *  less significant bits. This causes an error at each stage of <= X * 2^-64.
+   *  The total error, after n squarings, can then be bounded by:
+   *
+   *    E = ( ( (rshift * (1+2^-60))^2 * (1+2^-64) )^2 ...)^2
+   *
+   *    E = (rshift)^(2^n) * (1 + 2^-60)^(2^n) * (1 + 2^-64)^(2^n - 1)
+   *
+   *  With the maximum of 6 squarings, this gives a maximum error of n * 2^-53.9,
+   *  for almost 54 bits of accuracy.
    *
    */
 
@@ -208,12 +225,12 @@ fixed fix_exp(fixed op1) {
   fixed final_result = MASK_UNLESS(shift > (-64 + FIX_FLAG_BITS),
         ROUND_TO_EVEN(rshift, ((-shift) + FIX_FLAG_BITS)) << FIX_FLAG_BITS);
 
-  isinfpos |= (shift >= 0);
+  isinfpos |= ((shift >= 0) & (!isinfneg));
 
   // note that we want to return 0 if op1 is FIX_INF_NEG...
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |
-    MASK_UNLESS(!FIX_IS_INF_NEG(op1), FIX_DATA_BITS(final_result));
+    MASK_UNLESS(!isinfneg, FIX_DATA_BITS(final_result));
 }
 
   // We don't want to use a inline function here to avoid pointers
