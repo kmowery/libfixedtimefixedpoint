@@ -659,6 +659,7 @@ LN(63     , FIXNUM(63,0)      , FIXNUM(4,143134726391532687895843217))   \
 LN(64     , FIXNUM(64,0)      , FIXNUM(4,158883083359671856503392729))   \
 LN(64_5   , FIXNUM(64,5)      , FIXNUM(4,166665223801726805450855629))   \
 LN(epsilon, FIX_EPSILON       , FIX_TEST_LN_epsilon)                     \
+LN(big    , FIXNUM(536870911,0), FIXNUM(20,10126823437576882213405101290619719824480))\
 LN(max    , FIX_MAX           , FIX_TEST_LN_max)                         \
 LN(inf    , FIX_INF_POS       , FIX_INF_POS)                             \
 LN(neg    , FIXNUM(-1,0)      , FIX_NAN)                                 \
@@ -821,40 +822,63 @@ SQRT_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define POW(name, op1, op2, result) \
+#define POW(name, op1, op2, result, bitaccuracy) \
 TEST_HELPER(pow_##name, { \
   fixed o1 = op1; \
   fixed o2 = op2; \
   fixed powresult = fix_pow(o1, o2); \
   fixed expected = result; \
-  CHECK_EQ_NAN(#name, powresult, expected); \
+  fixed bound = ((FIX_EPSILON) + FIX_DATA_BITS( (((bitaccuracy) >= 0) ? ((expected) >> (bitaccuracy)) : ((expected) << (-(bitaccuracy))) )) ); \
+  CHECK_DIFFERENCE(#name, powresult, expected, bound); \
 };)
 
-#define POW_TESTS                                                               \
-POW(zero_zero       , FIX_ZERO          , FIX_ZERO,      FIX_ZERO)              \
-POW(zero_one        , FIX_ZERO          , FIXNUM(1,0),   FIX_ZERO)              \
-POW(half_zero       , FIXNUM(0,5)       , FIX_ZERO   ,   FIXNUM(1,0) )          \
-POW(half_square     , FIXNUM(0,5)       , FIXNUM(2,0),   FIXNUM(0,25) ) \
-POW(half_nsquare    , FIXNUM(0,5)       , FIXNUM(-2,0),  FIXNUM(3,99996948242) ) \
-POW(half_neight     , FIXNUM(0,5)       , FIXNUM(-8,0),  FIXNUM(255,994140625) ) \
-POW(one2            , FIXNUM(1,0)       , FIXNUM(2,0),   FIXNUM(1,0))           \
-POW(one4            , FIXNUM(1,0)       , FIXNUM(4,0),   FIXNUM(1,0))           \
-POW(ten_square      , FIXNUM(10,0)      , FIXNUM(2,0),   FIXNUM(99,2214660644)) \
-POW(ten_cubed       , FIXNUM(10,0)      , FIXNUM(3,0),   FIXNUM(988,31304931640)) \
-POW(neg_one2        , FIXNUM(-1,0)      , FIXNUM(2,0),   FIXNUM(1,0))           \
-POW(neg_one3        , FIXNUM(-1,0)      , FIXNUM(3,0),   FIXNUM(-1,0))          \
-POW(neg_two2        , FIXNUM(-2,0)      , FIXNUM(2,0),   FIXNUM(3,999969482421))   \
-POW(neg_two3        , FIXNUM(-2,0)      , FIXNUM(3,0),   FIXNUM(-7,9999084472)) \
-POW(neg_two_neg2    , FIXNUM(-2,0)      , FIXNUM(-2,0),  FIXNUM(0,25))  \
-POW(neg_two_nan     , FIXNUM(-2,0)      , FIXNUM(2,5),   FIX_NAN)               \
-POW(neg_pos_overflow, FIXNUM(-2,0)      , FIXNUM(128,0), FIX_INF_POS)           \
-POW(neg_overflow    , FIXNUM(-2,0)      , FIXNUM(127,0), FIX_INF_NEG)           \
-POW(ten_overflow    , FIXNUM(10,0)      , FIXNUM(100,0), FIX_INF_POS)           \
-POW(inf_not         , FIX_INF_POS       , FIXNUM(1,0),   FIX_INF_POS)           \
-POW(not_inf         , FIXNUM(2,0)       , FIX_INF_POS,   FIX_INF_POS)           \
-POW(not_inf_neg     , FIXNUM(2,0)       , FIX_INF_NEG,   FIX_ZERO)              \
-POW(nan_not         , FIX_NAN           , FIXNUM(1,0),   FIX_NAN    )           \
-POW(not_nan         , FIXNUM(2,0)       , FIX_NAN    ,   FIX_NAN    )
+/* We add FIX_EPSILON to the shifted result above in order to ignore rounding
+ * issues when shifting expected, and to always allow a FIX_EPSILON upper bound on error. */
+
+#define POW_TESTS                                                                                                                        \
+POW(zero_zero       , FIX_ZERO           , FIX_ZERO     , FIXNUM(1,0)                      , 63)                                         \
+POW(zero_one        , FIX_ZERO           , FIXNUM(1,0)  , FIX_ZERO                         , 63)                                         \
+POW(half_zero       , FIXNUM(0,5)        , FIX_ZERO     , FIXNUM(1,0)                      , 63 )                                        \
+POW(half_square     , FIXNUM(0,5)        , FIXNUM(2,0)  , FIXNUM(0,25)                     , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-1 : 46)  \
+POW(half_nsquare    , FIXNUM(0,5)        , FIXNUM(-2,0) , FIXNUM(4,0)                      , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-1 : 46)  \
+POW(half_neight     , FIXNUM(0,5)        , FIXNUM(-8,0) , FIXNUM(256 ,0)                   , FIX_FRAC_BITS <= 1 ? FIX_FRAC_BITS - 6 :    \
+                                                                                             FIX_FRAC_BITS < 48 ? FIX_FRAC_BITS-4 : 44)  \
+POW(sqrt            , FIXNUM(536870911,0), FIXNUM(0,5)  ,                                                                                \
+                      FIX_INT_BITS <= 29 ? FIX_INF_POS :                                                                                 \
+                      FIXNUM(23170,4749843416028319405320375889409653360224397842555396195)                                              \
+                                                                                           , FIX_FRAC_BITS >= 48 ? 48 : FIX_FRAC_BITS)   \
+                      /* (1 + 2^-13)  */                                                                                                 \
+POW(epsilon         , FIXNUM(1,0001220703125), FIXNUM(70911,0),                                                                          \
+                      FIX_INT_BITS <= 17 ? FIX_INF_POS :                                                                                 \
+                      FIXNUM(5742,211216908114514755729967881141948869288460297210364158767605983527118659),                             \
+                        FIX_FRAC_BITS <  13 ? 0 :                                                                                        \
+                        FIX_FRAC_BITS <= 15 ? FIX_FRAC_BITS - 20 :                                                                       \
+                        FIX_FRAC_BITS <= 47 ? FIX_FRAC_BITS - 16 :                                                                       \
+                        31                                                                                                               \
+                      )                                                                                                                  \
+                                                                                                                                         \
+POW(one2         , FIXNUM( 1,0) , FIXNUM( 2,0) , FIXNUM(1   ,0)                             , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-2 : 46) \
+POW(one4         , FIXNUM( 1,0) , FIXNUM( 4,0) , FIXNUM(1   ,0)                             , FIX_FRAC_BITS < 48 ? FIX_FRAC_BITS-3 : 45) \
+POW(two_sqrt     , FIXNUM( 2,0) , FIXNUM( 0,5) , FIXNUM(1   ,41421356237309504880168872421) , FIX_FRAC_BITS < 48 ? FIX_FRAC_BITS-1 : 48) \
+POW(ten_sqrt     , FIXNUM(10,0) , FIXNUM( 0,5) , FIXNUM(3   ,16227766016837933199889354443) , FIX_FRAC_BITS < 36 ? FIX_FRAC_BITS   : 35) \
+POW(ten_square   , FIXNUM(10,0) , FIXNUM( 2,0) , FIXNUM(100 ,0)                             , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-2 : 46) \
+POW(ten_odd      , FIXNUM(10,0) , FIXNUM( 1,5) , FIXNUM(31  ,6227766016837933199889354443)  , FIX_FRAC_BITS < 48 ? FIX_FRAC_BITS-1 : 47) \
+POW(ten_cubed    , FIXNUM(10,0) , FIXNUM( 3,0) , FIXNUM(1000,0)                             , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-2 : 46) \
+POW(neg_one2     , FIXNUM(-1,0) , FIXNUM( 2,0) , FIXNUM(1   ,0)                             , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-2 : 46) \
+POW(neg_one3     , FIXNUM(-1,0) , FIXNUM( 3,0) , FIXNUM(-1  ,0)                             , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-2 : 46) \
+POW(neg_two2     , FIXNUM(-2,0) , FIXNUM( 2,0) , FIXNUM(4   ,0)                             , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-2 : 46) \
+POW(neg_two3     , FIXNUM(-2,0) , FIXNUM( 3,0) , FIXNUM(-8  ,0)                             , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-2 : 46) \
+POW(neg_two_neg2 , FIXNUM(-2,0) , FIXNUM(-2,0) , FIXNUM(0   ,25)                            , FIX_FRAC_BITS < 47 ? FIX_FRAC_BITS-2 : 46) \
+POW(neg_two_nan     , FIXNUM(-2,0)      , FIXNUM(2,5),    FIX_NAN, 63)                                                                   \
+POW(neg_pos_overflow, FIXNUM(-2,0)      , FIXNUM(536870910,0), FIX_FRAC_BITS < 29 ? FIX_INF_POS : FIX_INF_NEG, 63)                       \
+POW(neg_overflow    , FIXNUM(-2,0)      , FIXNUM(127,0),  FIX_INF_NEG, 63)                                                               \
+POW(ten_overflow    , FIXNUM(10,0)      , FIXNUM(100,0),  FIX_INF_POS, 63)                                                               \
+POW(inf_not         , FIX_INF_POS       , FIXNUM(1,0),    FIX_INF_POS, 63)                                                               \
+POW(not_inf         , FIXNUM(2,0)       , FIX_INF_POS,    FIX_INF_POS, 63)                                                               \
+POW(not_inf_neg     , FIXNUM(2,0)       , FIX_INF_NEG,    FIX_ZERO, 63)                                                                  \
+POW(nan_not         , FIX_NAN           , FIXNUM(1,0),    FIX_NAN, 63    )                                                               \
+POW(not_nan         , FIXNUM(2,0)       , FIX_NAN    ,    FIX_NAN, 63    )
+
 POW_TESTS
 
 //////////////////////////////////////////////////////////////////////////////

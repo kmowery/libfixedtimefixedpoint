@@ -567,7 +567,9 @@ fixed fix_sqrt(fixed op1) {
  * fixed each time... */
 
 /* The complicated bits here are to deal with the case where you do x^y, but x
- * is negative and y is non-integer... */
+ * is negative and y is non-integer...
+ */
+
 fixed fix_pow(fixed x, fixed y) {
   uint8_t isnan = FIX_IS_NAN(x) | FIX_IS_NAN(y);
 
