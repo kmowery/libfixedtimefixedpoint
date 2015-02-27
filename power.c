@@ -585,7 +585,22 @@ fixed fix_pow(fixed x, fixed y) {
   /* Store x's sign, and then check if it's positive. */
   uint8_t xneg = FIX_IS_NEG(x);
   uint8_t yneg = FIX_IS_NEG(y);
+
+  fixed one = FIXINT(1);
+  fixed neg_one = FIXNUM(-1,0);
+
+#if FIX_INT_BITS == 1
+  fixed xorig = x;
   x = fix_abs(x);
+  uint8_t xmagone  = (xorig == FIX_MIN);
+  uint8_t xmagonel = (xorig != FIX_MIN);
+  uint8_t xmagoneg = 0;
+#else
+  x = fix_abs(x);
+  uint8_t xmagone  = fix_eq(x, one);
+  uint8_t xmagonel = fix_lt(x, one);
+  uint8_t xmagoneg = fix_gt(x, one);
+#endif
 
   // To know if y is an integer, we need it to be positive.
   fixed yabs = fix_abs(y);
@@ -601,12 +616,6 @@ fixed fix_pow(fixed x, fixed y) {
   uint8_t isone = 0;
   uint8_t iszero = 0;
   uint8_t isnegone = 0;
-
-  fixed one = FIXINT(1);
-  fixed neg_one = fix_neg(one);
-  uint8_t xmagone  = fix_eq(x, one);
-  uint8_t xmagonel = fix_lt(x, one);
-  uint8_t xmagoneg = fix_gt(x, one);
 
   uint8_t isresult = 0;
 
@@ -631,6 +640,9 @@ fixed fix_pow(fixed x, fixed y) {
    *   Inf          -Inf         Inf
    *  -Inf           Inf        -Inf
    *  -Inf          -Inf        -Inf
+   *
+   *  -Inf           R>0, even   Inf
+   *  -Inf           R>0, odd   -Inf
    *
    *   R>0           R>0         R^R
    *   R<0           R>0         R^R
@@ -665,15 +677,12 @@ fixed fix_pow(fixed x, fixed y) {
   isinfpos  |= xisinfpos;
   isinfneg  |= xisinfneg;
 
-  isinfpos  |= yisinfpos & (!xisinfpos) & (!xneg);
-  isinfneg  |= yisinfpos & (!xisinfpos) & ( xneg);
+  isresult  |= (!excep) & (x != FIX_ZERO) & (!yneg) & (y != FIX_ZERO);
+  iszero    |= (!excep) & (x == FIX_ZERO) & (!yneg) & (y != FIX_ZERO);
 
-  isresult  |= (x != FIX_ZERO) & (!yneg) & (y != FIX_ZERO);
-  iszero    |= (x == FIX_ZERO) & (!yneg) & (y != FIX_ZERO);
+  isone     |= (!excep) & (y == FIX_ZERO);
 
-  isone     |= (y == FIX_ZERO);
-
-  isresult  |= (x != FIX_ZERO) & (yneg) & (y_is_int);
+  isresult  |= (!excep) & (x != FIX_ZERO) & (yneg) & (y_is_int);
 
   isnan     |= (xneg) & (yneg) & (!y_is_int);
 
@@ -696,12 +705,23 @@ fixed fix_pow(fixed x, fixed y) {
   // the result in the R^R case. Spell it out here...
   uint8_t invert_result = (xneg) & (y_is_int) & (y_int_mod_2 == 1);
 
+
+  // If the result went to infinity...
+  isinfpos |= (!excep) & ((FIX_IS_INF_POS(result) & (!invert_result)) |
+                          (FIX_IS_INF_NEG(result) & ( invert_result)));
+
+  isinfneg |= (!excep) & ((FIX_IS_INF_POS(result) & ( invert_result)) |
+                          (FIX_IS_INF_NEG(result) & (!invert_result)));
+
+  isnan |= (!excep) & FIX_IS_NAN(result);
+
   return FIX_IF_NAN(isnan)   |
-    FIX_IF_INF_POS(isinfpos) |
-    FIX_IF_INF_NEG(isinfneg) |
-    MASK_UNLESS( (!isnan) & isone, one) |
-    MASK_UNLESS( (!isnan) & iszero, FIX_ZERO) |  /* no-op, but it keeps the compiler happy */
-    MASK_UNLESS( (!isnan) & isnegone, neg_one) |
-    MASK_UNLESS( (!excep) & isresult & (!invert_result), result) |
-    MASK_UNLESS( (!excep) & isresult & ( invert_result), fix_neg(result));
+    FIX_IF_INF_POS((!isnan) & isinfpos) |
+    FIX_IF_INF_NEG((!isnan) & isinfneg) |
+    FIX_DATA_BITS(
+      MASK_UNLESS( (!isnan) & isone, one) |
+      MASK_UNLESS( (!isnan) & iszero, FIX_ZERO) |  /* no-op, but it keeps the compiler happy */
+      MASK_UNLESS( (!isnan) & isnegone, neg_one) |
+      MASK_UNLESS( (!excep) & isresult & (!invert_result), result) |
+      MASK_UNLESS( (!excep) & isresult & ( invert_result), fix_neg(result)));
 }
