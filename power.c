@@ -561,7 +561,42 @@ fixed fix_sqrt(fixed op1) {
  *     ln z = y ln(x)
  *        z = e ^ (y ln(x))
  *
- * */
+ *  Error analysis:
+ *
+ *    fix_ln  has an error of max(fix_epsilon, 0.000000000000004).
+ *    fix_exp has an error of max(fix_epsilon, (1 + 2^-64)^63 * (1 + 2*-60)^64).
+ *
+ *  Therefore, to calculate the error, we take a worst-case scenario and
+ *  subtract the real valued output:
+ *
+ *   error <= e^((ln(x) + max(fix_epsilon,  0.000000000000004)) * y) * fix_exp_error - e^(ln(x)y)
+ *         <= e^(ln(x) * y) e^(max(fix_epsilon, fix_ln_error * abs(y))) * fix_exp_error - e^(ln(x)y)
+ *         <= e^(ln(x) * y) * (e^(max(fix_epsilon, fix_ln_error * abs(y))) * fix_exp_error - 1)
+ *
+ *  Unfortunately, this means that error depends fairly heavily on the value of y.
+ *
+ *  This error will be calculated in significant binary digits.
+ *
+ *  To calculate the error for a fixed with F fracbits and y = ###Y###, in python:
+
+   # import sympy
+   # y,z = sympy.symbols("y z")
+   # def make_poly(depth):
+   #  return ((e**y) * sympy.sympify("1+z**-60")) if depth == 0 else \
+   #    (make_poly(depth-1)**2 * (sympy.sympify("1+z**-64")))
+   #
+   # fracbits = sympy.symbols("f")
+   # epsilon = Float("2", 100)**-(fracbits)
+   # lnerr = sympy.Max(0.000000000000004, epsilon)
+   # experr = sympy.Max(mak_poly(6), epsilon)
+   #
+   # pow_err = (experr * (sympy.E**sympy.Max(epsilon, lnerr * sympy.Abs(y))) * experr - 1)
+
+   # for i in range(1,63):
+   #  pow_err_est = pow_err.subs([(z,2)]).subs([(fracbits, i), (y,###Y###)]).evalf(50)
+   #  print i, sympy.log(pow_err_est,2).evalf(60), pow_err_est
+
+ */
 
 /* We might be able to make this a little bit more precise by not casting to a
  * fixed each time... */
