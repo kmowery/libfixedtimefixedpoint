@@ -410,57 +410,6 @@ typedef uint64_t fix_internal;
 
 
 
-// Multiply two 2.28 bit fixed point numbers
-#define MUL_2x28(op1, op2) ((uint32_t) ((((int64_t) ((int32_t) (op1)) ) * ((int64_t) ((int32_t) (op2)) )) >> (32-4)) & 0xffffffff)
-
-// Convert a 2.28 bit value into a fixed
-#if FIX_POINT_BITS >= 62
-#define convert_228_to_fixed(v228) \
-  FIX_DATA_BITS( ((fixed) v228) << (FIX_POINT_BITS - 28))
-
-#define convert_228_to_fixed_signed(v228) \
-    FIX_DATA_BITS( ((fixed) v228) << ((FIX_POINT_BITS) - 28));
-
-#elif FIX_POINT_BITS > 28
-/* TODO This might be wrong. check this when we fix a test which uses it... */
-#define convert_228_to_fixed(v228) \
-  FIX_DATA_BITS(SIGN_EXTEND_64( ((fixed) v228) << (FIX_POINT_BITS - 28), \
-                                (FIX_POINT_BITS + 2) ))
-
-#define convert_228_to_fixed_signed(v228) \
-    FIX_DATA_BITS( ((fixed) v228) << ((FIX_POINT_BITS) - 28));
-
-#elif FIX_POINT_BITS == 28
-
-#define convert_228_to_fixed(v228) \
-  FIX_DATA_BITS(SIGN_EXTEND( ((fixed) v228) >> (28 - FIX_POINT_BITS), \
-                             (30 - (28 - FIX_POINT_BITS ) )))
-
-#define convert_228_to_fixed_signed(v228) \
-    FIX_DATA_BITS(((fixed) v228));
-
-#elif FIX_POINT_BITS == 27
-
-#define convert_228_to_fixed(v228) \
-  FIX_DATA_BITS(SIGN_EXTEND( ((fixed) v228) >> (28 - FIX_POINT_BITS), \
-                             (30 - (28 - FIX_POINT_BITS ) )))
-
-#define convert_228_to_fixed_signed(v228) \
-    FIX_DATA_BITS(ROUND_TO_EVEN_ONE_BIT( ((fixed) v228)));
-
-#elif FIX_POINT_BITS <= 27
-
-#define convert_228_to_fixed(v228) \
-  FIX_DATA_BITS(SIGN_EXTEND( ((fixed) v228) >> (28 - FIX_POINT_BITS), \
-                             (30 - (28 - FIX_POINT_BITS ) )))
-
-#define convert_228_to_fixed_signed(v228) \
-    FIX_DATA_BITS(ROUND_TO_EVEN_SIGNED( ((fixed) v228), (28 - (FIX_POINT_BITS))));
-
-#else
-#error Problem with convert_228_to_fixed
-#endif
-
 ///////////////////////////////////////
 //  Helper functions
 ///////////////////////////////////////
