@@ -469,7 +469,7 @@ uint8_t uint64_log2(uint64_t o);
 
 #define fixed_log2 uint64_log2
 
-void cordic(uint32_t* Z, uint32_t* C, uint32_t* S);
+void cordic(fix_internal* Z, fix_internal* C, fix_internal* S);
 
 uint64_t fix_div_64(uint64_t x, uint64_t y, uint8_t* overflow);
 
