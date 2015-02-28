@@ -1095,13 +1095,13 @@ int main(int argc, char** argv) {
     LN_TESTS
     LOG2_TESTS
     LOG10_TESTS
-    EXP_TESTS
 
+    EXP_TESTS
     SQRT_TESTS
 
     POW_TESTS
 
-    SIN_TESTS
+    //SIN_TESTS
     TRIG_TESTS
 
     PRINT_TESTS
