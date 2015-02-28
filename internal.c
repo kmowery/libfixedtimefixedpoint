@@ -68,7 +68,7 @@ fix_internal fix_circle_frac(fixed op1) {
 
   uint8_t overflow = 0;
 
-  fixed big_qtau = 0x3243f6a8885a308d;
+  fixed big_qtau = 0xc90fdaa22168c235;
 
   /*
    * We want to divide op1 by TAU/4 (i.e., Pi/2), and end up with a fix_internal
@@ -83,7 +83,7 @@ fix_internal fix_circle_frac(fixed op1) {
   uint8_t logx = uint64_log2(absx);
 
   /* We change the result by shifting these numbers up. Record the shift... */
-  int8_t shift = logx - (FIX_POINT_BITS);
+  int8_t shift = logx + 1 - (FIX_POINT_BITS);
 
   uint64_t acc = absx << (62 - logx);
   uint64_t base = big_qtau;
@@ -135,7 +135,9 @@ fix_internal fix_circle_frac(fixed op1) {
 
   //return FIX_DATA_BITS(result);
 
-  result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS+1))-1);
+
+  result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS))-1);
+  //internald64("resumod", result);
   return result;
 }
 
