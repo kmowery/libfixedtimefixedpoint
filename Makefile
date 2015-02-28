@@ -11,7 +11,7 @@ ftfp_inc          := ftfp.h internal.h base.h lut.h
 ftfp_obj          := $(ftfp_src:.c=.o)
 ftfp_pre          := $(ftfp_src:.c=.pre)
 
-autogens          := base.h lut.c autogen.c base.pyc
+autogens          := base.h lut.h autogen.c base.pyc
 
 test_ftfp_src     := test.c
 test_ftfp_obj     := $(test_ftfp_src:.c=.o)
