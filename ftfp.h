@@ -98,6 +98,8 @@ fixed fix_sqrt(fixed op1);
  */
 fixed fix_pow(fixed x, fixed y);
 
+
+/* Accurate to 2^-57. */
 fixed fix_sin(fixed op1);
 fixed fix_cos(fixed op1);
 fixed fix_tan(fixed op1);

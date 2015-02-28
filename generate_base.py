@@ -249,7 +249,7 @@ static const fixed fix_e = 0x%016x;
         import mpmath,operator
         mpmath.mp.prec = 100
 
-        tangents = [mpmath.mpf(0.5)**i for i in range(0,60)]
+        tangents = [mpmath.mpf(0.5)**i for i in range(0,61)]
         angles = [mpmath.atan(tan) for tan in tangents]
         circle_fracs = [angle / (mpmath.pi/2) for angle in angles]
 
