@@ -126,7 +126,7 @@ inline uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits) {
     return (value >> n_shift_bits) + ROUND_TO_EVEN_ADDITION(lowbit, highroundbit, restroundbits);
 }
 
-#define ROUND_TO_EVEN_SIGNED(value, n_shift_bits) \
+#define ROUND_TO_EVEN_SIGNED_32(value, n_shift_bits) \
   (SIGN_EX_SHIFT_RIGHT_32(value, n_shift_bits) + \
    !!( \
      (!!((value) & (1LL << ((n_shift_bits)-1))) & !!((value) & ((1LL << ((n_shift_bits)-1))-1))) | \
@@ -363,6 +363,8 @@ uint64_t fixfrac(char* frac);
     FIX_MUL_64_N(op1, op2, overflow, FIX_POINT_BITS)
 
 #define FIX_MUL FIX_MUL_64
+
+#define ROUND_TO_EVEN_SIGNED ROUND_TO_EVEN_SIGNED_64
 
 
 /************************************************************************
