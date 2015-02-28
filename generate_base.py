@@ -116,6 +116,12 @@ if __name__ == "__main__":
         l = ["#define %s_%d ((fix_internal) 0x%016x)"%(name, i, decimal_to_fix_extrabits(x, internal_frac_bits)) for i,x in enumerate(lut)]
         return "\n".join(l) + "\n"
 
+    def make_c_internal_define_lut(lut, name, varname):
+        l = ["  0x%016x"%(decimal_to_fix_extrabits(x, internal_frac_bits)) for x in lut]
+        return "#define %s fix_internal %s[%d] = { \\\n"%(name, varname, len(lut)) + \
+               ",\\\n".join(l) + \
+               "\\\n};\n"
+
     # note that 1/0 isn't very useful, so just call it 1
     internal_inv_integer_lut = [Decimal('1')] + [((decimal.Decimal('1')/decimal.Decimal(x))) for x in range(1,25)]
     ln_coef_lut = list(reversed([
@@ -186,6 +192,24 @@ if __name__ == "__main__":
             if x != ''
         ]))
 
+    # generate the cordic luts
+    import mpmath,operator
+    mpmath.mp.prec = 100
+
+    tangents = [mpmath.mpf(0.5)**i for i in range(0,60)]
+    angles = [mpmath.atan(tan) for tan in tangents]
+    circle_fracs = [angle / (mpmath.pi/2) for angle in angles]
+
+    # To speed up the cordic function, we can ignore fractions that are too
+    # small
+    circle_fracs = [cf for cf in circle_fracs if cf >= mpmath.mpf(0.5)**(frac_bits+2)]
+
+    cordic_lut = [decimal.Decimal(str(c)) for c in circle_fracs]
+
+    ps = [mpmath.cos(angle) for angle in angles]
+    p = decimal.Decimal(str(reduce(operator.mul,ps)))
+    cordic_p = decimal_to_fix_extrabits(p, internal_frac_bits)
+
     # Write files
 
     if args["pyfile"] is not None:
@@ -245,13 +269,17 @@ static const fixed fix_e = 0x%016x;
             lutc += '#include "base.h"\n'
             lutc += '#include "internal.h"\n'
             lutc += "\n"
-            lutc += (make_c_internal_lut(internal_inv_integer_lut, "LUT_int_inv_integer"))
+            lutc += (make_c_internal_define_lut(internal_inv_integer_lut, "INT_INV_LUT", "LUT_int_inv_integer"))
             lutc += "\n"
             lutc += (make_c_internal_defines(ln_coef_lut, "FIX_LN_COEF"))
             lutc += "\n"
             lutc += (make_c_internal_defines(log2_coef_lut, "FIX_LOG2_COEF"))
             lutc += "\n"
             lutc += (make_c_internal_defines(log10_coef_lut, "FIX_LOG10_COEF"))
+            lutc += "\n"
+            lutc += "#define CORDIC_N %d\n"%(len(cordic_lut))
+            lutc += "#define CORDIC_P 0x%x\n"%(cordic_p)
+            lutc += (make_c_internal_define_lut(cordic_lut, "CORDIC_LUT", "cordic_lut"))
             lutc += "\n#endif\n"
             f.write(lutc)
 
