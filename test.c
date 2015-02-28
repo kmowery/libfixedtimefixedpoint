@@ -962,7 +962,7 @@ TEST_HELPER(trig_##name, { \
   fixed sinresult = sinx; \
   fixed cosresult = cosx; \
   fixed tanresult = tanx; \
-  if(FIX_IS_INF_POS(op1)) { \
+  if(FIX_IS_INF_POS(op1) | FIX_IS_INF_NEG(op1)) { \
     sinresult = cosresult = tanresult = FIX_NAN; \
   } \
   CHECK_DIFFERENCE(#name " sin", sin, sinresult, bounds); \
@@ -974,50 +974,51 @@ TEST_HELPER(trig_##name, { \
   }\
 };)
 
-#define n3_2 fix_div(FIXNUM(3,0), FIXNUM(2,0))
-
 // Note that tan is poorly defined near pi/2 + n*pi. It's either positive
 // infinity or negative infinity, with very little separating them.
 
-#define TRIG_TESTS                                                                                              \
-TRIG(zero      , FIX_ZERO                             , FIX_ZERO     , FIXNUM(1,0) , FIX_NAN , FIX_EPSILON)     \
-TRIG(pi_2      , FIXNUM( 1,57079632679489661923132169), FIXNUM(1,0)  , FIX_ZERO    , FIX_NAN , FIX_EPSILON)     \
-TRIG(pi        , FIXNUM( 3,14159265358979323846264338), FIX_ZERO     , FIXNUM(-1,0), FIX_NAN , FIX_EPSILON)     \
-TRIG(pi3_2     , FIXNUM( 4,71238898038468985769396507), FIXNUM(-1,0) , FIX_ZERO    , FIX_NAN , FIX_EPSILON)     \
-TRIG(pi2       , FIXNUM( 6,28318530717958647692528676), FIX_ZERO     , FIXNUM(1,0) , FIX_NAN , FIX_EPSILON)     \
-                                                                                                                \
-TRIG(pi5_2     , FIXNUM( 7,85398163397448309615660845), FIXNUM(1,0) , FIX_ZERO    , FIX_NAN , FIX_EPSILON)      \
-TRIG(pi3       , FIXNUM( 9,42477796076937971538793014), FIX_ZERO    , FIXNUM(-1,0), FIX_ZERO, FIX_EPSILON)      \
-TRIG(pi7_2     , FIXNUM(10,99557428756427633461925184), FIXNUM(-1,0), FIX_ZERO    , FIX_NAN , FIX_EPSILON)      \
-TRIG(pi4       , FIXNUM(12,56637061435917295385057353), FIX_ZERO    , FIXNUM(1,0) , FIX_ZERO, FIX_EPSILON)      \
-                                                                                                                \
-TRIG(neg_pi_2  , FIXNUM(-1,57079632679489661923132169) , FIXNUM(-1,0), FIX_ZERO    , FIX_NAN    , FIX_EPSILON)  \
-TRIG(neg_pi    , FIXNUM(-3,14159265358979323846264338) , FIX_ZERO    , FIXNUM(-1,0), FIX_ZERO   , FIX_EPSILON)  \
-TRIG(neg_pi3_2 , FIXNUM(-4,71238898038468985769396507) , FIXNUM(1,0) , FIX_ZERO    , FIX_NAN    , FIX_EPSILON)  \
-TRIG(neg_pi2   , FIXNUM(-6,28318530717958647692528676) , FIX_ZERO    , FIXNUM(1,0) , FIX_ZERO   , FIX_EPSILON)  \
-                                                                                                                \
-TRIG(q1        , FIXNUM(1,0), FIXNUM(0,84147098480789650665250232163029899962256306079837106567275170),         \
-                              FIXNUM(0,540302305868139717400936607442976603732310420617922) ,                   \
-                              FIXNUM(1,557407724654902230506974807458360173087250772381520038383946605698861),  \
-                              FIX_EPSILON)                                                                      \
-TRIG(q2        , FIXNUM(2,57079632679489661923132169163975144209858469968755291048),                            \
-                              FIXNUM( 0,54030230586813971740093660744297660373231042061792222767) ,             \
-                              FIXNUM(-0,84147098480789650665250232163029899962256306079837106567) ,             \
-                              FIXNUM(-0,64209261593433070300641998659426562023027811391817137910) ,             \
-                              FIX_EPSILON)                                                                      \
-TRIG(q3        , FIXNUM(3,6415926535897932384626433832795028841971693993751058209749),                          \
-                              FIXNUM(-0,479425538604203000273287935215571388081803367940600675188),             \
-                              FIXNUM(-0,877582561890372716116281582603829651991645197109744052997),             \
-                              FIXNUM(0,5463024898437905132551794657802853832975517201797912461640),             \
-                              FIX_EPSILON)                                                                      \
-TRIG(q4        , FIXNUM(-0,5),                                                                                  \
-                             FIXNUM(-0,479425538604203000273287935215571388081803367940600675188),              \
-                             FIXNUM(0,8775825618903727161162815826038296519916451971097440529976),              \
-                             FIXNUM(-0,546302489843790513255179465780285383297551720179791246164),              \
-                             FIX_EPSILON)                                                                       \
-                                                                                                                \
-TRIG(inf_pos   , FIX_INF_POS, FIX_NAN, FIX_NAN, FIX_NAN, FIX_ZERO)                                              \
-TRIG(inf_neg   , FIX_INF_NEG, FIX_NAN, FIX_NAN, FIX_NAN, FIX_ZERO)                                              \
+#define err2_57 (FIXNUM(0,000000000000000006938893903907228377647697925567626953125) | FIX_EPSILON)
+
+#define TRIG_TESTS                                                                                             \
+TRIG(zero      , FIX_ZERO                             , FIX_ZERO     ,                                         \
+                   FIX_INT_BITS!=1? FIXNUM(1,0) : FIXNUM( 0,999999999999999999132638262), FIX_NAN , err2_57)   \
+TRIG(pi_2      , FIXNUM( 1,57079632679489661923132169), FIXNUM(1,0)  , FIX_ZERO    , FIX_NAN      , err2_57)   \
+TRIG(pi        , FIXNUM( 3,14159265358979323846264338), FIX_ZERO     , FIXNUM(-1,0), FIX_NAN      , err2_57)   \
+TRIG(pi3_2     , FIXNUM( 4,71238898038468985769396507), FIXNUM(-1,0) , FIX_ZERO    , FIX_NAN      , err2_57)   \
+TRIG(pi2       , FIXNUM( 6,28318530717958647692528676), FIX_ZERO     , FIXNUM(1,0) , FIX_NAN      , err2_57)   \
+                                                                                                               \
+TRIG(pi5_2     , FIXNUM( 7,85398163397448309615660845), FIXNUM(1,0) , FIX_ZERO    , FIX_NAN       , err2_57)   \
+TRIG(pi3       , FIXNUM( 9,42477796076937971538793014), FIX_ZERO    , FIXNUM(-1,0), FIX_ZERO      , err2_57)   \
+TRIG(pi7_2     , FIXNUM(10,99557428756427633461925184), FIXNUM(-1,0), FIX_ZERO    , FIX_NAN       , err2_57)   \
+TRIG(pi4       , FIXNUM(12,56637061435917295385057353), FIX_ZERO    , FIXNUM(1,0) , FIX_ZERO      , err2_57)   \
+                                                                                                               \
+TRIG(neg_pi_2  , FIXNUM(-1,57079632679489661923132169) , FIXNUM(-1,0), FIX_ZERO    , FIX_NAN      , err2_57)   \
+TRIG(neg_pi    , FIXNUM(-3,14159265358979323846264338) , FIX_ZERO    , FIXNUM(-1,0), FIX_ZERO     , err2_57)   \
+TRIG(neg_pi3_2 , FIXNUM(-4,71238898038468985769396507) , FIXNUM(1,0) , FIX_ZERO    , FIX_NAN      , err2_57)   \
+TRIG(neg_pi2   , FIXNUM(-6,28318530717958647692528676) , FIX_ZERO    , FIXNUM(1,0) , FIX_ZERO     , err2_57)   \
+                                                                                                               \
+TRIG(q1        , FIXNUM(1,0), FIXNUM(0,84147098480789650665250232163029899962256306079837106567275170),        \
+                              FIXNUM(0,540302305868139717400936607442976603732310420617922) ,                  \
+                              FIXNUM(1,557407724654902230506974807458360173087250772381520038383946605698861), \
+                              2*err2_57)                                                                       \
+TRIG(q2        , FIXNUM(2,57079632679489661923132169163975144209858469968755291048),                           \
+                              FIXNUM( 0,54030230586813971740093660744297660373231042061792222767) ,            \
+                              FIXNUM(-0,84147098480789650665250232163029899962256306079837106567) ,            \
+                              FIXNUM(-0,64209261593433070300641998659426562023027811391817137910) ,            \
+                              2*err2_57)                                                                       \
+TRIG(q3        , FIXNUM(3,6415926535897932384626433832795028841971693993751058209749),                         \
+                              FIXNUM(-0,479425538604203000273287935215571388081803367940600675188),            \
+                              FIXNUM(-0,877582561890372716116281582603829651991645197109744052997),            \
+                              FIXNUM(0,5463024898437905132551794657802853832975517201797912461640),            \
+                              2*err2_57)                                                                       \
+TRIG(q4        , FIXNUM(-0,5),                                                                                 \
+                             FIXNUM(-0,479425538604203000273287935215571388081803367940600675188),             \
+                             FIXNUM(0,8775825618903727161162815826038296519916451971097440529976),             \
+                             FIXNUM(-0,546302489843790513255179465780285383297551720179791246164),             \
+                             2*err2_57)                                                                        \
+                                                                                                               \
+TRIG(inf_pos   , FIX_INF_POS, FIX_NAN, FIX_NAN, FIX_NAN, FIX_ZERO)                                             \
+TRIG(inf_neg   , FIX_INF_NEG, FIX_NAN, FIX_NAN, FIX_NAN, FIX_ZERO)                                             \
 TRIG(nan       , FIX_NAN,     FIX_NAN, FIX_NAN, FIX_NAN, FIX_ZERO)
 TRIG_TESTS
 

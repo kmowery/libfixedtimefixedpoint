@@ -28,46 +28,10 @@ inline uint8_t uint64_log2(uint64_t o) {
   return log2;
 }
 
+#include "debug.h"
+
+
 fix_internal fix_circle_frac(fixed op1) {
-  /* Scratchpad to compute z:
-   *
-   * variables are lowercase, and considered as integers.
-   * real numbers are capitalized, and are the space we're trying to work in
-   *
-   * op1: input. fixed.
-   * X = op1 / 2^(frac_bits + flag_bits)     # in radians
-   * TAU = 6.28318530718...                  # 2pi
-   * QTAU = TAU/4
-   *
-   * Z = (X / QTAU) % 4                      # the dimensionless circle fraction
-   *
-   * circle_frac = Z * 2^28                  # will fit in 30 bits, 2 for extra
-   *
-   * big_op = op1 << 32
-   * BIG_OP = X * 2^32
-   *
-   * big_qtau = floor(QTAU * 2^(17+32-32+4)) # remove 32-4 bits so that big_op /
-   *          = floor(QTAU * 2^21)           # big_tau has 28-bits of fraction and
-   *                                         # 2 bits of integer
-   *
-   * circle_frac = big_op / big_qtau
-   *   = X * 2^32 / floor(QTAU * 2^21)
-   *  ~= X * 2^11 / QTAU
-   *   = (X / QTAU) * 2^11
-   *  ~= (op1 / QTAU / 2^17) * 2^11
-   *   = (op1 / QTAU) * 2^28                # in [0,4), fills 30 bits at 2.28
-   */
-
-  uint8_t isneg     = FIX_IS_NEG(op1);
-  uint8_t log2      = fixed_log2(op1);
-  uint8_t log2_neg  = fixed_log2((~op1) + 4);
-  uint8_t actuallog = MASK_UNLESS(!isneg, log2) | MASK_UNLESS( isneg, log2_neg);
-
-  uint32_t shiftamt = (((sizeof(fixed) * 8) - 1) - (actuallog+1));
-  fixed opmax = (op1 << shiftamt);
-
-  uint8_t overflow = 0;
-
   fixed big_qtau = 0xc90fdaa22168c235;
 
   /*
@@ -118,34 +82,13 @@ fix_internal fix_circle_frac(fixed op1) {
   // Since we moved y to be slightly above x, result contains a number in Q64.
   //
   int64_t shiftamount = ((64 - FIX_INTERN_FRAC_BITS) - shift);
-  uint64_t roundbits = (result) & ((1ull << shiftamount) -1);
   result = MASK_UNLESS(shiftamount < 64, (result >> shiftamount));
 
-  // If we're supposed to shift the result to the left (or not at all), there's
-  // overflow. Although, if x was the largest negative number, not shifting the
-  // result is okay.
-  //overflow = (shiftamount < 0) | ((shiftamount == 0) & (absx != 0x8000000000000000));
-
-  //result |= !!roundbits;
-
-  //result = ROUND_TO_EVEN(result, FIX_FLAG_BITS) << FIX_FLAG_BITS;
-
-  //result = MASK_UNLESS(ypos == xpos, result) |
-  //         MASK_UNLESS(ypos != xpos, fix_neg(result));
-
-  //return FIX_DATA_BITS(result);
-
-
   result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS))-1);
-
   result = MASK_UNLESS( xpos, result) |
            MASK_UNLESS(!xpos, ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS)) - result));
-
-  // Mask again, just in case result was 0 and x was negative... (can that even
-  // happen?)
   result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS))-1);
 
-  //internald64("resumod", result);
   return result;
 }
 

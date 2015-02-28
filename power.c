@@ -17,6 +17,8 @@ fixed fix_exp(fixed op1) {
 
   uint8_t actuallog = MASK_UNLESS(!isneg, log2) | MASK_UNLESS( isneg, log2_neg);
 
+  INT_INV_LUT;
+
   /* If the number is < 2, then move it directly to the fix_internal format.
    * Otherwise, map it to (-2, 2) in fix_internal. */
   fix_internal scratch =
