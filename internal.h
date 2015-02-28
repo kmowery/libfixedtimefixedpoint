@@ -463,7 +463,7 @@ typedef uint64_t fix_internal;
 //  Helper functions
 ///////////////////////////////////////
 
-uint32_t fix_circle_frac(fixed op1);
+fix_internal fix_circle_frac(fixed op1);
 uint8_t uint32_log2(uint32_t o);
 uint8_t uint64_log2(uint64_t o);
 
