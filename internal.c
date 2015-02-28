@@ -137,6 +137,14 @@ fix_internal fix_circle_frac(fixed op1) {
 
 
   result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS))-1);
+
+  result = MASK_UNLESS( xpos, result) |
+           MASK_UNLESS(!xpos, ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS)) - result));
+
+  // Mask again, just in case result was 0 and x was negative... (can that even
+  // happen?)
+  result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS))-1);
+
   //internald64("resumod", result);
   return result;
 }

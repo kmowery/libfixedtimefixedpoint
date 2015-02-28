@@ -131,7 +131,7 @@ fixed fix_tan(fixed op1) {
   fix_internal result = fix_div_var(S, C, &isinf);
 
   isinfpos |= !!(isinf | (C==0)) & !FIX_IS_NEG(S);
-  isinfneg |= !!(isinf | (C==0)) & FIX_IS_NEG(S);
+  isinfneg |= !!(isinf | (C==0)) &  FIX_IS_NEG(S);
 
   return FIX_IF_NAN(isnan) |
     FIX_IF_INF_POS(isinfpos & (!isnan)) |

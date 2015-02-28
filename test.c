@@ -955,15 +955,23 @@ SIN_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define TRIG(name, op1, sinx, cosx, tanx) \
+#define TRIG(name, op1, sinx, cosx, tanx, bounds) \
 TEST_HELPER(trig_##name, { \
   fixed o1 = op1; \
   fixed sin = fix_sin(o1); \
-  CHECK_DIFFERENCE(#name " sin", sin, sinx, FIX_EPSILON); \
+  fixed sinresult = sinx; \
+  fixed cosresult = cosx; \
+  fixed tanresult = tanx; \
+  if(FIX_IS_INF_POS(op1)) { \
+    sinresult = cosresult = tanresult = FIX_NAN; \
+  } \
+  CHECK_DIFFERENCE(#name " sin", sin, sinresult, bounds); \
   fixed cos = fix_cos(o1); \
-  CHECK_DIFFERENCE(#name " cos", cos, cosx, FIX_EPSILON); \
-  /*fixed tan = fix_tan(o1);*/ \
-  /*CHECK_DIFFERENCE(#name " tan", tan, tanx, FIX_EPSILON);*/ \
+  CHECK_DIFFERENCE(#name " cos", cos, cosresult, bounds); \
+  if(!FIX_IS_NAN(tanx)) { \
+    fixed tan = fix_tan(o1); \
+    CHECK_DIFFERENCE(#name " tan", tan, tanresult, bounds); \
+  }\
 };)
 
 #define n3_2 fix_div(FIXNUM(3,0), FIXNUM(2,0))
@@ -971,40 +979,46 @@ TEST_HELPER(trig_##name, { \
 // Note that tan is poorly defined near pi/2 + n*pi. It's either positive
 // infinity or negative infinity, with very little separating them.
 
-#define TRIG_TESTS \
-TRIG(zero  , FIX_ZERO                          , FIX_ZERO             , FIXNUM(1,0),     FIX_ZERO )  \
-TRIG(pi_2  , fix_div(FIX_PI , FIXNUM(2,0))     , FIXNUM(1,0)          , FIX_ZERO,        FIX_INF_POS )  \
-TRIG(pi    , FIX_PI                            , FIX_ZERO             , FIXNUM(-1,0),    FIX_ZERO )  \
-TRIG(pi3_2 , fix_mul(FIX_PI, n3_2)             , FIXNUM(-1,0)         , FIX_ZERO,        FIX_INF_NEG)  \
-TRIG(pi2   , fix_mul(FIX_PI, FIXNUM(2,0))      , FIX_ZERO             , FIXNUM(1,0),     FIX_ZERO )  \
-\
-//TRIG(pi5_2 , fix_div(fix_mul(FIX_PI, FIXNUM(5,0)), FIXNUM(2,0)) , \
-//             FIXNUM(1,0), FIX_ZERO, FIX_INF_NEG)  \
-//TRIG(pi3   , fix_mul(FIX_PI, FIXNUM(3,0))                       , \
-//             FIX_ZERO, FIXNUM(-1,0), FIX_ZERO )  \
-//TRIG(pi7_2 , fix_div(fix_mul(FIX_PI, FIXNUM(7,0)), FIXNUM(2,0)) , \
-//             FIXNUM(-1,0), FIX_ZERO, FIX_INF_NEG)  \
-//TRIG(pi4   , fix_mul(FIX_PI, FIXNUM(4,0)), \
-//             FIX_ZERO, FIXNUM(1,0), FIX_EPSILON )  \
-//\
-//TRIG(neg_pi_2  , fix_neg(fix_div(FIX_PI , FIXNUM(2 , 0))), \
-//                 FIXNUM(-1,0)         , FIX_EPSILON_NEG,               FIX_INF_POS)  \
-//TRIG(neg_pi    , fix_neg(FIX_PI), \
-//                 FIX_ZERO, FIXNUM(-1,0), FIX_ZERO )  \
-//TRIG(neg_pi3_2 , fix_neg(fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0))) , \
-//                 FIXNUM(1,0)          , FIX_ZERO,   FIX_INF_POS )  \
-//TRIG(neg_pi2   , fix_neg(fix_mul(FIX_PI, FIXNUM(2,0))), \
-//                 FIX_EPSILON_NEG, FIXNUM(1,0), FIX_ZERO )  \
-//\
-//TRIG(q1       , FIXNUM(1,0),                  FIXNUM(0,8414709848), FIXNUM(0,54028320) , FIXNUM(1,5574077246))  \
-//TRIG(q2      ,  fix_add(fix_div(FIX_PI, FIXNUM(2,0)), FIXNUM(1,0)), \
-//                                              FIXNUM(0,54028320) , FIXNUM(-0,84149169) , FIXNUM(-0,64209261))  \
-//TRIG(q3      ,  fix_add(FIX_PI, FIXNUM(0,5)), FIXNUM(-0,47942553), FIXNUM(-0,877582561), FIXNUM(0,5463256835))  \
-//TRIG(q4      ,  FIXNUM(-0,5),                 FIXNUM(-0,47942553), FIXNUM(0,877563476) , FIXNUM(-0,546302489))  \
-//\
-//TRIG(inf_pos   , FIX_INF_POS, FIX_NAN, FIX_NAN, FIX_NAN)  \
-//TRIG(inf_neg   , FIX_INF_NEG, FIX_NAN, FIX_NAN, FIX_NAN)  \
-//TRIG(nan       , FIX_NAN, FIX_NAN, FIX_NAN, FIX_NAN)
+#define TRIG_TESTS                                                                                              \
+TRIG(zero      , FIX_ZERO                             , FIX_ZERO     , FIXNUM(1,0) , FIX_NAN , FIX_EPSILON)     \
+TRIG(pi_2      , FIXNUM( 1,57079632679489661923132169), FIXNUM(1,0)  , FIX_ZERO    , FIX_NAN , FIX_EPSILON)     \
+TRIG(pi        , FIXNUM( 3,14159265358979323846264338), FIX_ZERO     , FIXNUM(-1,0), FIX_NAN , FIX_EPSILON)     \
+TRIG(pi3_2     , FIXNUM( 4,71238898038468985769396507), FIXNUM(-1,0) , FIX_ZERO    , FIX_NAN , FIX_EPSILON)     \
+TRIG(pi2       , FIXNUM( 6,28318530717958647692528676), FIX_ZERO     , FIXNUM(1,0) , FIX_NAN , FIX_EPSILON)     \
+                                                                                                                \
+TRIG(pi5_2     , FIXNUM( 7,85398163397448309615660845), FIXNUM(1,0) , FIX_ZERO    , FIX_NAN , FIX_EPSILON)      \
+TRIG(pi3       , FIXNUM( 9,42477796076937971538793014), FIX_ZERO    , FIXNUM(-1,0), FIX_ZERO, FIX_EPSILON)      \
+TRIG(pi7_2     , FIXNUM(10,99557428756427633461925184), FIXNUM(-1,0), FIX_ZERO    , FIX_NAN , FIX_EPSILON)      \
+TRIG(pi4       , FIXNUM(12,56637061435917295385057353), FIX_ZERO    , FIXNUM(1,0) , FIX_ZERO, FIX_EPSILON)      \
+                                                                                                                \
+TRIG(neg_pi_2  , FIXNUM(-1,57079632679489661923132169) , FIXNUM(-1,0), FIX_ZERO    , FIX_NAN    , FIX_EPSILON)  \
+TRIG(neg_pi    , FIXNUM(-3,14159265358979323846264338) , FIX_ZERO    , FIXNUM(-1,0), FIX_ZERO   , FIX_EPSILON)  \
+TRIG(neg_pi3_2 , FIXNUM(-4,71238898038468985769396507) , FIXNUM(1,0) , FIX_ZERO    , FIX_NAN    , FIX_EPSILON)  \
+TRIG(neg_pi2   , FIXNUM(-6,28318530717958647692528676) , FIX_ZERO    , FIXNUM(1,0) , FIX_ZERO   , FIX_EPSILON)  \
+                                                                                                                \
+TRIG(q1        , FIXNUM(1,0), FIXNUM(0,84147098480789650665250232163029899962256306079837106567275170),         \
+                              FIXNUM(0,540302305868139717400936607442976603732310420617922) ,                   \
+                              FIXNUM(1,557407724654902230506974807458360173087250772381520038383946605698861),  \
+                              FIX_EPSILON)                                                                      \
+TRIG(q2        , FIXNUM(2,57079632679489661923132169163975144209858469968755291048),                            \
+                              FIXNUM( 0,54030230586813971740093660744297660373231042061792222767) ,             \
+                              FIXNUM(-0,84147098480789650665250232163029899962256306079837106567) ,             \
+                              FIXNUM(-0,64209261593433070300641998659426562023027811391817137910) ,             \
+                              FIX_EPSILON)                                                                      \
+TRIG(q3        , FIXNUM(3,6415926535897932384626433832795028841971693993751058209749),                          \
+                              FIXNUM(-0,479425538604203000273287935215571388081803367940600675188),             \
+                              FIXNUM(-0,877582561890372716116281582603829651991645197109744052997),             \
+                              FIXNUM(0,5463024898437905132551794657802853832975517201797912461640),             \
+                              FIX_EPSILON)                                                                      \
+TRIG(q4        , FIXNUM(-0,5),                                                                                  \
+                             FIXNUM(-0,479425538604203000273287935215571388081803367940600675188),              \
+                             FIXNUM(0,8775825618903727161162815826038296519916451971097440529976),              \
+                             FIXNUM(-0,546302489843790513255179465780285383297551720179791246164),              \
+                             FIX_EPSILON)                                                                       \
+                                                                                                                \
+TRIG(inf_pos   , FIX_INF_POS, FIX_NAN, FIX_NAN, FIX_NAN, FIX_ZERO)                                              \
+TRIG(inf_neg   , FIX_INF_NEG, FIX_NAN, FIX_NAN, FIX_NAN, FIX_ZERO)                                              \
+TRIG(nan       , FIX_NAN,     FIX_NAN, FIX_NAN, FIX_NAN, FIX_ZERO)
 TRIG_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
