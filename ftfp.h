@@ -106,7 +106,7 @@ fixed fix_tan(fixed op1);
 
 /* Uses a polynomial approximation of sin. Very quick, but less accurate at the
  * edges. */
-fixed fix_sin_fast(fixed op1);
+//fixed fix_sin_fast(fixed op1);
 
 fixed  fix_convert_from_double(double d);
 double fix_convert_to_double(fixed op1);
