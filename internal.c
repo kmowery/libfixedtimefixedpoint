@@ -28,14 +28,14 @@ inline uint8_t uint64_log2(uint64_t o) {
   return log2;
 }
 
-uint32_t fix_circle_frac(fixed op1) {
+fix_internal fix_circle_frac(fixed op1) {
   /* Scratchpad to compute z:
    *
    * variables are lowercase, and considered as integers.
    * real numbers are capitalized, and are the space we're trying to work in
    *
-   * op1: input. fixed: 15.15.b00
-   * X = op1 / 2^17                          # in radians
+   * op1: input. fixed.
+   * X = op1 / 2^(frac_bits + flag_bits)     # in radians
    * TAU = 6.28318530718...                  # 2pi
    * QTAU = TAU/4
    *
@@ -56,13 +56,87 @@ uint32_t fix_circle_frac(fixed op1) {
    *   = (X / QTAU) * 2^11
    *  ~= (op1 / QTAU / 2^17) * 2^11
    *   = (op1 / QTAU) * 2^28                # in [0,4), fills 30 bits at 2.28
-   *
    */
 
-  int64_t big_op = ((int64_t) ((int32_t) FIX_DATA_BITS(op1))) << 32;
-  int32_t big_tau = 0x3243f6;  // in python: "0x%x"%(math.floor((math.pi / 2) * 2**21))
-  int32_t circle_frac = (big_op / big_tau) & 0x3fffffff;
-  return circle_frac;
+  uint8_t isneg     = FIX_IS_NEG(op1);
+  uint8_t log2      = fixed_log2(op1);
+  uint8_t log2_neg  = fixed_log2((~op1) + 4);
+  uint8_t actuallog = MASK_UNLESS(!isneg, log2) | MASK_UNLESS( isneg, log2_neg);
+
+  uint32_t shiftamt = (((sizeof(fixed) * 8) - 1) - (actuallog+1));
+  fixed opmax = (op1 << shiftamt);
+
+  uint8_t overflow = 0;
+
+  fixed big_qtau = 0x3243f6a8885a308d;
+
+  /*
+   * We want to divide op1 by TAU/4 (i.e., Pi/2), and end up with a fix_internal
+   * within [0,4).
+   *
+   * Ugh. Code copied from fix_div_64, and modified for our purposes.
+   */
+
+  uint8_t xpos =  !FIX_TOP_BIT(op1);
+  uint64_t absx = MASK_UNLESS_64( xpos,   op1) |
+                  MASK_UNLESS_64(!xpos, (~op1)+1 );
+  uint8_t logx = uint64_log2(absx);
+
+  /* We change the result by shifting these numbers up. Record the shift... */
+  int8_t shift = logx - (FIX_POINT_BITS);
+
+  uint64_t acc = absx << (62 - logx);
+  uint64_t base = big_qtau;
+
+  uint64_t result = 0;
+
+  /* if absx is 0x80..0, then x was the largest negative number, and acc is
+   * some nonsense. Fix that up... */
+  acc = MASK_UNLESS_64( absx == 0x8000000000000000, absx >> 1 ) |
+        MASK_UNLESS_64( absx != 0x8000000000000000, acc );
+
+  // Now, perform long division: x / y
+  for(int i = 63; i >= 0; i--) {
+
+    // Pesudocode:
+    //if((acc >= base) & (base != 0)) {
+    //    acc -= base;
+    //    result |= 1;
+    //}
+
+    uint8_t expression = (acc >= base) & (base != 0);
+    acc = MASK_UNLESS( expression, acc - base) |
+          MASK_UNLESS(!expression, acc);
+    result = result | MASK_UNLESS( expression, 1);
+
+    result = result << 1;
+    base = base >> 1;
+  }
+
+  // result now has 64 bits of division result; we need to shift it into place
+  // "Place" is a combination of FIX_POINT_BITS and 'shift', as computed above
+  // Since we moved y to be slightly above x, result contains a number in Q64.
+  //
+  int64_t shiftamount = ((64 - FIX_INTERN_FRAC_BITS) - shift);
+  uint64_t roundbits = (result) & ((1ull << shiftamount) -1);
+  result = MASK_UNLESS(shiftamount < 64, (result >> shiftamount));
+
+  // If we're supposed to shift the result to the left (or not at all), there's
+  // overflow. Although, if x was the largest negative number, not shifting the
+  // result is okay.
+  //overflow = (shiftamount < 0) | ((shiftamount == 0) & (absx != 0x8000000000000000));
+
+  //result |= !!roundbits;
+
+  //result = ROUND_TO_EVEN(result, FIX_FLAG_BITS) << FIX_FLAG_BITS;
+
+  //result = MASK_UNLESS(ypos == xpos, result) |
+  //         MASK_UNLESS(ypos != xpos, fix_neg(result));
+
+  //return FIX_DATA_BITS(result);
+
+  result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS+1))-1);
+  return result;
 }
 
 /*
