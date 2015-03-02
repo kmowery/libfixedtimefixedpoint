@@ -3,6 +3,8 @@
 
 #include "base.h"
 
+#include <stdint.h>
+
 // This file contains things needed internally for libftfp, but that a library
 // user should never need to see.
 
@@ -171,23 +173,23 @@ uint64_t fixfrac(char* frac);
     uint8_t isnan = FIX_IS_NAN(op1); \
     uint8_t ex = isinfpos | isinfneg | isnan; \
     fixed result_nosign = round_exp; \
-    (MASK_UNLESS_64(isinfpos, INT_MAX) | \
-     MASK_UNLESS_64(isinfneg, INT_MIN) | \
+    (MASK_UNLESS_64(isinfpos, INT64_MAX) | \
+     MASK_UNLESS_64(isinfneg, INT64_MIN) | \
      MASK_UNLESS_64( !ex, result_nosign)); \
     })
 
 /* Uses round to even semantics */
-#define FIX_ROUND_INT(op1) \
+#define FIX_ROUND_INT64(op1) \
   FIX_ROUND_BASE(op1, ROUND_TO_EVEN_SIGNED_64(op1, FIX_POINT_BITS))
 
 /* 0.5 rounds up always */
-#define FIX_ROUND_UP_INT(op1) \
+#define FIX_ROUND_UP_INT64(op1) \
   FIX_ROUND_BASE(op1, SIGN_EX_SHIFT_RIGHT_64(op1, FIX_POINT_BITS) + ((op1 >> (FIX_POINT_BITS-1)) & 0x1))
 
-#define FIX_CEIL(op1) \
+#define FIX_CEIL64(op1) \
   FIX_ROUND_BASE(op1, SIGN_EX_SHIFT_RIGHT_64(op1, FIX_POINT_BITS) + !!(op1 & FIX_FRAC_MASK))
 
-#define FIX_FLOOR(op1) \
+#define FIX_FLOOR64(op1) \
   FIX_ROUND_BASE(op1, SIGN_EX_SHIFT_RIGHT_64(op1, FIX_POINT_BITS))
 
 
