@@ -273,17 +273,17 @@ TEST_HELPER(rounding_##name, { \
   fixed input = value; \
   /* Trust that FIXNUM is doing its job correctly. Therefore, if input is \
    * infinity, we can fix up the expected values below... */ \
-  int64_t round_even  = FIX_ROUND_INT(input); \
-  int64_t exp_even    = FIX_IS_INF_POS(input) ? INT_MAX : FIX_IS_INF_NEG(input) ? INT_MIN : (res_even); \
+  int64_t round_even  = fix_to_int64(input); \
+  int64_t exp_even    = FIX_IS_INF_POS(input) ? INT64_MAX : FIX_IS_INF_NEG(input) ? INT64_MIN : (res_even); \
   CHECK_INT_EQUAL("round to even" , round_even  , exp_even); \
-  int64_t round_up    = FIX_ROUND_UP_INT(input); \
-  int64_t exp_up      = FIX_IS_INF_POS(input) ? INT_MAX : FIX_IS_INF_NEG(input) ? INT_MIN : (res_up); \
+  int64_t round_up    = fix_round_up_int64(input); \
+  int64_t exp_up      = FIX_IS_INF_POS(input) ? INT64_MAX : FIX_IS_INF_NEG(input) ? INT64_MIN : (res_up); \
   CHECK_INT_EQUAL("round up"      , round_up    , exp_up); \
-  int64_t round_ceil  = FIX_CEIL(input); \
-  int64_t exp_ceil    = FIX_IS_INF_POS(input) ? INT_MAX : FIX_IS_INF_NEG(input) ? INT_MIN : (res_ceil); \
+  int64_t round_ceil  = fix_ceil64(input); \
+  int64_t exp_ceil    = FIX_IS_INF_POS(input) ? INT64_MAX : FIX_IS_INF_NEG(input) ? INT64_MIN : (res_ceil); \
   CHECK_INT_EQUAL("ceiling"       , round_ceil  , exp_ceil); \
-  int64_t round_floor = FIX_FLOOR(input); \
-  int64_t exp_floor   = FIX_IS_INF_POS(input) ? INT_MAX : FIX_IS_INF_NEG(input) ? INT_MIN : (res_floor); \
+  int64_t round_floor = fix_floor64(input); \
+  int64_t exp_floor   = FIX_IS_INF_POS(input) ? INT64_MAX : FIX_IS_INF_NEG(input) ? INT64_MIN : (res_floor); \
   CHECK_INT_EQUAL("floor"         , round_floor , exp_floor); \
 };)
 

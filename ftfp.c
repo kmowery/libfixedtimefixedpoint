@@ -2,6 +2,8 @@
 #include "internal.h"
 #include <math.h>
 
+#include <stdint.h>
+
 int8_t fix_is_neg(fixed op1) {
   return FIX_IS_NEG(op1);
 }
@@ -451,4 +453,18 @@ double fix_convert_to_double(fixed op1) {
 
   double d = *(double*) &result;
   return d;
+}
+
+
+int64_t fix_to_int64(fixed op1) {
+  return FIX_ROUND_INT64(op1);
+}
+int64_t fix_round_up_int64(fixed op1) {
+  return FIX_ROUND_UP_INT64(op1);
+}
+int64_t fix_ceil64(fixed op1) {
+  return FIX_CEIL64(op1);
+}
+int64_t fix_floor64(fixed op1) {
+  return FIX_FLOOR64(op1);
 }
