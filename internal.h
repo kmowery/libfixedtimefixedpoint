@@ -8,6 +8,13 @@
 // This file contains things needed internally for libftfp, but that a library
 // user should never need to see.
 
+
+#define FIX_INLINE static inline
+
+fixed fix_neg(fixed op1);
+
+
+
 typedef int64_t fixed_signed;
 
 #define FIX_INT_MAX (((fixed) 1) << (FIX_INT_BITS-1))
@@ -115,7 +122,13 @@ typedef int64_t fixed_signed;
     ((((fixed) value) >> 1) + \
      ((value & 3) == 3))
 
-uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits);
+
+FIX_INLINE uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits) {
+    uint8_t lowbit = (value >> (n_shift_bits)) & 0x1;
+    uint8_t highroundbit = (value >> ((n_shift_bits)-1)) & 0x1;
+    uint64_t restroundbits = (value) & ((1ull << ((n_shift_bits)-1)) -1);
+    return (value >> n_shift_bits) + ROUND_TO_EVEN_ADDITION(lowbit, highroundbit, restroundbits);
+}
 
 #define ROUND_TO_EVEN_SIGNED_32(value, n_shift_bits) \
   (SIGN_EX_SHIFT_RIGHT_32(value, n_shift_bits) + \
@@ -405,16 +418,171 @@ typedef uint64_t fix_internal;
 //  Helper functions
 ///////////////////////////////////////
 
-fix_internal fix_circle_frac(fixed op1);
-uint8_t uint32_log2(uint32_t o);
-uint8_t uint64_log2(uint64_t o);
+//fix_internal fix_circle_frac(fixed op1);
 
-#define fixed_log2 uint64_log2
+//void cordic(fix_internal* Z, fix_internal* C, fix_internal* S);
 
-void cordic(fix_internal* Z, fix_internal* C, fix_internal* S);
-
-uint64_t fix_div_64(uint64_t x, uint64_t y, uint8_t* overflow);
+//uint64_t fix_div_64(uint64_t x, uint64_t y, uint8_t* overflow);
 
 #define fix_div_var fix_div_64
+
+///////////
+// functions that should be inlined
+///////////
+FIX_INLINE uint8_t uint64_log2(uint64_t o) {
+  uint64_t scratch = o;
+  uint64_t log2;
+  uint64_t shift;
+
+  log2 =  (scratch > 0xFFFFFFFF) << 5; scratch >>= log2;
+  shift = (scratch > 0xFFFF)     << 4; scratch >>= shift; log2 |= shift;
+  shift = (scratch >   0xFF)     << 3; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0xF)     << 2; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0x3)     << 1; scratch >>= shift; log2 |= shift;
+  log2 |= (scratch >> 1);
+  return log2;
+}
+
+FIX_INLINE uint8_t uint32_log2(uint32_t o) {
+  uint32_t scratch = o;
+  uint32_t log2;
+  uint32_t shift;
+
+  log2 =  (scratch > 0xFFFF) << 4; scratch >>= log2;
+  shift = (scratch >   0xFF) << 3; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0xF) << 2; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0x3) << 1; scratch >>= shift; log2 |= shift;
+  log2 |= (scratch >> 1);
+  return log2;
+}
+#define fixed_log2 uint64_log2
+
+FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
+  fixed big_qtau = 0xc90fdaa22168c235;
+
+  /*
+   * We want to divide op1 by TAU/4 (i.e., Pi/2), and end up with a fix_internal
+   * within [0,4).
+   *
+   * Ugh. Code copied from fix_div_64, and modified for our purposes.
+   */
+
+  uint8_t xpos =  !FIX_TOP_BIT(op1);
+  uint64_t absx = MASK_UNLESS_64( xpos,   op1) |
+                  MASK_UNLESS_64(!xpos, (~op1)+1 );
+  uint8_t logx = uint64_log2(absx);
+
+  /* We change the result by shifting these numbers up. Record the shift... */
+  int8_t shift = logx + 1 - (FIX_POINT_BITS);
+
+  uint64_t acc = absx << (62 - logx);
+  uint64_t base = big_qtau;
+
+  uint64_t result = 0;
+  int i = 0;
+
+  /* if absx is 0x80..0, then x was the largest negative number, and acc is
+   * some nonsense. Fix that up... */
+  acc = MASK_UNLESS_64( absx == 0x8000000000000000, absx >> 1 ) |
+        MASK_UNLESS_64( absx != 0x8000000000000000, acc );
+
+  // Now, perform long division: x / y
+  for(i = 63; i >= 0; i--) {
+
+    // Pesudocode:
+    //if((acc >= base) & (base != 0)) {
+    //    acc -= base;
+    //    result |= 1;
+    //}
+
+    uint8_t expression = (acc >= base) & (base != 0);
+    acc = MASK_UNLESS( expression, acc - base) |
+          MASK_UNLESS(!expression, acc);
+    result = result | MASK_UNLESS( expression, 1);
+
+    result = result << 1;
+    base = base >> 1;
+  }
+
+  // result now has 64 bits of division result; we need to shift it into place
+  // "Place" is a combination of FIX_POINT_BITS and 'shift', as computed above
+  // Since we moved y to be slightly above x, result contains a number in Q64.
+  //
+  int64_t shiftamount = ((64 - FIX_INTERN_FRAC_BITS) - shift);
+  result = MASK_UNLESS(shiftamount < 64, (result >> shiftamount));
+
+  result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS))-1);
+  result = MASK_UNLESS( xpos, result) |
+           MASK_UNLESS(!xpos, ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS)) - result));
+  result = result & ((((fix_internal) 4) << (FIX_INTERN_FRAC_BITS))-1);
+
+  return result;
+}
+
+static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
+  uint8_t xpos =  !FIX_TOP_BIT(x);
+  uint8_t ypos =  !FIX_TOP_BIT(y);
+
+  uint64_t absx = MASK_UNLESS_64( xpos, x ) |
+                  MASK_UNLESS_64(!xpos, (~x)+1 );
+  uint64_t absy = MASK_UNLESS_64( ypos, y ) |
+                  MASK_UNLESS_64(!ypos, (~y)+1 );
+
+  uint8_t logx = uint64_log2(absx);
+  uint8_t logy = uint64_log2(absy);
+
+  /* We change the result by shifting these numbers up. Record the shift... */
+  int8_t shift = logx - logy + 1;
+
+  uint64_t acc = absx << (62 - logx);
+  uint64_t base = absy << (63 - logy);
+
+  uint64_t result = 0;
+
+  /* if absx is 0x80..0, then x was the largest negative number, and acc is
+   * some nonsense. Fix that up... */
+  acc = MASK_UNLESS_64( absx == 0x8000000000000000, absx >> 1 ) |
+        MASK_UNLESS_64( absx != 0x8000000000000000, acc );
+  int i = 0;
+
+  // Now, perform long division: x / y
+  for(i = 63; i >= 0; i--) {
+
+    // Pesudocode:
+    //if((acc >= base) & (base != 0)) {
+    //    acc -= base;
+    //    result |= 1;
+    //}
+
+    uint8_t expression = (acc >= base) & (base != 0);
+    acc = MASK_UNLESS( expression, acc - base) |
+          MASK_UNLESS(!expression, acc);
+    result = result | MASK_UNLESS( expression, 1);
+
+    result = result << 1;
+    base = base >> 1;
+  }
+
+  // result now has 64 bits of division result; we need to shift it into place
+  // "Place" is a combination of FIX_POINT_BITS and 'shift', as computed above
+  // Since we moved y to be slightly above x, result contains a number in Q64.
+  int64_t shiftamount = ((64 - FIX_POINT_BITS) - shift);
+  uint64_t roundbits = (result) & ((1ull << shiftamount) -1);
+  result = MASK_UNLESS(shiftamount < 64, (result >> shiftamount));
+
+  // If we're supposed to shift the result to the left (or not at all), there's
+  // overflow. Although, if x was the largest negative number, not shifting the
+  // result is okay.
+  *overflow = (shiftamount < 0) | ((shiftamount == 0) & (absx != 0x8000000000000000));
+
+  result |= !!roundbits;
+
+  result = ROUND_TO_EVEN(result, FIX_FLAG_BITS) << FIX_FLAG_BITS;
+
+  result = MASK_UNLESS(ypos == xpos, result) |
+           MASK_UNLESS(ypos != xpos, fix_neg(result));
+
+  return FIX_DATA_BITS(result);
+}
 
 #endif
