@@ -168,11 +168,11 @@ LOG10(max,     FIX_MAX)
 LOG10_TESTS
 
 #undef TEST_HELPER
-#define TEST_HELPER(name, code) unit_test(name),
+#define TEST_HELPER(name, code) cmocka_unit_test(name),
 
 int main(int argc, char** argv) {
 
-  const UnitTest tests[] = {
+  const struct CMUnitTest tests[] = {
     PRINT_TESTS
     SQRT_TESTS
     LN_TESTS
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
 
   fprintf(fd, "#if FIX_INT_BITS == %d\n", FIX_INT_BITS);
 
-  int i = run_tests(tests);
+  int i = cmocka_run_group_tests(tests, NULL, NULL);
 
   fprintf(fd, "#endif /* FIX_INT_BITS == %d */\n", FIX_INT_BITS);
 
