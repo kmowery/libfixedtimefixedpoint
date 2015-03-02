@@ -2,7 +2,7 @@ SHELL := /bin/bash
 CC := gcc
 OPTFLAGS := -O
 CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fPIC
-LDFLAGS := -lcmocka -lm
+LDFLAGS := -lcmocka -lm -lftfp
 
 LD_LIBRARY_PATH=.
 
@@ -50,10 +50,10 @@ perf_test: $(perf_ftfp_obj) $(libs)
 	$(CC) -lftfp -L . -o $@ $(CFLAGS) $<
 
 test: $(test_ftfp_obj) $(libs)
-	$(CC) -lftfp -L . ${CFLAGS} -o $@ $< ${LDFLAGS}
+	$(CC) -L . ${CFLAGS} -o $@ $< ${LDFLAGS}
 
 generate_test_helper: $(gen_test_obj) $(libs)
-	$(CC) -lftfp -L . ${CFLAGS} -o $@ $< ${LDFLAGS}
+	$(CC) -L . ${CFLAGS} -o $@ $< ${LDFLAGS}
 
 pre: $(test_ftfp_pre) $(ftfp_pre) $(perf_ftfp_pre) $(gen_test_pre)
 
