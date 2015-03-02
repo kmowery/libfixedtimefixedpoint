@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "base.h"
-#include "internal.h"
 
 /*
  * TODO:
@@ -21,30 +20,18 @@
 #define FIX_INF_POS  ((fixed) 0x2)
 #define FIX_INF_NEG  ((fixed) 0x3)
 
+// Useful constants
+#define FIX_EPSILON     ((fixed) (1 << FIX_FLAG_BITS))
+#define FIX_EPSILON_NEG ((fixed) ~((1 << FIX_FLAG_BITS)-1))
+#define FIX_ZERO        ((fixed) 0)
+
+#define FIX_MAX     FIX_DATA_BITS((fixed) (((fixed) 1) << (FIX_BITS-1)) -1)
+#define FIX_MIN     FIX_DATA_BITS((fixed) ((fixed) 1) << (FIX_BITS-1))
+
 int8_t fix_is_neg(fixed op1);
 int8_t fix_is_nan(fixed op1);
 int8_t fix_is_inf_pos(fixed op1);
 int8_t fix_is_inf_neg(fixed op1);
-
-// Create a fixnum constant. Use:
-//   fixed x = FIX(-3,14159);
-//
-//We must also check that we didn't accidentally roll over from POS_INF to FIX_MIN...
-#define FIXNUM(i,frac) ({ \
-        uint8_t neg = (((fixed_signed) (i)) < 0) | (#i[0] == '-'); \
-        fixed fnfrac = FIXFRAC(frac); \
-        uint8_t inf = (((fixed) (i)) >= FIX_INT_MAX) & \
-                        ((((fixed) (i)) < (-((fixed_signed) FIX_INT_MAX))) | \
-                        ((((fixed) (i)) == (-((fixed_signed) FIX_INT_MAX))) & (fnfrac != 0x0))); \
-        fnfrac = MASK_UNLESS_64( neg , (~fnfrac) + 1 ) | \
-                 MASK_UNLESS_64(!neg , fnfrac ); \
-        /* if you do this on one line, the compiler complains about shifting
-         * some bits off the edge of the world... */ \
-        fixed_signed fnint = ((fixed_signed) (i)); \
-        fixed f =  (fnint << FIX_POINT_BITS) + (fnfrac); \
-    ( MASK_UNLESS_64( (inf & !neg) | (!!FIX_TOP_BIT(f) & !neg), FIX_INF_POS ) | \
-      MASK_UNLESS_64( (inf &  neg)                          , FIX_INF_NEG ) | \
-      MASK_UNLESS_64(!inf , f )); })
 
 /* Returns true if the numbers are equal (NaNs are always unequal.) */
 int8_t fix_eq(fixed op1, fixed op2);
@@ -64,14 +51,6 @@ uint8_t fix_ge(fixed op1, fixed op2);
 
 uint8_t fix_lt(fixed op1, fixed op2);
 uint8_t fix_gt(fixed op1, fixed op2);
-
-// Useful constants
-#define FIX_EPSILON     ((fixed) (1 << FIX_FLAG_BITS))
-#define FIX_EPSILON_NEG ((fixed) ~((1 << FIX_FLAG_BITS)-1))
-#define FIX_ZERO        ((fixed) 0)
-
-#define FIX_MAX     FIX_DATA_BITS((fixed) (((fixed) 1) << (FIX_BITS-1)) -1)
-#define FIX_MIN     FIX_DATA_BITS((fixed) ((fixed) 1) << (FIX_BITS-1))
 
 fixed fix_neg(fixed op1);
 fixed fix_abs(fixed op1);
@@ -121,8 +100,6 @@ int64_t fix_floor64(fixed op1);
  * characters long. */
 void fix_print(char* buffer, fixed f);
 void fix_print_nospecial(char* buffer, fixed f);
-void fix_internal_print(char* buffer, fix_internal f);
-void fix_allfrac_print(char* buffer, fix_internal f);
 
 /* Note that this is not constant time, but will return a buffer sized to the
  * number. */

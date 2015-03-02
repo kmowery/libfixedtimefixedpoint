@@ -180,6 +180,26 @@ uint64_t fixfrac(char* frac);
 /* NOTE: does not protect against numbers that are too large */
 #define FIXINT(z) (((fixed_signed) z %FIX_INT_MAX)<<(FIX_POINT_BITS))
 
+// Create a fixnum constant. Use:
+//   fixed x = FIX(-3,14159);
+//
+//We must also check that we didn't accidentally roll over from POS_INF to FIX_MIN...
+#define FIXNUM(i,frac) ({ \
+        uint8_t neg = (((fixed_signed) (i)) < 0) | (#i[0] == '-'); \
+        fixed fnfrac = FIXFRAC(frac); \
+        uint8_t inf = (((fixed) (i)) >= FIX_INT_MAX) & \
+                        ((((fixed) (i)) < (-((fixed_signed) FIX_INT_MAX))) | \
+                        ((((fixed) (i)) == (-((fixed_signed) FIX_INT_MAX))) & (fnfrac != 0x0))); \
+        fnfrac = MASK_UNLESS_64( neg , (~fnfrac) + 1 ) | \
+                 MASK_UNLESS_64(!neg , fnfrac ); \
+        /* if you do this on one line, the compiler complains about shifting
+         * some bits off the edge of the world... */ \
+        fixed_signed fnint = ((fixed_signed) (i)); \
+        fixed f =  (fnint << FIX_POINT_BITS) + (fnfrac); \
+    ( MASK_UNLESS_64( (inf & !neg) | (!!FIX_TOP_BIT(f) & !neg), FIX_INF_POS ) | \
+      MASK_UNLESS_64( (inf &  neg)                          , FIX_INF_NEG ) | \
+      MASK_UNLESS_64(!inf , f )); })
+
 #define FIX_ROUND_BASE(op1, round_exp) ({ \
     uint8_t isinfpos = FIX_IS_INF_POS(op1); \
     uint8_t isinfneg = FIX_IS_INF_NEG(op1); \
@@ -418,17 +438,15 @@ typedef uint64_t fix_internal;
 //  Helper functions
 ///////////////////////////////////////
 
-//fix_internal fix_circle_frac(fixed op1);
-
-//void cordic(fix_internal* Z, fix_internal* C, fix_internal* S);
-
-//uint64_t fix_div_64(uint64_t x, uint64_t y, uint8_t* overflow);
+void fix_internal_print(char* buffer, fix_internal f);
+void fix_allfrac_print(char* buffer, fix_internal f);
 
 #define fix_div_var fix_div_64
 
-///////////
+///////////////////////////////////////
 // functions that should be inlined
-///////////
+///////////////////////////////////////
+
 FIX_INLINE uint8_t uint64_log2(uint64_t o) {
   uint64_t scratch = o;
   uint64_t log2;
