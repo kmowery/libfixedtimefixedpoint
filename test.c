@@ -924,35 +924,35 @@ POW_TESTS
 //p(fix_sin(FIX_PI));
 
 
-//#define SIN(name, op1, result) \
-//TEST_HELPER(sin_##name, { \
-//  fixed o1 = op1; \
-//  fixed sin = fix_sin_fast(o1); \
-//  fixed expected = result; \
-//  CHECK_EQ_NAN(#name, sin, expected); \
-//};)
-//
-//#define SIN_TESTS                                                                         \
-//SIN(zero       , FIX_ZERO                                           , 0)                  \
-//SIN(pi_2  , fix_div(FIX_PI , FIXNUM(2 , 0))                    , 0x1fffc)                 \
-//SIN(pi    , FIX_PI                                             , 0xfffffffc)              \
-//SIN(pi3_2 , fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0)) , 0xfffe0000)              \
-//SIN(pi2   , fix_mul(FIX_PI, FIXNUM(2,0))                       , 0)                       \
-//SIN(pi5_2 , fix_div(fix_mul(FIX_PI, FIXNUM(5,0)), FIXNUM(2,0)) , 0x1fffc)                 \
-//SIN(pi3   , fix_mul(FIX_PI, FIXNUM(3,0))                       , 0xfffffffc)              \
-//SIN(pi7_2 , fix_div(fix_mul(FIX_PI, FIXNUM(7,0)), FIXNUM(2,0)) , 0xfffe0000)              \
-//SIN(pi4   , fix_mul(FIX_PI, FIXNUM(4,0))                       , 0x4)                     \
-//                                                                                          \
-//SIN(neg_pi_2  , fix_neg(fix_div(FIX_PI , FIXNUM(2 , 0)))                    , 0xfffe0000) \
-//SIN(neg_pi    , fix_neg(FIX_PI)                                             , 0x0)        \
-//SIN(neg_pi3_2 , fix_neg(fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0))) , 0x1fffc)    \
-//SIN(neg_pi2   , fix_neg(fix_mul(FIX_PI, FIXNUM(2,0)))                       , 0xfffffffc) \
-//                                                                                          \
-//SIN(inf_pos   , FIX_INF_POS                          , FIX_INF_POS)                       \
-//SIN(inf_neg   , FIX_INF_NEG                          , FIX_INF_NEG)                       \
-//SIN(nan       , FIX_NAN                              , FIX_NAN)
-//SIN_TESTS
+/**#define SIN(name, op1, result)               \
+ *TEST_HELPER(sin_##name, {                     \
+ *  fixed o1 = op1;                             \
+ *  fixed sin = fix_sin_fast(o1);               \
+ *  fixed expected = result;                    \
+ *  CHECK_EQ_NAN(#name, sin, expected);         \
+ *};)
 
+*#define SIN_TESTS                                                                         \
+*SIN(zero       , FIX_ZERO                                           , 0)                  \
+*SIN(pi_2  , fix_div(FIX_PI , FIXNUM(2 , 0))                    , 0x1fffc)                 \
+*SIN(pi    , FIX_PI                                             , 0xfffffffc)              \
+*SIN(pi3_2 , fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0)) , 0xfffe0000)              \
+*SIN(pi2   , fix_mul(FIX_PI, FIXNUM(2,0))                       , 0)                       \
+*SIN(pi5_2 , fix_div(fix_mul(FIX_PI, FIXNUM(5,0)), FIXNUM(2,0)) , 0x1fffc)                 \
+*SIN(pi3   , fix_mul(FIX_PI, FIXNUM(3,0))                       , 0xfffffffc)              \
+*SIN(pi7_2 , fix_div(fix_mul(FIX_PI, FIXNUM(7,0)), FIXNUM(2,0)) , 0xfffe0000)              \
+*SIN(pi4   , fix_mul(FIX_PI, FIXNUM(4,0))                       , 0x4)                     \
+*                                                                                          \
+*SIN(neg_pi_2  , fix_neg(fix_div(FIX_PI , FIXNUM(2 , 0)))                    , 0xfffe0000) \
+*SIN(neg_pi    , fix_neg(FIX_PI)                                             , 0x0)        \
+*SIN(neg_pi3_2 , fix_neg(fix_div(fix_mul(FIX_PI, FIXNUM(3,0)), FIXNUM(2,0))) , 0x1fffc)    \
+*SIN(neg_pi2   , fix_neg(fix_mul(FIX_PI, FIXNUM(2,0)))                       , 0xfffffffc) \
+*                                                                                          \
+*SIN(inf_pos   , FIX_INF_POS                          , FIX_INF_POS)                       \
+*SIN(inf_neg   , FIX_INF_NEG                          , FIX_INF_NEG)                       \
+*SIN(nan       , FIX_NAN                              , FIX_NAN)
+*SIN_TESTS
+**/
 //////////////////////////////////////////////////////////////////////////////
 
 #define TRIG(name, op1, sinx, cosx, tanx, bounds) \
