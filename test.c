@@ -267,7 +267,6 @@ EQ_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define unit_rounding(name) unit_test(rounding_##name)
 #define TEST_ROUNDING(name, value, res_even, res_up, res_ceil, res_floor) \
 TEST_HELPER(rounding_##name, { \
   fixed input = value; \
@@ -410,7 +409,7 @@ static void constants(void **state) {
     printf( "Tau - Pi - Pi is %s ("FIX_PRINTF_HEX")\n", b1, temp);
   }
 }
-#define CONSTANT_TESTS unit_test(constants),
+#define CONSTANT_TESTS cmocka_unit_test(constants),
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -1070,12 +1069,12 @@ PRINT_TESTS
 
 
 #undef TEST_HELPER
-#define TEST_HELPER(name, code) unit_test(name),
+#define TEST_HELPER(name, code) cmocka_unit_test(name),
 
 int main(int argc, char** argv) {
 
-  const UnitTest tests[] = {
-    unit_test(null_test_success),
+  const struct CMUnitTest tests[] = {
+    cmocka_unit_test(null_test_success),
 
     ROUND_TO_EVEN_TESTS
     FIXNUM_TESTS
@@ -1107,5 +1106,7 @@ int main(int argc, char** argv) {
     PRINT_TESTS
   };
 
-  return run_tests(tests);
+  int i = cmocka_run_group_tests(tests, NULL, NULL);
+
+  return i;
 }
