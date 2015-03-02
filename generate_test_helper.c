@@ -11,7 +11,7 @@
 #include <math.h>
 
 #include "ftfp.h"
-
+#include "internal.h"
 
 #include "fcntl.h"
 #include "unistd.h"
