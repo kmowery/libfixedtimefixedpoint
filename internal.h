@@ -113,18 +113,7 @@ typedef int64_t fixed_signed;
     ((((fixed) value) >> 1) + \
      ((value & 3) == 3))
 
-//#define ROUND_TO_EVEN_64(value, n_shift_bits) \
-//  ((((fixed) value) >> (n_shift_bits)) + \
-//   !!( \
-//     (!!((value) & (1ull << ((n_shift_bits)-1))) & !!((value) & ((1ull << ((n_shift_bits)-1))-1))) | \
-//     ((((value) >> ((n_shift_bits)-2)) & 0x6) == 0x6) \
-//   ))
-inline uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits) {
-    uint8_t lowbit = (value >> (n_shift_bits)) & 0x1;
-    uint8_t highroundbit = (value >> ((n_shift_bits)-1)) & 0x1;
-    uint64_t restroundbits = (value) & ((1ull << ((n_shift_bits)-1)) -1);
-    return (value >> n_shift_bits) + ROUND_TO_EVEN_ADDITION(lowbit, highroundbit, restroundbits);
-}
+inline uint64_t ROUND_TO_EVEN_64(uint64_t value, int n_shift_bits);
 
 #define ROUND_TO_EVEN_SIGNED_32(value, n_shift_bits) \
   (SIGN_EX_SHIFT_RIGHT_32(value, n_shift_bits) + \
