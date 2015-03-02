@@ -25,7 +25,7 @@ fixed fix_exp(fixed op1) {
 #if FIX_INTERN_FRAC_BITS >= FIX_POINT_BITS
       MASK_UNLESS(actuallog <= FIX_POINT_BITS,
               op1 << (FIX_INTERN_FRAC_BITS - FIX_POINT_BITS)) |
-      MASK_UNLESS(actuallog > FIX_POINT_BITS & actuallog <= FIX_INTERN_FRAC_BITS,
+      MASK_UNLESS((actuallog > FIX_POINT_BITS) & (actuallog <= FIX_INTERN_FRAC_BITS),
               op1 << (FIX_INTERN_FRAC_BITS - actuallog)) |
       MASK_UNLESS(actuallog > FIX_INTERN_FRAC_BITS,
               SIGN_EX_SHIFT_RIGHT(op1, (actuallog - FIX_INTERN_FRAC_BITS)));
