@@ -11,7 +11,7 @@ void d64(char* msg, uint64_t f) {
   char buf[100];
 
   fix_print_nospecial(buf, f);
-  printf("%s: %16s (%016llx)\n", msg, buf, f);
+  printf("%s: %16s ("FIX_PRINTF_HEX")\n", msg, buf, f);
 }
 
 void fix_print_noflag(char* buffer, fixed f) {
@@ -40,14 +40,14 @@ void internald64(char* msg, fix_internal f) {
   char buf[100];
   fix_internal_print(buf, f);
 
-  printf("%s: %16s (%016llx)\n", msg, buf, f);
+  printf("%s: %16s ("FIX_PRINTF_HEX")\n", msg, buf, f);
 }
 
 void allfracd64(char* msg, fix_internal f) {
   char buf[100];
   fix_allfrac_print(buf, f);
 
-  printf("%s: %16s (%016llx)\n", msg, buf, f);
+  printf("%s: %16s ("FIX_PRINTF_HEX")\n", msg, buf, f);
 }
 
 //void fix_internal_print_noflag(char* buffer, fix_internal f) {
@@ -79,7 +79,7 @@ void floatd64(char* msg, uint64_t f, uint16_t frac_bits) {
   char buf[40];
 
   fix_float_print_noflag(buf, f, frac_bits);
-  printf("%s: %16s (%016llx)\n", msg, buf, f);
+  printf("%s: %16s ("FIX_PRINTF_HEX")\n", msg, buf, f);
 }
 
 void fix_float_print_noflag(char* buffer, fix_internal f, uint16_t frac_bits) {

@@ -4,6 +4,8 @@ OPTFLAGS := -O
 CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fPIC
 LDFLAGS := -lcmocka -lm
 
+LD_LIBRARY_PATH=.
+
 progs             := test perf_test generate_test_helper
 libs              := libftfp.so
 ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c debug.c
