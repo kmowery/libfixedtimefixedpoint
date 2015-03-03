@@ -28,7 +28,7 @@ gen_test_obj     := $(gen_test_src:.c=.o)
 gen_test_pre     := $(gen_test_src:.c=.pre)
 
 .PHONY: all clean depend alltest
-all: $(libs) $(progs)
+all: $(libs)
 
 base.h : generate_base.py
 	python generate_base.py --file base.h
