@@ -1,5 +1,9 @@
-#include "internal.h"
+#ifndef cordic_h
+#define cordic_h
+
 #include "ftfp.h"
+#include "internal.h"
+#include "lut.h"
 
 FIX_INLINE void cordic(fix_internal* Zext, fix_internal* Cext, fix_internal* Sext) {
   /* See http://math.exeter.edu/rparris/peanut/cordic.pdf for the best
@@ -49,3 +53,4 @@ FIX_INLINE void cordic(fix_internal* Zext, fix_internal* Cext, fix_internal* Sex
 
 }
 
+#endif
