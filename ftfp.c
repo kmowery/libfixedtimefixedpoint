@@ -22,6 +22,9 @@ int8_t fix_eq(fixed op1, fixed op2) {
 int8_t fix_eq_nan(fixed op1, fixed op2) {
   return FIX_EQ_NAN(op1, op2);
 }
+int8_t fix_ne(fixed op1, fixed op2) {
+  return !FIX_EQ(op1, op2);
+}
 
 int8_t fix_cmp(fixed op1, fixed op2) {
   uint32_t nans = !!(FIX_IS_NAN(op1) | FIX_IS_NAN(op2));
