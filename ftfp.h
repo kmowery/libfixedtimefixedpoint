@@ -39,6 +39,9 @@ int8_t fix_eq(fixed op1, fixed op2);
 /* Returns true if the numbers are equal (and also if they are both NaN) */
 int8_t fix_eq_nan(fixed op1, fixed op2);
 
+/* Returns true if the numbers are unequal (NaNs are always unequal.) */
+int8_t fix_ne(fixed op1, fixed op2);
+
 /* Returns:
  *   -1 if op1 < op2
  *    0 if they are equal

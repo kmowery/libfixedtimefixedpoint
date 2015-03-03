@@ -461,6 +461,7 @@ TEST_HELPER(cmp_##name, { \
   int8_t cmp = fix_cmp(o1, o2); \
   int8_t expected = result; \
   CHECK_VALUE("cmp failed", cmp, expected, o1, o2); \
+  CHECK_VALUE("ne failed", fix_ne(o1, o2), ( (FIX_IS_NAN(o1) | FIX_IS_NAN(o2))) | (expected != 0), o1, o2); \
   CHECK_VALUE("lt failed", fix_lt(o1, o2), (!(FIX_IS_NAN(o1) | FIX_IS_NAN(o2))) & (expected <  0), o1, o2); \
   CHECK_VALUE("gt failed", fix_gt(o1, o2), (!(FIX_IS_NAN(o1) | FIX_IS_NAN(o2))) & (expected >  0), o1, o2); \
   CHECK_VALUE("le failed", fix_le(o1, o2), (!(FIX_IS_NAN(o1) | FIX_IS_NAN(o2))) & (expected <= 0), o1, o2); \
