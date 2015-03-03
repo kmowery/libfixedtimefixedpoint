@@ -90,6 +90,8 @@ fixed fix_tan(fixed op1);
 fixed  fix_convert_from_double(double d);
 double fix_convert_to_double(fixed op1);
 
+fixed  fix_convert_from_int64(int64_t i);
+
 /* Round to integers */
 int64_t fix_to_int64(fixed op1);
 int64_t fix_round_up_int64(fixed op1);
