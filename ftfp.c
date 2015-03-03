@@ -455,6 +455,18 @@ double fix_convert_to_double(fixed op1) {
   return d;
 }
 
+fixed fix_convert_from_int64(int64_t i) {
+  fixed_signed fnint = (fixed_signed) i;
+  uint8_t isinfpos = (fnint >= ((fixed_signed) FIX_INT_MAX));
+  uint8_t isinfneg = (fnint < (-((fixed_signed) FIX_INT_MAX)));
+
+  fixed f = ((fixed_signed) i) << (FIX_POINT_BITS);
+
+  return FIX_IF_INF_POS(isinfpos) |
+         FIX_IF_INF_NEG(isinfneg) |
+         MASK_UNLESS(!(isinfpos | isinfneg), f);
+}
+
 
 int64_t fix_to_int64(fixed op1) {
   return FIX_ROUND_INT64(op1);

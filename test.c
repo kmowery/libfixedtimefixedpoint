@@ -167,6 +167,47 @@ TEST_FIXNUM(regress45       , 0              , 99999999999999999999 , 0         
 TEST_FIXNUM(regress5        , -1             , 3862915039           , 0           , 1 , 1             , 0x62e3fffff920c809)
 FIXNUM_TESTS
 
+#define TEST_INTCONVERSION(name, inputint, inputfrac, inf, outputsign, outputint) \
+TEST_HELPER(fixint_##name, { \
+  fixed gi64 = fix_convert_from_int64((int64_t) inputint); \
+  fixed expectedint = (((fixed) (outputint)) << FIX_POINT_BITS); \
+  if(outputsign == 1) { \
+        expectedint = FIX_DATA_BITS((~(fixed) expectedint) + 0x4); \
+  } else { \
+        expectedint = FIX_DATA_BITS((fixed) expectedint); \
+  }\
+  if(inf == FIX_INF_POS || (outputsign == 0 && outputint >= FIX_INT_MAX)) { \
+    expectedint = FIX_INF_POS; \
+  } \
+  if(inf == FIX_INF_NEG || (outputsign == 1 && ((outputint > FIX_INT_MAX) ))) { \
+    expectedint = FIX_INF_NEG; \
+  } \
+  CHECK_EQ("fixint int64", gi64, expectedint); \
+};)
+
+#define INTCONVERSION_TESTS                                                                                      \
+TEST_INTCONVERSION(zero            , 0              , 0                    , 0           , 0 , 0               ) \
+TEST_INTCONVERSION(one             , 1              , 0                    , 0           , 0 , 1               ) \
+TEST_INTCONVERSION(one_neg         , -1             , 0                    , 0           , 1 , 1               ) \
+TEST_INTCONVERSION(two             , 2              , 0                    , 0           , 0 , 2               ) \
+TEST_INTCONVERSION(two_neg         , -2             , 0                    , 0           , 1 , 2               ) \
+TEST_INTCONVERSION(many            , 1000           , 4                    , 0           , 0 , 1000            ) \
+TEST_INTCONVERSION(many_neg        , -1000          , 4                    , 0           , 1 , 1000            ) \
+TEST_INTCONVERSION(max_int_l1      , FIX_INT_MAX-1  , 0                    , 0           , 0 , FIX_INT_MAX-1   ) \
+TEST_INTCONVERSION(max_int         , FIX_INT_MAX    , 0                    , FIX_INF_POS , 0 , 0               ) \
+TEST_INTCONVERSION(max_int_neg     , -FIX_INT_MAX   , 0                    , 0           , 1 , FIX_INT_MAX     ) \
+TEST_INTCONVERSION(max_int_neg_m1  , -FIX_INT_MAX-1 , 0                    , FIX_INF_NEG , 1 , 0               ) \
+TEST_INTCONVERSION(frac            , 0              , 5342                 , 0           , 0 , 0               ) \
+TEST_INTCONVERSION(frac_neg        , -0             , 5342                 , 0           , 1 , 0               ) \
+TEST_INTCONVERSION(regress0        , 0              , 00932                , 0           , 0 , 0               ) \
+TEST_INTCONVERSION(regress1        , 100            , 002655               , 0           , 0 , 100             ) \
+TEST_INTCONVERSION(regress12       , 100            , 0026550292968        , 0           , 0 , 100             ) \
+TEST_INTCONVERSION(regress2        , 1              , 4142150878906        , 0           , 0 , 1               ) \
+TEST_INTCONVERSION(regress3        , 1              , 6487121582031        , 0           , 0 , 1               ) \
+TEST_INTCONVERSION(regress4        , 2              , 0                    , 0           , 0 , 2               ) \
+TEST_INTCONVERSION(regress5        , -1             , 3862915039           , 0           , 1 , 1               )
+INTCONVERSION_TESTS
+
 //////////////////////////////////////////////////////////////////////////////
 
 /* Doubles only have 53 bits of precision, but we have 64 (minux the flag bits).
@@ -1078,6 +1119,7 @@ int main(int argc, char** argv) {
 
     ROUND_TO_EVEN_TESTS
     FIXNUM_TESTS
+    INTCONVERSION_TESTS
     CONVERT_DBL_TESTS
     EQ_TESTS
     ROUNDING_TESTS
