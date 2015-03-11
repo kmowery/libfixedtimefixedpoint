@@ -83,10 +83,14 @@ TEST_HELPER(sqrt_##name, { \
   fixed fsqrt = fix_sqrt(o1); \
   char buf[FIX_PRINT_BUFFER_SIZE]; \
   fix_print(buf, fsqrt); \
+  char abuf[FIX_PRINT_BUFFER_SIZE]; \
+  fix_print(abuf, result); \
+  char dbuf[FIX_PRINT_BUFFER_SIZE]; \
+  fix_print(dbuf,fix_sub(fsqrt, result)); \
     fix_buffer(buf, FIX_PRINT_BUFFER_SIZE); \
   fprintf(fd, "  #define %-30s FIXNUM(%s) // 0x"FIX_PRINTF_HEX"\n", "SQRT_MAX_FIXED", buf, fsqrt); \
   fix_print(buf, op1); \
-  fprintf(fd, "  // Max was FIXNUM(%s) // 0x"FIX_PRINTF_HEX"\n", buf, op1); \
+  fprintf(fd, "  // Max was FIXNUM(%s), sqrt was %s, difference %s // 0x"FIX_PRINTF_HEX"\n", buf, abuf, dbuf, op1); \
 };)
 #define SQRT_TESTS \
 SQRT(max    , FIX_MAX           , fix_convert_from_double(sqrt(fix_convert_to_double(FIX_MAX))))

@@ -472,7 +472,6 @@ fixed fix_log10(fixed op1) {
     FIX_DATA_BITS(r);
 }
 
-
 fixed fix_sqrt(fixed op1) {
   // We're going to use Newton's Method with a fixed number of iterations.
   // The polynomial to use is:
@@ -525,7 +524,7 @@ fixed fix_sqrt(fixed op1) {
 
   uint8_t overflow = 0;
 
-  for(int i = 0; i < 19; i++) {
+  for(int i = 0; i < 22; i++) {
     // Compute x/2
     fixed x2 = ROUND_TO_EVEN_ONE_BIT(x);
 

@@ -8,12 +8,12 @@
 // This file contains things needed internally for libftfp, but that a library
 // user should never need to see.
 
+#define FIX_x64
+
 
 #define FIX_INLINE static inline
 
 fixed fix_neg(fixed op1);
-
-
 
 typedef int64_t fixed_signed;
 
@@ -59,6 +59,8 @@ typedef int64_t fixed_signed;
 
 #define FIX_DATA_BIT_MASK (0xFFFFFFFFFFFFFFFCLL)
 #define FIX_DATA_BITS(f) ((f) & ((fixed)FIX_DATA_BIT_MASK))
+
+#define FIX_DATA_BITS_ROUNDED(f) (ROUND_TO_EVEN(f, FIX_FLAG_BITS) << FIX_FLAG_BITS)
 
 #define FIX_IF_NAN(isnan) (((isnan) | ((isnan) << 1)) & FIX_NAN)
 #define FIX_IF_INF_POS(isinfpos) (((isinfpos) | ((isinfpos) << 1)) & FIX_INF_POS)
@@ -445,8 +447,6 @@ typedef uint64_t fix_internal;
 void fix_internal_print(char* buffer, fix_internal f);
 void fix_allfrac_print(char* buffer, fix_internal f);
 
-#define fix_div_var fix_div_64
-
 ///////////////////////////////////////
 // functions that should be inlined
 ///////////////////////////////////////
@@ -595,10 +595,10 @@ static inline uint64_t fix_idiv(fixed x, fixed y, uint8_t bitsleft, uint8_t* ove
   return divresult;
 }
 
+
 static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
-#if 1
-  return fix_idiv(x,y, FIX_FRAC_BITS, overflow);
-}
+#ifdef FIX_x64
+  return FIX_DATA_BITS_ROUNDED(fix_idiv(x,y, FIX_FRAC_BITS, overflow));
 #else
   uint8_t xpos =  !FIX_TOP_BIT(x);
   uint8_t ypos =  !FIX_TOP_BIT(y);
@@ -663,7 +663,9 @@ static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
            MASK_UNLESS(ypos != xpos, fix_neg(result));
 
   return FIX_DATA_BITS(result);
-}
 #endif
+}
+
+#define fix_div_var fix_div_64
 
 #endif
