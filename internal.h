@@ -447,6 +447,7 @@ void fix_allfrac_print(char* buffer, fix_internal f);
 // functions that should be inlined
 ///////////////////////////////////////
 
+// Costs about 20 cycles
 FIX_INLINE uint8_t uint64_log2(uint64_t o) {
   uint64_t scratch = o;
   uint64_t log2;
@@ -544,26 +545,50 @@ static inline uint64_t fix_idiv(fixed x, fixed y, uint8_t bitsleft, uint8_t* ove
   d64("x", x);
   d64("y", y);
 
+  uint8_t isinf = 0;
+
+  uint8_t xismaxneg = x == FIX_TOP_BIT(x);
+
+  uint8_t xpos = !FIX_TOP_BIT(x);
   uint8_t ypos = !FIX_TOP_BIT(y);
 
+  // prevent any divisions by 0. Caller must handle this case.
   y = y | (y == 0);
+
+  uint64_t absx = MASK_UNLESS_64( xpos, x ) |
+                  MASK_UNLESS_64(!xpos, (~x)+1 );
   uint64_t absy = MASK_UNLESS_64( ypos, y ) |
                   MASK_UNLESS_64(!ypos, (~y)+1 );
+
+  uint8_t logx = uint64_log2(absx) - xismaxneg;
   uint8_t logy = uint64_log2(absy);
   uint8_t yshift = 63 - (logy+1);
+
+  // If log2(x) - log2(y) >= yshift, then we'll end up with overflow. In that
+  // case, don't actually overflow. Note that if x is the maximum negative
+  // number, we need to subtract a bit...
+  printf("logx - logy: %d\n", logx - logy);
+  printf("     yshift: %d\n", yshift);
+  printf(": %d\n", ((logx - logy) >= yshift));
+
+  isinf |= ((logx - logy) >= yshift);
 
   int16_t shiftamt = 63 - (bitsleft + yshift + 1);
 
   printf("shiftamt: %d\n", shiftamt);
 
   // If we would shift x left, then the result is infinite. Don't shift x.
-  uint8_t isinf = shiftamt <= 0;
-  shiftamt = MASK_UNLESS_64(shiftamt >  0, shiftamt) |
-             MASK_UNLESS_64(shiftamt <= 0, 2);
+  //
+  isinf |= shiftamt <= 0;
+  shiftamt = MASK_UNLESS_64(shiftamt >  0, shiftamt); // |
+             //MASK_UNLESS_64(shiftamt <= 0, 0);
 
   printf("shiftamt: %d\n", shiftamt);
 
-  uint64_t xhigh = SIGN_EX_SHIFT_RIGHT_64(x, shiftamt);
+  printf("isinf: %d\n", isinf);
+
+  uint64_t xhigh = MASK_UNLESS(!isinf, SIGN_EX_SHIFT_RIGHT_64(x, shiftamt));// |
+                   //MASK_UNLESS( isinf, 0);
   uint64_t xlow = x << (64-shiftamt);
 
   uint64_t yprep = y << yshift;
@@ -590,7 +615,7 @@ static inline uint64_t fix_idiv(fixed x, fixed y, uint8_t bitsleft, uint8_t* ove
 }
 
 static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
-#if 0
+#if 1
   return fix_idiv(x,y, FIX_FRAC_BITS, overflow);
 }
 #else

@@ -601,6 +601,7 @@ DIV(nfifteen_nthree  , FIXNUM(-15,0)          , FIXNUM(-3,0)           ,(FIX_INT
 DIV(nfifteen_three   , FIXNUM(-15,0)          , FIXNUM(3,0)            ,(FIX_INT_BITS > 4) ? FIXNUM(-5,0) : FIX_INF_NEG) \
 DIV(fifteen_frac5    , FIXNUM(15,0)           , FIXNUM(0,5)            ,FIXNUM(30,0)) \
 DIV(overflow         , FIXNUM(FIX_INT_MAX-1,5), FIXNUM(0,5)            ,FIX_INF_POS)  \
+DIV(overflow2        , FIXNUM(FIX_INT_MAX-1,5), FIX_EPSILON            ,FIX_INF_POS)  \
 DIV(underflow        , FIX_EPSILON            , FIXNUM(10,0)           ,FIXNUM(0,0))  \
 \
 DIV(zero_zero        , FIXNUM(0,0)            , FIXNUM(0,0)            ,FIX_NAN)      \
@@ -626,9 +627,11 @@ DIV(nan_pos          , FIX_NAN                , FIXNUM(10,0)           ,FIX_NAN)
 DIV(nan_neg          , FIX_NAN                , FIXNUM(-10,0)          ,FIX_NAN)      \
 DIV(nan_inf          , FIX_NAN                , FIX_INF_POS            ,FIX_NAN)      \
 DIV(nan_ninf         , FIX_NAN                , FIX_INF_NEG            ,FIX_NAN)      \
-DIV(regression1      , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(0,5)            ,FIX_INF_NEG)  \
-DIV(regression2      , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(-0,5)           ,FIX_INF_POS)  \
-DIV(regression3      , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(1,0)            ,(FIX_INT_BITS == 1) ? FIXNUM(0,0) : FIXNUM(-FIX_INT_MAX,0))
+\
+DIV(max_neg_ovf      , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(0,5)            ,FIX_INF_NEG)  \
+DIV(max_neg_ovf_neg  , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(-0,5)           ,FIX_INF_POS)  \
+DIV(max_neg_one      , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(1,0)            ,(FIX_INT_BITS == 1) ? FIXNUM(0,0) : FIXNUM(-FIX_INT_MAX,0)) \
+DIV(max_neg5_one     , FIXNUM(-FIX_INT_MAX+1,5) , FIXNUM(1,0)            ,(FIX_INT_BITS == 1) ? FIXNUM(0,0) : FIXNUM(-FIX_INT_MAX+1,5))
 DIV_TESTS
 
 //////////////////////////////////////////////////////////////////////////////
