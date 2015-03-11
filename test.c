@@ -604,6 +604,13 @@ DIV(overflow         , FIXNUM(FIX_INT_MAX-1,5), FIXNUM(0,5)            ,FIX_INF_
 DIV(overflow2        , FIXNUM(FIX_INT_MAX-1,5), FIX_EPSILON            ,FIX_INF_POS)  \
 DIV(underflow        , FIX_EPSILON            , FIXNUM(10,0)           ,FIXNUM(0,0))  \
 \
+DIV(max_neg_ovf      , FIXNUM(-FIX_INT_MAX,0)   , FIXNUM(0,5)          ,FIX_INF_NEG)  \
+DIV(max_neg_ovf_neg  , FIXNUM(-FIX_INT_MAX,0)   , FIXNUM(-0,5)         ,FIX_INF_POS)  \
+DIV(max_neg_one      , FIXNUM(-FIX_INT_MAX,0)   , FIXNUM(1,0)          ,(FIX_INT_BITS == 1) ? FIXNUM(0,0) : FIXNUM(-FIX_INT_MAX,0)) \
+DIV(max_neg5_one     , FIXNUM(-FIX_INT_MAX+1,5) , FIXNUM(1,0)          ,(FIX_INT_BITS == 1) ? FIXNUM(0,0) : FIXNUM(-FIX_INT_MAX+1,5)) \
+DIV(max_neg_two      , FIXNUM(-FIX_INT_MAX,0)   , FIXNUM(2,0)          ,(FIX_INT_BITS <= 2) ? FIXNUM(0,0) : FIXNUM(-(FIX_INT_MAX/2),0)) \
+DIV(max_neg5_two     , FIXNUM(-FIX_INT_MAX+1,5) , FIXNUM(2,0)          ,(FIX_INT_BITS <= 2) ? FIXNUM(0,0) : FIXNUM(-(FIX_INT_MAX/2)+1,75)) \
+\
 DIV(zero_zero        , FIXNUM(0,0)            , FIXNUM(0,0)            ,FIX_NAN)      \
 DIV(one_zero         , FIXNUM(1,0)            , FIXNUM(0,0)            ,FIX_INF_POS)  \
 DIV(none_zero        , FIXNUM(-1,0)           , FIXNUM(0,0)            ,FIX_INF_NEG)  \
@@ -626,12 +633,7 @@ DIV(ninf_nan         , FIX_INF_NEG            , FIX_NAN                ,FIX_NAN)
 DIV(nan_pos          , FIX_NAN                , FIXNUM(10,0)           ,FIX_NAN)      \
 DIV(nan_neg          , FIX_NAN                , FIXNUM(-10,0)          ,FIX_NAN)      \
 DIV(nan_inf          , FIX_NAN                , FIX_INF_POS            ,FIX_NAN)      \
-DIV(nan_ninf         , FIX_NAN                , FIX_INF_NEG            ,FIX_NAN)      \
-\
-DIV(max_neg_ovf      , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(0,5)            ,FIX_INF_NEG)  \
-DIV(max_neg_ovf_neg  , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(-0,5)           ,FIX_INF_POS)  \
-DIV(max_neg_one      , FIXNUM(-FIX_INT_MAX,0) , FIXNUM(1,0)            ,(FIX_INT_BITS == 1) ? FIXNUM(0,0) : FIXNUM(-FIX_INT_MAX,0)) \
-DIV(max_neg5_one     , FIXNUM(-FIX_INT_MAX+1,5) , FIXNUM(1,0)            ,(FIX_INT_BITS == 1) ? FIXNUM(0,0) : FIXNUM(-FIX_INT_MAX+1,5))
+DIV(nan_ninf         , FIX_NAN                , FIX_INF_NEG            ,FIX_NAN)
 DIV_TESTS
 
 //////////////////////////////////////////////////////////////////////////////

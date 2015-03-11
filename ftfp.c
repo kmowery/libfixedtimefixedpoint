@@ -144,7 +144,8 @@ fixed fix_sub(fixed op1, fixed op2) {
  *  Nan    Inf      NaN
  */
 fixed fix_div(fixed op1, fixed op2) {
-  uint8_t isinf;
+  uint8_t isinf = 0;
+
   fixed tempresult = fix_div_64(op1, op2, &isinf);
 
   uint8_t divbyzero = op2 == FIX_ZERO;

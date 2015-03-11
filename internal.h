@@ -542,13 +542,8 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
   return result;
 }
 
-#include "debug.h"
-
 static inline uint64_t fix_idiv(fixed x, fixed y, uint8_t bitsleft, uint8_t* overflow) {
   uint8_t isinf = 0;
-
-  // Check if x is the maximum negative value. We'll need this later on...
-  uint8_t xismaxneg = x == FIX_TOP_BIT(x);
 
   // prevent any divisions by 0. Caller must handle this case.
   y = y | (y == 0);
@@ -560,18 +555,31 @@ static inline uint64_t fix_idiv(fixed x, fixed y, uint8_t bitsleft, uint8_t* ove
   uint64_t xhigh = SIGN_EX_SHIFT_RIGHT_64(x, shiftamt);
   uint64_t xlow = x << (64-shiftamt);
 
+  // Check if x is the maximum negative value. We'll need this later on...
+  uint8_t xismaxneg = x == FIX_TOP_BIT(x);
+
   // check for overflow. Account for the fact that yprep has a sign bit, while
-  // xhigh is adjusted by 2^64, not 2^63.
+  // xhigh is adjusted by 2^64, not 2^63. Also, remember that xhigh has two sign
+  // bits, so the shifting nonsense is fine.
   //
   // If x is the maximum negative value, abs won't work properly. Check for if
   // y is fractional.
-
   uint64_t yabs = FIX_ABS_64(y);
 
-  isinf |= (!xismaxneg) & (FIX_ABS_64(xhigh) >= (yabs >> 1));
+  uint64_t xlowflip = ((~xlow) +1);
+  uint64_t xshift =
+    (MASK_UNLESS_64( !FIX_TOP_BIT(xhigh),(  xhigh << 1)+(!!FIX_TOP_BIT(xlow))) |
+     MASK_UNLESS_64(!!FIX_TOP_BIT(xhigh),((~xhigh)<< 1)+(xlowflip == 0)));
+
+  // Check if x is too large. If the final result will be negative, x must be > y.
+  // Otherwise, must be >=. Fix after dinner.
+  uint8_t resultneg = (!!FIX_TOP_BIT(xhigh)) ^ (!!FIX_TOP_BIT(y));
+
+  isinf |= (!xismaxneg) & ((xshift >=  yabs) | ((!resultneg) & (xshift == yabs)));
   isinf |= ( xismaxneg) & (yabs < (((fixed) 1) << FIX_POINT_BITS));
 
   xhigh = MASK_UNLESS(!isinf, xhigh);
+  xlow  = MASK_UNLESS(!isinf, xlow );
 
   uint64_t divresult = 0;
   uint64_t modresult = 0;
