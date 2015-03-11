@@ -481,7 +481,7 @@ FIX_INLINE uint8_t uint32_log2(uint32_t o) {
 #define fixed_log2 uint64_log2
 
 FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
-  fixed big_qtau = 0xc90fdaa22168c235;
+  fixed big_qtau = 0xc90fdaa22168c235; // "%x"%(mpmath.nint( (mpmath.pi / 2) * 2**63))
 
   /*
    * We want to divide op1 by TAU/4 (i.e., Pi/2), and end up with a fix_internal
@@ -498,6 +498,19 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
   /* We change the result by shifting these numbers up. Record the shift... */
   int8_t shift = logx + 1 - (FIX_POINT_BITS);
 
+#ifdef FIX_x64
+  uint64_t xhigh = absx << (62 - logx);
+  uint64_t xlow = 0;
+
+  fix_internal result = 0;
+  uint64_t modresult = 0;
+  __asm(
+      "div %%rcx"
+      : "=a"(result), "=d"(modresult)
+      : "d"(xhigh), "a"(xlow), "c"(big_qtau)
+      :
+    );
+#else
   uint64_t acc = absx << (62 - logx);
   uint64_t base = big_qtau;
 
@@ -526,7 +539,7 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
     result = result << 1;
     base = base >> 1;
   }
-
+#endif
   // result now has 64 bits of division result; we need to shift it into place
   // "Place" is a combination of FIX_POINT_BITS and 'shift', as computed above
   // Since we moved y to be slightly above x, result contains a number in Q64.
@@ -541,6 +554,7 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
 
   return result;
 }
+
 
 static inline uint64_t fix_idiv(fixed x, fixed y, uint8_t bitsleft, uint8_t* overflow) {
   uint8_t isinf = 0;
