@@ -537,7 +537,63 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
   return result;
 }
 
+#include "debug.h"
+
+static inline uint64_t fix_idiv(fixed x, fixed y, uint8_t bitsleft, uint8_t* overflow) {
+
+  d64("x", x);
+  d64("y", y);
+
+  uint8_t ypos = !FIX_TOP_BIT(y);
+
+  y = y | (y == 0);
+  uint64_t absy = MASK_UNLESS_64( ypos, y ) |
+                  MASK_UNLESS_64(!ypos, (~y)+1 );
+  uint8_t logy = uint64_log2(absy);
+  uint8_t yshift = 63 - (logy+1);
+
+  int16_t shiftamt = 63 - (bitsleft + yshift + 1);
+
+  printf("shiftamt: %d\n", shiftamt);
+
+  // If we would shift x left, then the result is infinite. Don't shift x.
+  uint8_t isinf = shiftamt <= 0;
+  shiftamt = MASK_UNLESS_64(shiftamt >  0, shiftamt) |
+             MASK_UNLESS_64(shiftamt <= 0, 2);
+
+  printf("shiftamt: %d\n", shiftamt);
+
+  uint64_t xhigh = SIGN_EX_SHIFT_RIGHT_64(x, shiftamt);
+  uint64_t xlow = x << (64-shiftamt);
+
+  uint64_t yprep = y << yshift;
+
+  printf("xhigh: %016llx xlow: %016llx / yprep: %016llx\n", xhigh, xlow, yprep);
+  printf("isinf: %d\n", isinf);
+
+  uint64_t divresult = 0;
+  uint64_t modresult = 0;
+  __asm(
+      "idiv %%rcx"
+      : "=a"(divresult), "=d"(modresult)
+      : "d"(xhigh), "a"(xlow), "c"(yprep)
+      :
+    );
+
+  *overflow |= isinf;
+
+  printf("divresult: %016llx\n", divresult);
+
+  //return divresult << 1;
+
+  return divresult;
+}
+
 static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
+#if 0
+  return fix_idiv(x,y, FIX_FRAC_BITS, overflow);
+}
+#else
   uint8_t xpos =  !FIX_TOP_BIT(x);
   uint8_t ypos =  !FIX_TOP_BIT(y);
 
@@ -602,5 +658,6 @@ static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
 
   return FIX_DATA_BITS(result);
 }
+#endif
 
 #endif
