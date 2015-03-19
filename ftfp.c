@@ -438,7 +438,7 @@ fixed fix_convert_from_int64(int64_t i) {
 }
 
 
-int64_t fix_to_int64(fixed op1) {
+int64_t fix_convert_to_int64(fixed op1) {
   return FIX_ROUND_INT64(op1);
 }
 int64_t fix_round_up_int64(fixed op1) {
