@@ -103,7 +103,7 @@ int64_t fix_floor64(fixed op1);
 
 /* Prints the fixed into a buffer in base 10. The buffer must be at least FIX_PRINT_BUFFER_SIZE
  * characters long. */
-void fix_print(char* buffer, fixed f);
-void fix_print_nospecial(char* buffer, fixed f);
+void fix_sprint(char* buffer, fixed f);
+void fix_sprint_nospecial(char* buffer, fixed f);
 
 #endif

@@ -109,5 +109,5 @@ int main(int argc, char* argv[]){
   //run_test_s ("fix_sin_fast   ",fix_sin_fast,10);
   printf("\n");
 
-  run_test_p ("fix_print      ",fix_print,10);
+  run_test_p ("fix_sprint      ",fix_sprint,10);
 }

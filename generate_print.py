@@ -169,7 +169,7 @@ with args["file"] as f:
 
 """)
 
-    f.write(make_print_function("""void fix_print(char* buffer, fixed f) {
+    f.write(make_print_function("""void fix_sprint(char* buffer, fixed f) {
   uint8_t isinfpos = FIX_IS_INF_POS(f);
   uint8_t isinfneg = FIX_IS_INF_NEG(f);
   uint8_t isnan = FIX_IS_NAN(f);
@@ -181,7 +181,7 @@ with args["file"] as f:
 
     f.write("#ifdef DEBUG\n")
 
-    f.write(make_print_function( """void fix_print_nospecial(char* buffer, fixed f) {
+    f.write(make_print_function( """void fix_sprint_nospecial(char* buffer, fixed f) {
   uint8_t isinfpos = 0;
   uint8_t isinfneg = 0;
   uint8_t isnan = 0;

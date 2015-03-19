@@ -12,11 +12,11 @@
 void d64(char* msg, uint64_t f) {
   char buf[100];
 
-  fix_print_nospecial(buf, f);
+  fix_sprint_nospecial(buf, f);
   printf("%s: %16s ("FIX_PRINTF_HEX")\n", msg, buf, f);
 }
 
-void fix_print_noflag(char* buffer, fixed f) {
+void fix_sprint_noflag(char* buffer, fixed f) {
   double d;
   fixed f_ = f;
 
@@ -107,7 +107,7 @@ void fix_float_print_noflag(char* buffer, fix_internal f, uint16_t frac_bits) {
 }
 
 // Note that this is not constant time.
-void fix_print_variable(char* buffer, fixed f) {
+void fix_sprint_variable(char* buffer, fixed f) {
   double d;
   fixed f_ = f;
 

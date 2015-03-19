@@ -23,9 +23,9 @@ static void null_test_success(void **state) {
 #define CHECK_CONDITION(error_msg, condition, var1, var2) \
   if( !(condition) ) { \
     char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE]; \
-    fix_print(b1, var1); fix_print(b2, var2); \
+    fix_sprint(b1, var1); fix_sprint(b2, var2); \
     fixed difference = fix_sub(var1, var2); \
-    char b3[FIX_PRINT_BUFFER_SIZE]; fix_print(b3, difference); \
+    char b3[FIX_PRINT_BUFFER_SIZE]; fix_sprint(b3, difference); \
     fail_msg( error_msg ": \n%s ("FIX_PRINTF_HEX") != %s ("FIX_PRINTF_HEX \
         ")\n difference %s ("FIX_PRINTF_HEX", "FIX_PRINTF_HEX")", \
         b1, var1, b2, var2, b3, difference, ~difference+4); \
@@ -62,13 +62,13 @@ static void null_test_success(void **state) {
 void p(fixed f) {
   char buf[FIX_PRINT_BUFFER_SIZE];
 
-  fix_print(buf, f);
+  fix_sprint(buf, f);
   printf("n: %s ("FIX_PRINTF_HEX")\n", buf, f);
 }
 void pl(fixed f) {
   char buf[FIX_PRINT_BUFFER_SIZE];
 
-  fix_print(buf, f);
+  fix_sprint(buf, f);
   printf("%s ("FIX_PRINTF_HEX")", buf, f);
 }
 
@@ -80,9 +80,9 @@ void bounds(fixed f) {
   fixed less = f - 0x4;
   fixed more = f + 0x4;
 
-  fix_print(buf_less, less);
-  fix_print(buf, f);
-  fix_print(buf_more, more);
+  fix_sprint(buf_less, less);
+  fix_sprint(buf, f);
+  fix_sprint(buf_more, more);
 
   printf("%s (0x"FIX_PRINTF_HEX") | %s (0x"FIX_PRINTF_HEX") | %s (0x"FIX_PRINTF_HEX")\n", buf_less, less, buf, f, buf_more, more);
 }
@@ -249,13 +249,13 @@ TEST_HELPER(convert_dbl_##name, { \
         (isinf(d2) && (isinf(d) || (locald) >= FIX_INT_MAX || locald < -FIX_INT_MAX )) || \
         (isnan(d) && isnan(d2))) ) { \
     char b1[FIX_PRINT_BUFFER_SIZE]; \
-    fix_print(b1, result); \
+    fix_sprint(b1, result); \
     fail_msg( #name " convert_to_double failed : %g (%s "FIX_PRINTF_HEX") != %g", d2, b1, result, locald); \
   } \
     char buf[FIX_PRINT_BUFFER_SIZE]; \
     char bitsbuf[FIX_PRINT_BUFFER_SIZE]; \
-    fix_print(buf, result); \
-    fix_print(bitsbuf, bits); \
+    fix_sprint(buf, result); \
+    fix_sprint(bitsbuf, bits); \
     printf("Test passed: %g == %g == %s == %s\n", locald, d2, buf, bitsbuf); \
 };)
 
@@ -439,8 +439,8 @@ static void constants(void **state) {
       limit = fix_add(limit, FIX_EPSILON);
     }
     char b1[FIX_PRINT_BUFFER_SIZE], b2[FIX_PRINT_BUFFER_SIZE];
-    fix_print(b1, temp);
-    fix_print(b2, FIX_PI);
+    fix_sprint(b1, temp);
+    fix_sprint(b2, FIX_PI);
 
     if(fix_cmp(temp, limit) >= 0) {
       fail_msg( "Tau - Pi - Pi is %s ("FIX_PRINTF_HEX
@@ -1074,11 +1074,11 @@ TRIG_TESTS
 TEST_HELPER(print_##name, { \
   fixed o1 = op1; \
   char buf[FIX_PRINT_BUFFER_SIZE]; \
-  fix_print(buf, o1); \
+  fix_sprint(buf, o1); \
   char* expected = result; \
   if(strcmp(buf, expected))  { \
     printf("Strings not equal: '%s' != '%s'\n", buf, expected); \
-    fix_print(buf, o1); \
+    fix_sprint(buf, o1); \
     printf("I should have expected: '%s'\n", buf); \
   } \
   assert_memory_equal(buf, expected, 23); \
