@@ -106,4 +106,8 @@ int64_t fix_floor64(fixed op1);
 void fix_sprint(char* buffer, fixed f);
 void fix_sprint_nospecial(char* buffer, fixed f);
 
+/* Prints a fixed to STDOUT. */
+void fix_print(fixed f);
+void fix_println(fixed f);
+
 #endif
