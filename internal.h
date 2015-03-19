@@ -8,9 +8,6 @@
 // This file contains things needed internally for libftfp, but that a library
 // user should never need to see.
 
-#define FIX_x64
-
-
 #define FIX_INLINE static inline
 
 fixed fix_neg(fixed op1);
@@ -498,19 +495,6 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
   /* We change the result by shifting these numbers up. Record the shift... */
   int8_t shift = logx + 1 - (FIX_POINT_BITS);
 
-#ifdef FIX_x64
-  uint64_t xhigh = absx << (62 - logx);
-  uint64_t xlow = 0;
-
-  fix_internal result = 0;
-  uint64_t modresult = 0;
-  __asm(
-      "div %%rcx"
-      : "=a"(result), "=d"(modresult)
-      : "d"(xhigh), "a"(xlow), "c"(big_qtau)
-      :
-    );
-#else
   uint64_t acc = absx << (62 - logx);
   uint64_t base = big_qtau;
 
@@ -539,7 +523,6 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
     result = result << 1;
     base = base >> 1;
   }
-#endif
   // result now has 64 bits of division result; we need to shift it into place
   // "Place" is a combination of FIX_POINT_BITS and 'shift', as computed above
   // Since we moved y to be slightly above x, result contains a number in Q64.
@@ -556,64 +539,8 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
 }
 
 
-static inline uint64_t fix_idiv(fixed x, fixed y, uint8_t bitsleft, uint8_t* overflow) {
-  uint8_t isinf = 0;
-
-  // prevent any divisions by 0. Caller must handle this case.
-  y = y | (y == 0);
-
-  // Compute how much we'll shift x by. It's 62 here, rather than 64, to account
-  // for both x and y's sign bit.
-  int16_t shiftamt = 62 - bitsleft;
-
-  uint64_t xhigh = SIGN_EX_SHIFT_RIGHT_64(x, shiftamt);
-  uint64_t xlow = x << (64-shiftamt);
-
-  // Check if x is the maximum negative value. We'll need this later on...
-  uint8_t xismaxneg = x == FIX_TOP_BIT(x);
-
-  // check for overflow. Account for the fact that yprep has a sign bit, while
-  // xhigh is adjusted by 2^64, not 2^63. Also, remember that xhigh has two sign
-  // bits, so the shifting nonsense is fine.
-  //
-  // If x is the maximum negative value, abs won't work properly. Check for if
-  // y is fractional.
-  uint64_t yabs = FIX_ABS_64(y);
-
-  uint64_t xlowflip = ((~xlow) +1);
-  uint64_t xshift =
-    (MASK_UNLESS_64( !FIX_TOP_BIT(xhigh),(  xhigh << 1)+(!!FIX_TOP_BIT(xlow))) |
-     MASK_UNLESS_64(!!FIX_TOP_BIT(xhigh),((~xhigh)<< 1)+(xlowflip == 0)));
-
-  // Check if x is too large. If the final result will be negative, x must be > y.
-  // Otherwise, must be >=. Fix after dinner.
-  uint8_t resultneg = (!!FIX_TOP_BIT(xhigh)) ^ (!!FIX_TOP_BIT(y));
-
-  isinf |= (!xismaxneg) & ((xshift >=  yabs) | ((!resultneg) & (xshift == yabs)));
-  isinf |= ( xismaxneg) & (yabs < (((fixed) 1) << FIX_POINT_BITS));
-
-  xhigh = MASK_UNLESS(!isinf, xhigh);
-  xlow  = MASK_UNLESS(!isinf, xlow );
-
-  uint64_t divresult = 0;
-  uint64_t modresult = 0;
-  __asm(
-      "idiv %%rcx"
-      : "=a"(divresult), "=d"(modresult)
-      : "d"(xhigh), "a"(xlow), "c"(y)
-      :
-    );
-
-  *overflow |= isinf;
-
-  return divresult;
-}
-
 
 static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
-#ifdef FIX_x64
-  return FIX_DATA_BITS_ROUNDED(fix_idiv(x,y, FIX_FRAC_BITS, overflow));
-#else
   uint8_t xpos =  !FIX_TOP_BIT(x);
   uint8_t ypos =  !FIX_TOP_BIT(y);
 
@@ -671,13 +598,12 @@ static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
 
   result |= !!roundbits;
 
-  result = ROUND_TO_EVEN(result, FIX_FLAG_BITS) << FIX_FLAG_BITS;
+  result = FIX_DATA_BITS_ROUNDED(result);
 
   result = MASK_UNLESS(ypos == xpos, result) |
            MASK_UNLESS(ypos != xpos, fix_neg(result));
 
   return FIX_DATA_BITS(result);
-#endif
 }
 
 #define fix_div_var fix_div_64
