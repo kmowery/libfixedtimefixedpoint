@@ -106,8 +106,4 @@ int64_t fix_floor64(fixed op1);
 void fix_print(char* buffer, fixed f);
 void fix_print_nospecial(char* buffer, fixed f);
 
-/* Note that this is not constant time, but will return a buffer sized to the
- * number. */
-void fix_print_variable(char* buffer, fixed f);
-
 #endif

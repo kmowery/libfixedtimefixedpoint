@@ -8,6 +8,10 @@
 // This file contains things needed internally for libftfp, but that a library
 // user should never need to see.
 
+// If you'd like to compile the debug functions, enable this define
+//#define DEBUG
+
+
 #define FIX_INLINE static inline
 
 fixed fix_neg(fixed op1);
@@ -441,8 +445,10 @@ typedef uint64_t fix_internal;
 //  Helper functions
 ///////////////////////////////////////
 
+#ifdef DEBUG
 void fix_internal_print(char* buffer, fix_internal f);
 void fix_allfrac_print(char* buffer, fix_internal f);
+#endif
 
 ///////////////////////////////////////
 // functions that should be inlined

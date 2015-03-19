@@ -1,5 +1,7 @@
 #include "debug.h"
 
+#ifdef DEBUG
+
 //void d(char* msg, fixed f) {
 //  char buf[40];
 //
@@ -103,3 +105,40 @@ void fix_float_print_noflag(char* buffer, fix_internal f, uint16_t frac_bits) {
 
   sprintf(buffer, "% 16.16f", d);
 }
+
+// Note that this is not constant time.
+void fix_print_variable(char* buffer, fixed f) {
+  double d;
+  fixed f_ = f;
+
+  if(FIX_IS_NAN(f)) {
+    memcpy(buffer, "NaN", 4);
+    return;
+  }
+  if(FIX_IS_INF_POS(f)) {
+    memcpy(buffer, "+Inf", 5);
+    return;
+  }
+  if(FIX_IS_INF_NEG(f)) {
+    memcpy(buffer, "-Inf", 5);
+    return;
+  }
+
+  uint8_t neg = !!FIX_TOP_BIT(f);
+
+  if(neg) {
+    f_ = ~f_ + 4;
+  }
+
+  d = f_ >> 17;
+  d += ((f_ >> 2) & 0x7fff) / (float) (1<<15);
+
+  if(neg) {
+    d *= -1;
+  }
+
+  sprintf(buffer, "%.015f", d);
+}
+
+
+#endif

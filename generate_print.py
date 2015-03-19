@@ -179,6 +179,8 @@ with args["file"] as f:
 
     f.write("\n\n");
 
+    f.write("#ifdef DEBUG\n")
+
     f.write(make_print_function( """void fix_print_nospecial(char* buffer, fixed f) {
   uint8_t isinfpos = 0;
   uint8_t isinfneg = 0;
@@ -202,3 +204,4 @@ with args["file"] as f:
   uint32_t neg = 0;
   """,
   0, 64, 0))
+    f.write("#endif\n")
