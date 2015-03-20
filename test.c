@@ -313,7 +313,7 @@ TEST_HELPER(rounding_##name, { \
   fixed input = value; \
   /* Trust that FIXNUM is doing its job correctly. Therefore, if input is \
    * infinity, we can fix up the expected values below... */ \
-  int64_t round_even  = fix_to_int64(input); \
+  int64_t round_even  = fix_convert_to_int64(input); \
   int64_t exp_even    = FIX_IS_INF_POS(input) ? INT64_MAX : FIX_IS_INF_NEG(input) ? INT64_MIN : (res_even); \
   CHECK_INT_EQUAL("round to even" , round_even  , exp_even); \
   int64_t round_up    = fix_round_up_int64(input); \
