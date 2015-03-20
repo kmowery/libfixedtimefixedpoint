@@ -251,10 +251,10 @@ fixed fix_ceil(fixed op1) {
   uint8_t isnan = FIX_IS_NAN(op1);
   uint8_t ispos = !FIX_IS_NEG(op1);
 
-  uint64_t frac_mask = (1ull << (FIX_FRAC_BITS + FIX_FLAG_BITS))-1;
+  fixed frac_mask = (((fixed) 1) << (FIX_POINT_BITS))-1;
 
   fixed tempresult = (op1 & ~frac_mask) +
-    ( (uint64_t) (!!(op1 & frac_mask)) << (FIX_FRAC_BITS + FIX_FLAG_BITS));
+    MASK_UNLESS(!!(op1 & frac_mask),  (((fixed) 1) << (FIX_POINT_BITS)));
 
   // If we used to be positive and we wrapped around, switch to INF_POS.
   isinfpos |= ((tempresult == FIX_MIN) & ispos);
