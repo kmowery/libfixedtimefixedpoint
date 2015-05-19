@@ -50,10 +50,3 @@ NaN in any operation will always result in NaN.
  * 0 / (-)Inf = 0
  * (-)N / 0 = (-)Inf
  * 0 / 0 = NaN
-
-## Static Build
-We manually verify an x86_64 build for each major version.
-
-The current verified version is: 1.0
-
-Sha1sum 8aee2d5237ef9ecf67d704bd7bd165da7fc92d51
