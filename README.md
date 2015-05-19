@@ -4,7 +4,10 @@ This library provides constant-time mathematical operations on fixed point numbe
 
 ## Why
 
-Operations on floating point numbers (`float` or `double`), even simple ones such as add and multiply, can take different amounts of time depending on the operands. If you use these numbers in your security-critical application, malicious attackers could use this timing side-channel against you.
+Operations on floating point numbers (`float` or `double`), even simple ones
+such as add and multiply, can take varying amounts of time depending on the
+numbers inovlved. If you use floating point operations in your security-critical
+application, malicious attackers could use this timing side-channel against you.
 
 ## Usage
 
@@ -18,15 +21,32 @@ The functions provided by libftfp are outlined in `ftfp.h`. These include:
   * Trigonometry: Sine, Cosine, Tangent
   * Conversion: Printing (Base 10), To/From double
 
-Your application should link against the libftfp shared library, which is built by our Makefile.
+Your application should link against the libftfp shared library, which is built
+by our Makefile.
 
 ## Representation
 
-Each number is stored in 32 bits.
+Each libftfp number is stored in a 64-bit value. 2 bits are reserved for
+metadata, leaving 62 bits for the number itself.
 
-libftfp currently uses a 15-15 format for numbers. That is, 15 bits are reserved for the integer portion and 15 for the fractional portion.
+First, select your preferred precision: libftfp allocates 62 bits for each
+number, and you can use between 1 and 61 of these for the integer portion, with
+the rest allocated to the fractional portion of the number.
 
-This representation is expected to change.
+
+## Building
+
+To select 32 integer bits, run:
+
+    $ python generate_base.py --file base.h --pyfile base.py --intbits 32
+
+Acceptable values are between 1 and 61. If you prefer, you can modify `base.py`
+directly. Next,
+
+    $ make
+
+This will generate `libftfp.so`, which you can then link against in your
+application.
 
 ## Behavioral Notes
  * Inf is infinity
