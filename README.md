@@ -48,6 +48,11 @@ directly. Next,
 This will generate `libftfp.so`, which you can then link against in your
 application.
 
+If you'd like to run the full test suite on your local machine (which iterates
+through every possible configuration of the library), run
+
+    $ make run_tests
+
 ## Behavioral Notes
  * Inf is infinity
  * (-) indicated - or + versions of the value
