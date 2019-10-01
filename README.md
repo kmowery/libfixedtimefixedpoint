@@ -2,6 +2,23 @@
 
 This library provides constant-time mathematical operations on fixed point numbers.
 
+You can read more about this library, and why it was developed in our
+(paper)[https://people.eecs.berkeley.edu/~dkohlbre//papers/subnormal.pdf].
+
+If you are using libftfp in an academic paper, please cite as:
+
+```
+@inproceedings{andrysco2015subnormal,
+  title={On subnormal floating point and abnormal timing},
+  author={Andrysco, Marc and Kohlbrenner, David and Mowery, Keaton and Jhala, Ranjit and Lerner, Sorin and Shacham, Hovav},
+  booktitle={2015 IEEE Symposium on Security and Privacy},
+  pages={623--639},
+  year={2015},
+  organization={IEEE}
+}
+```
+
+
 ## Why
 
 Operations on floating point numbers (`float` or `double`), even simple ones
