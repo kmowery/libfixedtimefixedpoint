@@ -3,7 +3,7 @@
 This library provides constant-time mathematical operations on fixed point numbers.
 
 You can read more about this library, and why it was developed in our
-(paper)[https://people.eecs.berkeley.edu/~dkohlbre//papers/subnormal.pdf].
+paper: [On Subnormal Floating Point and Abnormal Timing](https://people.eecs.berkeley.edu/~dkohlbre/papers/subnormal.pdf).
 
 If you are using libftfp in an academic paper, please cite as:
 
