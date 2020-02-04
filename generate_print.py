@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import math
 import argparse
 import sys
@@ -42,7 +42,7 @@ sys.dont_write_bytecode = True
 try:
   from base import *
 except:
-    print "You must run generate_base.py before running generate_print.py."
+    print("You must run generate_base.py before running generate_print.py.")
     sys.exit(1)
 
 parser = argparse.ArgumentParser(description="Generate libftfp's print function")
@@ -97,12 +97,12 @@ def make_print_function(preamble, int_bits, frac_bits, flag_bits):
     ints =  {i: {bit: int_patterns[bit][i]      for bit in range(len(int_patterns))}      for i in range(int_chars)}
 
     def frac_poly(n):
-        patterns = [(k,v) for k, v in fracs[n].iteritems()]
+        patterns = [(k,v) for k, v in fracs[n].items()]
         terms = ["(%c * bit%d)"%(p, bit+flag_bits) for bit, p in patterns if p != "0"]
         return " + ".join(terms)
 
     def int_poly(n):
-        patterns = [(k,v) for k, v in ints[n].iteritems()]
+        patterns = [(k,v) for k, v in ints[n].items()]
         terms = ["(%c * bit%d)"%(p, bit+flag_bits) for bit, p in patterns if p != "0"]
         return " + ".join(terms)
 

@@ -51,6 +51,14 @@ number, and you can use between 1 and 61 of these for the integer portion, with
 the rest allocated to the fractional portion of the number.
 
 
+## Dependencies
+
+```
+   python3
+   python3 mpmath
+   cmocka
+```
+
 ## Building
 
 To select 32 integer bits, run:
@@ -69,6 +77,8 @@ If you'd like to run the full test suite on your local machine (which iterates
 through every possible configuration of the library), run
 
     $ make run_tests
+
+You will need to have installed `cmocka` to run tests.
 
 ## Behavioral Notes
  * Inf is infinity
