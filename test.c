@@ -223,7 +223,7 @@ INTCONVERSION_TESTS
 
 #define CONVERT_DBL(name, d, bits) \
 TEST_HELPER(convert_dbl_##name, { \
-  fixed expected = bits; \
+  fixed expected = bits;			\
   double locald = (d); \
   double log2d = log2(fabs(d)); \
   uint32_t ilog2d = (int) ceil(log2d); \
@@ -260,21 +260,21 @@ TEST_HELPER(convert_dbl_##name, { \
 };)
 
 #define CONVERT_DBL_TESTS                                                \
-CONVERT_DBL(zero     , 0                       , FIX_ZERO)               \
-CONVERT_DBL(one      , 1                       , FIXNUM(1    , 0))       \
-CONVERT_DBL(one_neg  , -1                      , FIXNUM(-1   , 0))       \
-CONVERT_DBL(two      , 2                       , FIXNUM(2    , 0))       \
-CONVERT_DBL(two_neg  , -2                      , FIXNUM(-2   , 0))       \
-CONVERT_DBL(many     , 1000.4                  , FIXNUM(1000 , 4))       \
-CONVERT_DBL(many_neg , -1000.4                 , FIXNUM(-1000, 4))       \
-CONVERT_DBL(frac     , 0.5342                  , FIXNUM(0    , 5342))    \
-CONVERT_DBL(frac_neg , -0.5342                 , FIXNUM(-0   , 5342))    \
-CONVERT_DBL(underflow, 1e-60                   , FIX_ZERO)               \
+CONVERT_DBL(zero     , (double)0                       , FIX_ZERO)	\
+CONVERT_DBL(one      , (double)1                       , FIXNUM(1    , 0))       \
+CONVERT_DBL(one_neg  , (double)-1                      , FIXNUM(-1   , 0))       \
+CONVERT_DBL(two      , (double)2                       , FIXNUM(2    , 0))       \
+CONVERT_DBL(two_neg  , (double)-2                      , FIXNUM(-2   , 0))       \
+CONVERT_DBL(many     , (double)1000.4                  , FIXNUM(1000 , 4))       \
+CONVERT_DBL(many_neg , (double)-1000.4                 , FIXNUM(-1000, 4))       \
+CONVERT_DBL(frac     , (double)0.5342                  , FIXNUM(0    , 5342))    \
+CONVERT_DBL(frac_neg , (double)-0.5342                 , FIXNUM(-0   , 5342))    \
+CONVERT_DBL(underflow, (double)1e-60                   , FIX_ZERO)               \
 CONVERT_DBL(max      , (double) FIX_INT_MAX    , FIX_INF_POS)            \
 CONVERT_DBL(max_neg  , -((double) FIX_INT_MAX) , FIXNUM(-FIX_INT_MAX,0)) \
-CONVERT_DBL(inf_pos  , INFINITY                , FIX_INF_POS)            \
-CONVERT_DBL(inf_neg  , -INFINITY               , FIX_INF_NEG)            \
-CONVERT_DBL(nan      , nan("0")                , FIX_NAN)
+CONVERT_DBL(inf_pos  , (double)INFINITY                , FIX_INF_POS)            \
+CONVERT_DBL(inf_neg  , (double)-INFINITY               , FIX_INF_NEG)            \
+CONVERT_DBL(nan      , (double)nan("0.0")              , FIX_NAN)
 CONVERT_DBL_TESTS
 
 //////////////////////////////////////////////////////////////////////////////

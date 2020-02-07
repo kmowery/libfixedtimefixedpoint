@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import math
 import decimal
+from functools import reduce
 from decimal import Decimal
 
 # We might overwrite base.py; make sure we don't generate bytecode...
@@ -59,14 +60,14 @@ if __name__ == "__main__":
 
     # Check sanity
     if (flag_bits + int_bits + frac_bits) > 64:
-        print "Too many bits! (%d (flag) + %d (int) + %d (frac) > 64)"%(flag_bits, int_bits, frac_bits)
+        print("Too many bits! (%d (flag) + %d (int) + %d (frac) > 64)"%(flag_bits, int_bits, frac_bits))
         sys.exit(1)
     if (flag_bits + int_bits + frac_bits) < 64:
-        print "Not enough bits! (%d (flag) + %d (int) + %d (frac) < 64)"%(flag_bits, int_bits, frac_bits)
+        print("Not enough bits! (%d (flag) + %d (int) + %d (frac) < 64)"%(flag_bits, int_bits, frac_bits))
         sys.exit(1)
     if int_bits < 1:
-        print "There must be at least one integer bit (for two's complement...)"
-        print "You asked for %d (flag), %d (int), and %d (frac)"%(flag_bits, int_bits, frac_bits)
+        print("There must be at least one integer bit (for two's complement...)")
+        print("You asked for %d (flag), %d (int), and %d (frac)"%(flag_bits, int_bits, frac_bits))
         sys.exit(1)
 
     # Generate the buffer size for printing
@@ -88,17 +89,17 @@ if __name__ == "__main__":
       t = (d * 2**(point_bits-2))
       t = t.quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN)
       t = t * 2**2
-      return t
+      return int(t)
     def decimal_to_fix_extrabits(d, fracbits = point_bits):
       t = (d * 2**(fracbits))
       t = t.quantize(decimal.Decimal('1.'), rounding=decimal.ROUND_HALF_EVEN)
       if t < 0:
           t = Decimal(2**64) + t
-      return t
+      return int(t)
 
-    fix_pi =  fix_inf_pos if int_bits < 3 else decimal_to_fix(pi)
-    fix_tau = fix_inf_pos if int_bits < 4 else decimal_to_fix(tau)
-    fix_e =   fix_inf_pos if int_bits < 3 else decimal_to_fix(e)
+    fix_pi =  int(fix_inf_pos if int_bits < 3 else decimal_to_fix(pi))
+    fix_tau = int(fix_inf_pos if int_bits < 4 else decimal_to_fix(tau))
+    fix_e =   int(fix_inf_pos if int_bits < 3 else decimal_to_fix(e))
 
 
     # Write files
@@ -278,7 +279,7 @@ static const fixed fix_e = 0x%016x;
             lutc += (make_c_internal_defines(log10_coef_lut, "FIX_LOG10_COEF"))
             lutc += "\n"
             lutc += "#define CORDIC_N %d\n"%(len(cordic_lut))
-            lutc += "#define CORDIC_P 0x%x\n"%(cordic_p)
+            lutc += "#define CORDIC_P 0x%x\n"%(int(cordic_p))
             lutc += (make_c_internal_define_lut(cordic_lut, "CORDIC_LUT", "cordic_lut"))
             lutc += "\n#endif\n"
             f.write(lutc)

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 CC := gcc
-OPTFLAGS := -O
+OPTFLAGS := -O1 -fno-aggressive-loop-optimizations
 CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fPIC
 LDFLAGS := -lcmocka -lm -lftfp
 
@@ -31,14 +31,14 @@ gen_test_pre     := $(gen_test_src:.c=.pre)
 all: $(libs)
 
 base.h : generate_base.py
-	python generate_base.py --file base.h
+	python3 generate_base.py --file base.h
 base.py : generate_base.py
-	python generate_base.py --pyfile base.py
+	python3 generate_base.py --pyfile base.py
 
 autogen.c : generate_print.py base.py
-	python generate_print.py --file autogen.c
+	python3 generate_print.py --file autogen.c
 lut.h : generate_base.py
-	python generate_base.py --lutfile lut.h
+	python3 generate_base.py --lutfile lut.h
 
 %.o: %.c ${ftfp_inc} Makefile
 	$(CC) -c -o $@ $(CFLAGS) $<
@@ -66,7 +66,7 @@ clean:
 run_tests:
 	set -x ; \
 	number=1 ; while [[ $$number -le 61  ]] ; do \
-		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make test && ./test || exit 1; \
+		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make test && LD_LIBRARY_PATH=. ./test || exit 1; \
 		((number = number + 1)) ; \
 	done
 
