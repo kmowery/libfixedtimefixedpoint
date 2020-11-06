@@ -77,7 +77,7 @@ fixed fix_exp(fixed op1) {
    * guaranteed bit-accurate taylor series approximation (at least in a fix_internal).
    */
 
-#define FIX_EXP_LOOP 26
+#define FIX_EXP_LOOP 25
 
   /* To generate the table of fractional bits vs. loop iterations:
    *
